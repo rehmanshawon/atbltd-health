@@ -17,20 +17,26 @@ import { useState } from "react";
 export default function Home() {
   const [isMembershipOpen, setIsMembershipOpen] = useState(false);
   return (
-    <LanguageProvider><main className="relative overflow-hidden">
-      <BackgroundGlow />
+    <LanguageProvider>
+      <main className="relative overflow-hidden">
+        <BackgroundGlow />
 
-      <Navbar onJoin={() => setIsMembershipOpen(true)} />
+        <Navbar onJoin={() => setIsMembershipOpen(true)} />
 
-      <Hero onJoin={() => setIsMembershipOpen(true)} />
-      <MembershipDetails />
-      <HowItWorks />
-      <BenefitEligibility />
-      <Benefits />
-      <ChairmanMessage />
-      <FAQ />
-      <Footer />
-      <MembershipModal isOpen={isMembershipOpen} onClose={() => setIsMembershipOpen(false)} />
-    </main></LanguageProvider>
+        <Hero onJoin={() => setIsMembershipOpen(true)} />
+        <MembershipDetails />
+        <ChairmanMessage />
+        <HowItWorks />
+        <BenefitEligibility />
+        <Benefits />
+
+        <FAQ />
+        <Footer />
+        <MembershipModal
+          isOpen={isMembershipOpen}
+          onClose={() => setIsMembershipOpen(false)}
+        />
+      </main>
+    </LanguageProvider>
   );
 }
