@@ -12,6 +12,7 @@ import MembershipModal from "./components/MembershipModal";
 import MembershipDetails from "./components/MembershipDetails";
 import ChairmanMessage from "./components/ChairmanMessage";
 import BenefitEligibility from "./components/BenefitEligibility";
+import DiseaseCoverage from "./components/DiseaseCoverage";
 import { en } from "./i18n/en";
 import { bn } from "./i18n/bn";
 
@@ -40,6 +41,7 @@ export default function Home() {
       <ChairmanMessage strings={locale.chairman} />
       <HowItWorks strings={locale.howItWorks} />
       <BenefitEligibility strings={locale.eligibility} />
+      <DiseaseCoverage strings={locale.diseaseCoverage} />
       <Benefits strings={locale.benefits} />
 
       <FAQ strings={locale.faq} />
