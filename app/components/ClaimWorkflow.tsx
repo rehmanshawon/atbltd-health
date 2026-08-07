@@ -54,7 +54,7 @@ export default function ClaimWorkflow({ strings }: ClaimWorkflowProps) {
             </h3>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-5">
+          <div className="grid gap-4 lg:grid-cols-5 py-2">
             {strings.steps.map((step, index) => {
               const Icon = icons[index] ?? FileCheck;
               const isLast = index === strings.steps.length - 1;
@@ -66,7 +66,7 @@ export default function ClaimWorkflow({ strings }: ClaimWorkflowProps) {
                     whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                     viewport={{ once: true, amount: 0.2 }}
                     transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                    className="glass-card h-full p-6 text-white"
+                    className="glass-card h-full px-10 py-8 text-white"
                   >
                     <div className="flex items-center justify-between">
                       <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white">
@@ -77,7 +77,7 @@ export default function ClaimWorkflow({ strings }: ClaimWorkflowProps) {
                       </span>
                     </div>
 
-                    <div className="mt-7">
+                    <div className="mt-7 flex flex-col gap-2">
                       <h4 className="text-lg font-bold leading-snug text-white">
                         {step.title}
                       </h4>
@@ -125,7 +125,7 @@ export default function ClaimWorkflow({ strings }: ClaimWorkflowProps) {
                 whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-                className="glass-card p-6 text-white"
+                className="glass-card px-7 py-8 text-white"
               >
                 <div className="flex flex-wrap items-center gap-4">
                   <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-red-500/90 font-black text-white">
