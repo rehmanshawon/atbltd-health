@@ -13,6 +13,7 @@ import MembershipDetails from "./components/MembershipDetails";
 import ChairmanMessage from "./components/ChairmanMessage";
 import BenefitEligibility from "./components/BenefitEligibility";
 import DiseaseCoverage from "./components/DiseaseCoverage";
+import ClaimWorkflow from "./components/ClaimWorkflow";
 import { en } from "./i18n/en";
 import { bn } from "./i18n/bn";
 
@@ -42,6 +43,7 @@ export default function Home() {
       <HowItWorks strings={locale.howItWorks} />
       <BenefitEligibility strings={locale.eligibility} />
       <DiseaseCoverage strings={locale.diseaseCoverage} />
+      <ClaimWorkflow strings={locale.claimWorkflow} />
       <Benefits strings={locale.benefits} />
 
       <FAQ strings={locale.faq} />

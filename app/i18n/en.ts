@@ -132,6 +132,100 @@ export const en = {
     ],
     note: "The most recently published official ATB coverage list is considered final. The list will be expanded in phases based on financial capacity, number of members, reserve fund, hospital partnerships and policy decisions.",
   },
+  claimWorkflow: {
+    eyebrow: "Claim Process & Workflow",
+    title: "How your treatment claim works",
+    description:
+      "A clear, member-friendly claim journey from admission to support payment.",
+    overviewTitle: "Quick overview table",
+    workflowTitle: "Step-by-step sequence",
+    steps: [
+      {
+        number: "Step 1",
+        title: "Pre-notification",
+        activity:
+          "After hospital admission or before surgery, contact the support center and register the claim.",
+        timeframe: "12-24 hours before surgery",
+        team: "Customer Care (24/7)",
+      },
+      {
+        number: "Step 2",
+        title: "Document Submission",
+        activity:
+          "After discharge, upload or submit the required documents through app, website or office.",
+        timeframe: "Within 7 days",
+        team: "Field Agent",
+      },
+      {
+        number: "Step 3",
+        title: "Initial Screening",
+        activity:
+          "The verification team checks that the member information and treatment documents are complete.",
+        timeframe: "24 hours",
+        team: "IT & Verification Team",
+      },
+      {
+        number: "Step 4",
+        title: "Medical & Legal Verification",
+        activity:
+          "The medical team verifies the discharge summary, operating theatre notes and doctor confirmation.",
+        timeframe: "24-48 hours",
+        team: "In-house Medical Team",
+      },
+      {
+        number: "Step 5",
+        title: "Disbursement",
+        activity:
+          "Approved claims are released to the member’s bKash or account after review and approval.",
+        timeframe: "12-24 hours",
+        team: "Finance & Accounts Team",
+      },
+    ],
+    sequenceTitle: "Step-by-step sequence",
+    sequence: [
+      {
+        title: "Step 1: Hospital admission & initial notification",
+        copy: [
+          "When a patient is admitted or surgery is scheduled, the member informs ATB's 24/7 call center.",
+          "The call center registers the member ID number and waiting period in the system.",
+          "A ticket number is created for the claim request.",
+        ],
+      },
+      {
+        title: "Step 2: Document collection & submission",
+        copy: [
+          "After discharge, the field agent submits documents through app, website or office.",
+          "Original hospital discharge summary is required.",
+          "OT note, prescription, paid bills and ID documents must be attached.",
+        ],
+      },
+      {
+        title: "Step 3: Initial & automated screening",
+        copy: [
+          "The team checks all member details and documents for clarity and completeness.",
+          "Any incomplete information is requested through SMS or phone call.",
+          "The review is intended to keep the claim process fast and accurate.",
+        ],
+      },
+      {
+        title: "Step 4: Medical verification & audit",
+        copy: [
+          "The medical team verifies the hospital discharge summary and OT notes.",
+          "The team confirms that the surgery was actually performed.",
+          "Suspicious cases may be spot-verified through the responsible hospital contact.",
+        ],
+      },
+      {
+        title: "Step 5: Approval & settlement",
+        copy: [
+          "After medical confirmation, the Claim Head approves the claim.",
+          "The finance team transfers the support amount to the member's bKash or account.",
+          "A confirmation SMS is sent to the member after successful payment.",
+        ],
+      },
+    ],
+    note: "This workflow is a front-end summary. The official claim policy and approved service list govern final eligibility, payment and settlement decisions.",
+  },
   benefits: {
     heading: "Built around your wellbeing",
     title: "Protection with a calm, human center.",
@@ -158,15 +252,15 @@ export const en = {
   },
   chairman: {
     eyebrow: "A note from our chairman",
-    title: "Care should never feel out of reach.",
+    title: "Healthcare must not stop due to lack of money.",
     body1:
-      "At ATB, we believe that a sudden health need should not force a family to face it alone. Our purpose is simple: make practical healthcare support more accessible, with a membership people can understand and trust.",
+      "This belief guides Astha Treatment Bills Ltd (ATB) as it carries out its work: “Healthcare should never stop because of a lack of funds.”",
     body2:
-      "We are committed to being clear about what membership includes and how assistance is considered—so that every member can make an informed decision with confidence.",
-    signature: "Signature to be added",
+      "Across Bangladesh’s large population, many people from middle-income and lower-middle-income communities cannot access healthcare services when illness strikes because of financial constraints. ATB Ltd stands beside patients with technology-driven, instant financial support to help them receive the healthcare they need. People from all levels and professions in Bangladesh can become members of ATB Ltd and access this health service with confidence.",
+    signature: "Signature",
     name: "A.K.M. Moshiur Rahman",
-    role: "Founder & Chairman, ATB Health",
-    caption: "Founder’s message",
+    role: "Founder & Chairman",
+    caption: "Astha Treatment Bills Ltd",
   },
   faq: {
     eyebrow: "Clarity, from the beginning",
