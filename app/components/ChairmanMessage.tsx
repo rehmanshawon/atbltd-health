@@ -3,10 +3,21 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
-import { useLanguage } from "./LanguageProvider";
 
-export default function ChairmanMessage() {
-  const { t } = useLanguage();
+interface ChairmanProps {
+  strings: {
+    eyebrow: string;
+    title: string;
+    body1: string;
+    body2: string;
+    signature: string;
+    name: string;
+    role: string;
+    caption: string;
+  };
+}
+
+export default function ChairmanMessage({ strings }: ChairmanProps) {
   return (
     <section id="chairman-message" className="section-space chairman-section">
       <div className="container-xl">
@@ -26,23 +37,23 @@ export default function ChairmanMessage() {
               sizes="(max-width: 850px) 100vw, 42vw"
               className="chairman-portrait"
             />
-            <div className="chairman-photo-caption">{t("Founder’s message")}</div>
+            <div className="chairman-photo-caption">{strings.caption}</div>
           </div>
           <div className="chairman-copy">
-            <p className="section-eyebrow">{t("A note from our chairman")}</p>
+            <p className="section-eyebrow">{strings.eyebrow}</p>
             <Quote className="chairman-quote" size={43} strokeWidth={1.15} />
-            <h2>{t("Care should never feel out of reach.")}</h2>
-            <p>{t("At ATB, we believe that a sudden health need should not force a family to face it alone. Our purpose is simple: make practical healthcare support more accessible, with a membership people can understand and trust.")}</p>
-            <p>{t("We are committed to being clear about what membership includes and how assistance is considered—so that every member can make an informed decision with confidence.")}</p>
+            <h2>{strings.title}</h2>
+            <p>{strings.body1}</p>
+            <p>{strings.body2}</p>
             <div
               className="signature-placeholder"
               aria-label="Signature placeholder for A.K.M. Moshiur Rahman"
             >
-              <span>{t("Signature to be added")}</span>
+              <span>{strings.signature}</span>
             </div>
             <div className="chairman-name">
-              <strong>A.K.M. Moshiur Rahman</strong>
-              <span>{t("Founder & Chairman, ATB Health")}</span>
+              <strong>{strings.name}</strong>
+              <span>{strings.role}</span>
             </div>
           </div>
         </motion.article>

@@ -19,5 +19,5 @@ jobs:
             cd /home/ubuntu/apps/atbltd-health
             git pull origin main
             npm ci
-            npm run build
+            npm run build -- --webpack
             pm2 restart atbltd-health || PORT=3001 pm2 start npm --name "atbltd-health" -- start

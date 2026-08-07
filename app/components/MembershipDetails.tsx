@@ -4,12 +4,46 @@ import { motion } from "framer-motion";
 import { FileCheck2, ShieldCheck, WalletCards } from "lucide-react";
 import { MEMBERSHIP_DETAILS } from "../lib/constants";
 import SectionHeading from "./SectionHeading";
-import { useLanguage } from "./LanguageProvider";
 
 const detailIcons = [WalletCards, ShieldCheck, FileCheck2];
 
-export default function MembershipDetails() {
-  const { t } = useLanguage();
+interface MembershipDetailsProps {
+  strings: {
+    heading: string;
+    title: string;
+    description: string;
+    annualMembership: string;
+    annualMembershipValue: string;
+    annualMembershipDetail: string;
+    coveragePeriod: string;
+    coveragePeriodValue: string;
+    coveragePeriodDetail: string;
+    medicalAssistance: string;
+    medicalAssistanceValue: string;
+    medicalAssistanceDetail: string;
+    note: string;
+  };
+}
+
+export default function MembershipDetails({ strings }: MembershipDetailsProps) {
+  const details = [
+    {
+      label: strings.annualMembership,
+      value: strings.annualMembershipValue,
+      detail: strings.annualMembershipDetail,
+    },
+    {
+      label: strings.coveragePeriod,
+      value: strings.coveragePeriodValue,
+      detail: strings.coveragePeriodDetail,
+    },
+    {
+      label: strings.medicalAssistance,
+      value: strings.medicalAssistanceValue,
+      detail: strings.medicalAssistanceDetail,
+    },
+  ];
+
   return (
     <section
       id="membership-details"
@@ -18,12 +52,12 @@ export default function MembershipDetails() {
       <div className="container-xl">
         <SectionHeading
           centered
-          eyebrow="Know before you join"
-          title="A membership you can understand clearly."
-          description="We believe confidence begins with plain information. Here are the essential details of an ATB Ltd membership."
+          eyebrow={strings.heading}
+          title={strings.title}
+          description={strings.description}
         />
         <div className="membership-details-grid">
-          {MEMBERSHIP_DETAILS.map((detail, index) => {
+          {details.map((detail, index) => {
             const Icon = detailIcons[index];
             return (
               <motion.article
@@ -42,9 +76,9 @@ export default function MembershipDetails() {
                 <div className="detail-icon">
                   <Icon size={23} strokeWidth={1.7} />
                 </div>
-                <p>{t(detail.label)}</p>
-                <strong>{t(detail.value)}</strong>
-                <span>{t(detail.detail)}</span>
+                <p>{detail.label}</p>
+                <strong>{detail.value}</strong>
+                <span>{detail.detail}</span>
               </motion.article>
             );
           })}
@@ -55,7 +89,7 @@ export default function MembershipDetails() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
         >
-          {t("Assistance is subject to the membership terms, eligibility, and submission of the required documents.")}
+          {strings.note}
         </motion.p>
       </div>
     </section>

@@ -5,14 +5,29 @@ import { motion } from "framer-motion";
 import HeroVideo from "./HeroVideo";
 import HeroStats from "./HeroStats";
 import CTAButton from "./CTAButton";
-import { useLanguage } from "./LanguageProvider";
 
 interface Props {
   onJoin?: () => void;
+  strings: {
+    kicker: string;
+    trustedMembers: string;
+    title: string;
+    titleTwo: string;
+    subtitleLead: string;
+    subtitleSupport: string;
+    subtitlePrice: string;
+    becomeMember: string;
+    learnHowItWorks: string;
+    scroll: string;
+  };
+  statsStrings: {
+    maximumCoverage: string;
+    hospitalStay: string;
+    monthsValidity: string;
+  };
 }
 
-export default function Hero({ onJoin }: Props) {
-  const { t } = useLanguage();
+export default function Hero({ onJoin, strings, statsStrings }: Props) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <HeroVideo />
@@ -40,7 +55,7 @@ export default function Hero({ onJoin }: Props) {
             transition={{ delay: 0.15, duration: 0.6 }}
             className="company-kicker"
           >
-            {t("Astha Treatment Bills Ltd.")}
+            {strings.kicker}
           </motion.p>
 
           <motion.div
@@ -69,7 +84,7 @@ export default function Hero({ onJoin }: Props) {
           >
             <span className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
 
-            <span className="text-white/80">{t("Trusted by 50,000+ Members")}</span>
+            <span className="text-white/80">{strings.trustedMembers}</span>
           </motion.div>
 
           {/* Heading */}
@@ -93,10 +108,10 @@ export default function Hero({ onJoin }: Props) {
               tracking-[-0.05em]
             "
           >
-            {t("Your Health")}
+            {strings.title}
             <br />
             <span className="bg-gradient-to-r from-white via-white to-red-400 bg-clip-text text-transparent">
-              {t("Our Responsibility")}
+              {strings.titleTwo}
             </span>
           </motion.h1>
 
@@ -123,10 +138,12 @@ export default function Hero({ onJoin }: Props) {
               text-white/70
             "
           >
-            {t("Protect yourself and your family with affordable healthcare coverage. Receive up to")}
+            {strings.subtitleLead}
             <span className="text-white font-bold"> 12,000 BDT </span>
-            {t("of medical assistance for only")}
-            <span className="text-white font-bold">{t("1,000 BDT per year.")}</span>
+            {strings.subtitleSupport}
+            <span className="text-white font-bold">
+              {strings.subtitlePrice}
+            </span>
           </motion.p>
 
           {/* Buttons */}
@@ -152,12 +169,14 @@ export default function Hero({ onJoin }: Props) {
               mt-12
             "
           >
-            <CTAButton onClick={onJoin}>Become a Member</CTAButton>
+            <CTAButton onClick={onJoin}>{strings.becomeMember}</CTAButton>
 
-            <a className="secondary-button" href="#how-it-works">{t("Learn How It Works")}</a>
+            <a className="secondary-button" href="#how-it-works">
+              {strings.learnHowItWorks}
+            </a>
           </motion.div>
 
-          <HeroStats />
+          <HeroStats strings={{ stats: statsStrings }} />
         </motion.div>
       </div>
 
@@ -185,7 +204,9 @@ export default function Hero({ onJoin }: Props) {
           gap-3
         "
       >
-        <span className="text-sm tracking-[0.25em] uppercase">{t("Scroll")}</span>
+        <span className="text-sm tracking-[0.25em] uppercase">
+          {strings.scroll}
+        </span>
 
         <div
           className="

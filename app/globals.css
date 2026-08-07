@@ -66,7 +66,7 @@ body {
 
   color: white;
 
-  font-family: var(--font-geist-sans);
+  font-family: Arial, Helvetica, sans-serif;
 
   background:
     radial-gradient(
@@ -1070,23 +1070,351 @@ section {
 }
 
 /* Member enrollment */
-.membership-enrollment { width: min(100%, 42rem); }
-.membership-enrollment h2 { max-width: 15ch; }
-.enrollment-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem; margin: 2rem 0 .45rem; }
-.enrollment-step { display: grid; grid-template-columns: 1.4rem 1fr; align-items: center; gap: .45rem; color: rgba(255,255,255,.37); font-size: .68rem; font-weight: 750; letter-spacing: .02em; }
-.enrollment-step i { display: grid; width: 1.4rem; height: 1.4rem; place-items: center; font-style: normal; border: 1px solid rgba(255,255,255,.2); border-radius: 50%; }.enrollment-step.active { color: white; }.enrollment-step.active i { color: white; border-color: rgba(255,140,140,.75); background: rgba(211,47,47,.65); box-shadow: 0 0 0 4px rgba(211,47,47,.12); }
-.enrollment-form, .enrollment-screen { display: grid; gap: 1rem; margin-top: 1.25rem; }.form-two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.membership-enrollment textarea { width: 100%; resize: vertical; padding: .9rem 1rem; color: white; outline: none; border: 1px solid rgba(255,255,255,.12); border-radius: .85rem; background: rgba(5,17,38,.46); font: inherit; line-height: 1.5; transition: border .2s, box-shadow .2s, background .2s; }.membership-enrollment textarea:focus { border-color: rgba(255,135,135,.8); background: rgba(5,17,38,.7); box-shadow: 0 0 0 4px rgba(211,47,47,.16); }.membership-enrollment textarea::placeholder { color: rgba(255,255,255,.3); }
-.agreement-field { display: flex !important; grid-template-columns: none !important; align-items: flex-start; gap: .7rem !important; margin-top: .25rem; font-weight: 400 !important; line-height: 1.45; }.agreement-field input { width: 1rem; height: 1rem; flex: 0 0 auto; margin-top: .12rem; accent-color: #d32f2f; }.agreement-field span { color: rgba(255,255,255,.64) !important; }
-.payment-summary { display: grid; grid-template-columns: 1fr auto; gap: .15rem 1rem; padding: 1.2rem 1.3rem; border: 1px solid rgba(255,255,255,.14); border-radius: 1.1rem; background: linear-gradient(120deg, rgba(211,47,47,.22), rgba(255,255,255,.07)); }.payment-summary span { color: rgba(255,255,255,.7); font-size: .82rem; }.payment-summary strong { align-self: center; grid-row: 1 / span 2; grid-column: 2; font-size: 1.45rem; letter-spacing: -.05em; }.payment-summary small { color: rgba(255,255,255,.48); font-size: .73rem; }
-.gateway-list { display: grid; gap: .7rem; }.send-money-card, .gateway-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .9rem; width: 100%; padding: 1rem; text-align: left; border: 1px solid rgba(255,255,255,.12); border-radius: 1rem; }.send-money-card { color: white; cursor: default; background: linear-gradient(120deg, rgba(211,47,47,.24), rgba(255,255,255,.07)); }.gateway-card { color: rgba(255,255,255,.45); background: rgba(255,255,255,.035); opacity: .8; }.gateway-list strong, .gateway-list small { display: block; }.gateway-list strong { font-size: .92rem; }.gateway-list small { margin-top: .16rem; color: rgba(255,255,255,.5); font-size: .72rem; }.gateway-symbol { display: grid; width: 2.45rem; height: 2.45rem; place-items: center; border: 1px solid rgba(255,255,255,.15); border-radius: .75rem; color: #ff9a9a; background: rgba(255,255,255,.07); }
-.payment-assistance, .activation-note { display: flex; align-items: flex-start; gap: .65rem; padding: .85rem 1rem; color: rgba(255,255,255,.65); border: 1px solid rgba(255,255,255,.1); border-radius: .85rem; background: rgba(37,99,235,.1); font-size: .76rem; line-height: 1.55; }.payment-assistance svg, .activation-note svg { flex: 0 0 auto; margin-top: .1rem; color: #8eb9ff; }
-.form-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .6rem; }.form-actions .primary-button { padding: .9rem 1.2rem; }.modal-back-button { display: inline-flex; align-items: center; gap: .25rem; color: rgba(255,255,255,.68); cursor: pointer; border: 0; background: transparent; font: inherit; font-size: .86rem; }.modal-back-button:hover { color: white; }
-.verification-orb { display: grid; width: 4rem; height: 4rem; place-items: center; margin-top: .2rem; color: white; border: 1px solid rgba(255,255,255,.2); border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.3), rgba(211,47,47,.43), rgba(211,47,47,.1)); box-shadow: 0 0 0 8px rgba(211,47,47,.07), 0 13px 30px rgba(211,47,47,.2); }.enrollment-screen h3 { margin-top: .35rem; font-size: 1.55rem; letter-spacing: -.04em; }.prototype-notice { padding: .75rem .9rem; color: rgba(255,255,255,.62); border-left: 2px solid #ff8585; background: rgba(211,47,47,.08); font-size: .75rem; line-height: 1.55; }.otp-input { font-size: 1.35rem !important; letter-spacing: .38em; text-align: center; }.otp-error { border-color: #ff7777 !important; }.otp-error-text { margin-top: -.45rem; color: #ff9696; font-size: .75rem; }
-.membership-complete { display: grid; justify-items: start; gap: 1rem; padding-top: 1rem; }.membership-complete > svg { color: #ff8c8c; }.membership-complete h2 { margin: -.3rem 0 0; }.membership-complete > p:not(.section-eyebrow) { color: var(--text-secondary); line-height: 1.6; }.credential-card { display: grid; grid-template-columns: 1fr auto; width: 100%; gap: .25rem .75rem; padding: 1rem 1.1rem; border: 1px solid rgba(255,255,255,.14); border-radius: 1rem; background: rgba(5,17,38,.38); }.credential-card span { color: rgba(255,255,255,.48); font-size: .68rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }.credential-card strong { font-size: .94rem; letter-spacing: .02em; }.credential-card button { grid-column: 2; align-self: center; grid-row: span 2; color: rgba(255,255,255,.7); cursor: pointer; border: 0; background: transparent; }.membership-complete .modal-submit { margin-top: .3rem; }
+.membership-enrollment {
+  width: min(100%, 42rem);
+}
+.membership-enrollment h2 {
+  max-width: 15ch;
+}
+.enrollment-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
+  margin: 2rem 0 0.45rem;
+}
+.enrollment-step {
+  display: grid;
+  grid-template-columns: 1.4rem 1fr;
+  align-items: center;
+  gap: 0.45rem;
+  color: rgba(255, 255, 255, 0.37);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+.enrollment-step i {
+  display: grid;
+  width: 1.4rem;
+  height: 1.4rem;
+  place-items: center;
+  font-style: normal;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+.enrollment-step.active {
+  color: white;
+}
+.enrollment-step.active i {
+  color: white;
+  border-color: rgba(255, 140, 140, 0.75);
+  background: rgba(211, 47, 47, 0.65);
+  box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.12);
+}
+.enrollment-form,
+.enrollment-screen {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.form-two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.membership-enrollment textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 0.9rem 1rem;
+  color: white;
+  outline: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.85rem;
+  background: rgba(5, 17, 38, 0.46);
+  font: inherit;
+  line-height: 1.5;
+  transition:
+    border 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
+}
+.membership-enrollment textarea:focus {
+  border-color: rgba(255, 135, 135, 0.8);
+  background: rgba(5, 17, 38, 0.7);
+  box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.16);
+}
+.membership-enrollment textarea::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+.agreement-field {
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: flex-start;
+  gap: 0.7rem !important;
+  margin-top: 0.25rem;
+  font-weight: 400 !important;
+  line-height: 1.45;
+}
+.agreement-field input {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  margin-top: 0.12rem;
+  accent-color: #d32f2f;
+}
+.agreement-field span {
+  color: rgba(255, 255, 255, 0.64) !important;
+}
+.payment-summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.15rem 1rem;
+  padding: 1.2rem 1.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1.1rem;
+  background: linear-gradient(
+    120deg,
+    rgba(211, 47, 47, 0.22),
+    rgba(255, 255, 255, 0.07)
+  );
+}
+.payment-summary span {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+}
+.payment-summary strong {
+  align-self: center;
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  font-size: 1.45rem;
+  letter-spacing: -0.05em;
+}
+.payment-summary small {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.73rem;
+}
+.gateway-list {
+  display: grid;
+  gap: 0.7rem;
+}
+.send-money-card,
+.gateway-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 1rem;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+}
+.send-money-card {
+  color: white;
+  cursor: default;
+  background: linear-gradient(
+    120deg,
+    rgba(211, 47, 47, 0.24),
+    rgba(255, 255, 255, 0.07)
+  );
+}
+.gateway-card {
+  color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.035);
+  opacity: 0.8;
+}
+.gateway-list strong,
+.gateway-list small {
+  display: block;
+}
+.gateway-list strong {
+  font-size: 0.92rem;
+}
+.gateway-list small {
+  margin-top: 0.16rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.72rem;
+}
+.gateway-symbol {
+  display: grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.75rem;
+  color: #ff9a9a;
+  background: rgba(255, 255, 255, 0.07);
+}
+.payment-assistance,
+.activation-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  color: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.85rem;
+  background: rgba(37, 99, 235, 0.1);
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+.payment-assistance svg,
+.activation-note svg {
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+  color: #8eb9ff;
+}
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.6rem;
+}
+.form-actions .primary-button {
+  padding: 0.9rem 1.2rem;
+}
+.modal-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: rgba(255, 255, 255, 0.68);
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.86rem;
+}
+.modal-back-button:hover {
+  color: white;
+}
+.verification-orb {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  place-items: center;
+  margin-top: 0.2rem;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(255, 255, 255, 0.3),
+    rgba(211, 47, 47, 0.43),
+    rgba(211, 47, 47, 0.1)
+  );
+  box-shadow:
+    0 0 0 8px rgba(211, 47, 47, 0.07),
+    0 13px 30px rgba(211, 47, 47, 0.2);
+}
+.enrollment-screen h3 {
+  margin-top: 0.35rem;
+  font-size: 1.55rem;
+  letter-spacing: -0.04em;
+}
+.prototype-notice {
+  padding: 0.75rem 0.9rem;
+  color: rgba(255, 255, 255, 0.62);
+  border-left: 2px solid #ff8585;
+  background: rgba(211, 47, 47, 0.08);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+.otp-input {
+  font-size: 1.35rem !important;
+  letter-spacing: 0.38em;
+  text-align: center;
+}
+.otp-error {
+  border-color: #ff7777 !important;
+}
+.otp-error-text {
+  margin-top: -0.45rem;
+  color: #ff9696;
+  font-size: 0.75rem;
+}
+.membership-complete {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+.membership-complete > svg {
+  color: #ff8c8c;
+}
+.membership-complete h2 {
+  margin: -0.3rem 0 0;
+}
+.membership-complete > p:not(.section-eyebrow) {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.credential-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  width: 100%;
+  gap: 0.25rem 0.75rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1rem;
+  background: rgba(5, 17, 38, 0.38);
+}
+.credential-card span {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.credential-card strong {
+  font-size: 0.94rem;
+  letter-spacing: 0.02em;
+}
+.credential-card button {
+  grid-column: 2;
+  align-self: center;
+  grid-row: span 2;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+}
+.membership-complete .modal-submit {
+  margin-top: 0.3rem;
+}
 
 /* Benefit eligibility */
-.eligibility-section { padding-top: clamp(4rem, 8vw, 7rem); }.eligibility-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: clamp(3rem, 6vw, 4.5rem); }.eligibility-card { min-height: 15rem; padding: 1.5rem; }.eligibility-card h3 { margin-top: 1.45rem; font-size: 1.05rem; letter-spacing: -.025em; }.eligibility-card p { margin-top: .7rem; color: var(--text-secondary); font-size: .86rem; line-height: 1.65; }.eligibility-note { max-width: 48rem; margin: 1.5rem auto 0; color: rgba(255,255,255,.55); font-size: .8rem; line-height: 1.65; text-align: center; }
+.eligibility-section {
+  padding-top: clamp(4rem, 8vw, 7rem);
+}
+.eligibility-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+}
+.eligibility-card {
+  min-height: 15rem;
+  padding: 1.5rem;
+}
+.eligibility-card h3 {
+  margin-top: 1.45rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.025em;
+}
+.eligibility-card p {
+  margin-top: 0.7rem;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+.eligibility-note {
+  max-width: 48rem;
+  margin: 1.5rem auto 0;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  text-align: center;
+}
 
 /* Navigation and interaction safety */
 .primary-button,
@@ -1117,7 +1445,34 @@ section {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.06);
 }
-.language-toggle { align-items: center; justify-content: center; min-width: 3.3rem; padding: .65rem .8rem; color: #0a2a5e; cursor: pointer; border: 1px solid rgba(10,42,94,.16); border-radius: 999px; background: rgba(255,255,255,.54); font-size: .72rem; font-weight: 850; letter-spacing: .04em; transition: transform .2s, background .2s; }.language-toggle:hover { background: rgba(255,255,255,.8); transform: translateY(-2px); }.mobile-language-toggle { width: 100%; margin-top: .45rem; color: white; border-color: rgba(255,255,255,.16); background: rgba(255,255,255,.1); }
+.language-toggle {
+  align-items: center;
+  justify-content: center;
+  min-width: 3.3rem;
+  padding: 0.65rem 0.8rem;
+  color: #0a2a5e;
+  cursor: pointer;
+  border: 1px solid rgba(10, 42, 94, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.54);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  transition:
+    transform 0.2s,
+    background 0.2s;
+}
+.language-toggle:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+}
+.mobile-language-toggle {
+  width: 100%;
+  margin-top: 0.45rem;
+  color: white;
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.1);
+}
 .mobile-menu {
   display: grid;
   gap: 0.25rem;
@@ -1227,7 +1582,9 @@ section {
     grid-template-columns: 1fr;
     max-width: 34rem;
   }
-  .eligibility-grid { grid-template-columns: repeat(2, 1fr); }
+  .eligibility-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
   .membership-detail-card {
     min-height: 0;
   }
@@ -1330,7 +1687,41 @@ section {
   .chairman-copy h2 {
     font-size: 2.5rem;
   }
-  .form-two-column { grid-template-columns: 1fr; }.enrollment-steps { gap: .25rem; }.enrollment-step { grid-template-columns: 1.25rem 1fr; gap: .3rem; font-size: .58rem; }.enrollment-step i { width: 1.25rem; height: 1.25rem; }.form-actions { align-items: stretch; flex-direction: column-reverse; }.form-actions .primary-button { width: 100%; }.modal-back-button { align-self: center; padding: .5rem; }.eligibility-grid { grid-template-columns: 1fr; }.eligibility-card { min-height: 0; }.membership-enrollment { padding: 1.5rem; }
+  .form-two-column {
+    grid-template-columns: 1fr;
+  }
+  .enrollment-steps {
+    gap: 0.25rem;
+  }
+  .enrollment-step {
+    grid-template-columns: 1.25rem 1fr;
+    gap: 0.3rem;
+    font-size: 0.58rem;
+  }
+  .enrollment-step i {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+  .form-actions .primary-button {
+    width: 100%;
+  }
+  .modal-back-button {
+    align-self: center;
+    padding: 0.5rem;
+  }
+  .eligibility-grid {
+    grid-template-columns: 1fr;
+  }
+  .eligibility-card {
+    min-height: 0;
+  }
+  .membership-enrollment {
+    padding: 1.5rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

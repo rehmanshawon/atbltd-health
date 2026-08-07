@@ -6,15 +6,30 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import { useLanguage } from "./LanguageProvider";
 
 interface NavbarProps {
   onJoin?: () => void;
+  strings: {
+    about: string;
+    howItWorks: string;
+    benefits: string;
+    contact: string;
+    becomeMember: string;
+    learnHowItWorks: string;
+    scroll: string;
+    languageToggle: string;
+  };
+  language: "en" | "bn";
+  onLanguageChange: () => void;
 }
 
-export default function Navbar({ onJoin }: NavbarProps) {
+export default function Navbar({
+  onJoin,
+  strings,
+  language,
+  onLanguageChange,
+}: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { language, setLanguage, t } = useLanguage();
   const closeMenu = () => setIsMenuOpen(false);
   return (
     <motion.nav
@@ -55,45 +70,95 @@ export default function Navbar({ onJoin }: NavbarProps) {
             href="#chairman-message"
             className="text-white/75 hover:text-white transition"
           >
-            {t("About")}
+            {strings.about}
           </Link>
 
           <Link
             href="#how-it-works"
             className="text-white/75 hover:text-white transition"
           >
-            {t("How It Works")}
+            {strings.howItWorks}
           </Link>
 
           <Link
             href="#benefits"
             className="text-white/75 hover:text-white transition"
           >
-            {t("Benefits")}
+            {strings.benefits}
           </Link>
 
           <Link
             href="#contact"
             className="text-white/75 hover:text-white transition"
           >
-            {t("Contact")}
+            {strings.contact}
           </Link>
         </div>
 
         {/* CTA */}
 
         <button onClick={onJoin} className="primary-button hidden md:flex">
-          {t("Become a Member")}
+          {strings.becomeMember}
           <ArrowRight size={18} />
         </button>
-        <button className="language-toggle hidden sm:inline-flex" onClick={() => setLanguage(language === "bn" ? "en" : "bn")} aria-label={language === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}>{language === "bn" ? "EN" : "বাংলা"}</button>
-        <button className="mobile-menu-button lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle navigation" aria-expanded={isMenuOpen}>{isMenuOpen ? <X /> : <Menu />}</button>
+        <button
+          className="language-toggle hidden sm:inline-flex"
+          onClick={onLanguageChange}
+          aria-label={
+            language === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"
+          }
+        >
+          {strings.languageToggle}
+        </button>
+        <button
+          className="mobile-menu-button lg:hidden"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle navigation"
+          aria-expanded={isMenuOpen}
+        >
+          {isMenuOpen ? <X /> : <Menu />}
+        </button>
       </div>
-      {isMenuOpen && <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mobile-menu glass">
-        {[['About', '#chairman-message'], ['How It Works', '#how-it-works'], ['Benefits', '#benefits'], ['Contact', '#contact']].map(([label, href]) => <Link key={href} href={href} onClick={closeMenu}>{t(label)}</Link>)}
-        <button onClick={() => { closeMenu(); onJoin?.(); }} className="primary-button">{t("Become a Member")} <ArrowRight size={18}/></button>
-        <button className="language-toggle mobile-language-toggle" onClick={() => setLanguage(language === "bn" ? "en" : "bn")}>{language === "bn" ? "English" : "বাংলা"}</button>
-      </motion.div>}
+      {isMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          className="mobile-menu glass"
+        >
+          {[
+            ["About", "#chairman-message"],
+            ["How It Works", "#how-it-works"],
+            ["Benefits", "#benefits"],
+            ["Contact", "#contact"],
+          ].map(([label, href]) => (
+            <Link key={href} href={href} onClick={closeMenu}>
+              {label === "About"
+                ? strings.about
+                : label === "How It Works"
+                  ? strings.howItWorks
+                  : label === "Benefits"
+                    ? strings.benefits
+                    : strings.contact}
+            </Link>
+          ))}
+          <button
+            onClick={() => {
+              closeMenu();
+              onJoin?.();
+            }}
+            className="primary-button"
+          >
+            {strings.becomeMember} <ArrowRight size={18} />
+          </button>
+          <button
+            className="language-toggle mobile-language-toggle"
+            onClick={onLanguageChange}
+          >
+            {language === "bn" ? "English" : "বাংলা"}
+          </button>
+        </motion.div>
+      )}
     </motion.nav>
   );
 }

@@ -2,10 +2,18 @@
 
 import { motion } from "framer-motion";
 import { STATS } from "../lib/constants";
-import { useLanguage } from "./LanguageProvider";
 
-export default function HeroStats() {
-  const { t } = useLanguage();
+interface HeroStatsProps {
+  strings: {
+    stats: {
+      maximumCoverage: string;
+      hospitalStay: string;
+      monthsValidity: string;
+    };
+  };
+}
+
+export default function HeroStats({ strings }: HeroStatsProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -32,7 +40,17 @@ export default function HeroStats() {
               {item.value}
             </h3>
 
-            <p className="text-white/60 mt-2">{t(item.label)}</p>
+            <p className="text-white/60 mt-2">
+              {
+                strings.stats[
+                  index === 0
+                    ? "maximumCoverage"
+                    : index === 1
+                      ? "hospitalStay"
+                      : "monthsValidity"
+                ]
+              }
+            </p>
           </div>
         ))}
       </div>

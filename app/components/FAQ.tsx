@@ -5,21 +5,65 @@ import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { FAQS } from "../lib/constants";
 import SectionHeading from "./SectionHeading";
-import { useLanguage } from "./LanguageProvider";
 
-export default function FAQ() {
+interface FAQProps {
+  strings: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    questions: {
+      membershipProvide: string;
+      membershipValid: string;
+      membershipCost: string;
+      getStarted: string;
+      joinMind: string;
+    };
+    answers: {
+      membershipProvide: string;
+      membershipValid: string;
+      membershipCost: string;
+      getStarted: string;
+      joinMind: string;
+    };
+  };
+}
+
+export default function FAQ({ strings }: FAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const { t } = useLanguage();
+
+  const faqEntries = [
+    {
+      question: strings.questions.membershipProvide,
+      answer: strings.answers.membershipProvide,
+    },
+    {
+      question: strings.questions.membershipValid,
+      answer: strings.answers.membershipValid,
+    },
+    {
+      question: strings.questions.membershipCost,
+      answer: strings.answers.membershipCost,
+    },
+    {
+      question: strings.questions.getStarted,
+      answer: strings.answers.getStarted,
+    },
+    {
+      question: strings.questions.joinMind,
+      answer: strings.answers.joinMind,
+    },
+  ];
+
   return (
     <section id="about" className="section-space faq-section">
       <div className="container-xl faq-layout">
         <SectionHeading
-          eyebrow="Clarity, from the beginning"
-          title="Questions, answered simply."
-          description="Everything you need to know before becoming an ATB Ltd member."
+          eyebrow={strings.eyebrow}
+          title={strings.title}
+          description={strings.description}
         />
         <div className="faq-list">
-          {FAQS.map((faq, index) => {
+          {faqEntries.map((faq, index) => {
             const isOpen = openIndex === index;
             return (
               <article
@@ -32,7 +76,7 @@ export default function FAQ() {
                   aria-expanded={isOpen}
                   aria-controls={`faq-answer-${index}`}
                 >
-                  <span>{t(faq.question)}</span>
+                  <span>{faq.question}</span>
                   <ChevronDown
                     size={21}
                     className={isOpen ? "rotate-180" : ""}
@@ -49,7 +93,7 @@ export default function FAQ() {
                       transition={{ duration: 0.26, ease: "easeOut" }}
                       className="faq-answer"
                     >
-                      <p>{t(faq.answer)}</p>
+                      <p>{faq.answer}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
