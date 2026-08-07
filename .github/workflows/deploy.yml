@@ -16,8 +16,8 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /var/www/apps/atbltd-health
+            cd /home/ubuntu/apps/atbltd-health
             git pull origin main
             npm ci
             npm run build
-            pm2 restart atbltd-health
+            pm2 restart atbltd-health || PORT=3001 pm2 start npm --name "atbltd-health" -- start
