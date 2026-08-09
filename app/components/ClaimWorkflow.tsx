@@ -1,14 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Phone,
-  Upload,
-  FileCheck,
-  Banknote,
-} from "lucide-react";
+import { Phone, Upload, FileCheck, Banknote } from "lucide-react";
 import SectionHeading from "./SectionHeading";
 
 interface ClaimWorkflowProps {
@@ -21,7 +14,7 @@ interface ClaimWorkflowProps {
     steps: {
       number: string;
       title: string;
-      activity: string;
+      activity: string[];
       timeframe: string;
       team: string;
     }[];
@@ -47,113 +40,59 @@ export default function ClaimWorkflow({ strings }: ClaimWorkflowProps) {
           centered
         />
 
-        <div className="mt-12">
-          <div className="mb-8">
-            <h3 className="text-2xl font-bold text-white">
-              {strings.overviewTitle}
-            </h3>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-5 py-2">
+        <div className="mt-16 mx-auto max-w-4xl">
+          <div className="space-y-12">
             {strings.steps.map((step, index) => {
               const Icon = icons[index] ?? FileCheck;
               const isLast = index === strings.steps.length - 1;
 
               return (
-                <div key={step.number} className="relative">
-                  <motion.article
-                    initial={{ opacity: 0, y: 26, filter: "blur(8px)" }}
-                    whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                    className="glass-card h-full px-10 py-8 text-white"
+                <div key={index} className="relative flex gap-8">
+                  {/* Timeline Rail */}
+                  <div className="flex flex-col items-center">
+                    <div className="flex-shrink-0">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-red-300/50 bg-white/10 text-lg font-semibold text-red-200">
+                        {index + 1}
+                      </div>
+                    </div>
+                    {!isLast && (
+                      <div className="mt-2 w-px flex-grow bg-white/15" />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{
+                      duration: 0.6,
+                      ease: [0.16, 1, 0.3, 1],
+                      delay: 0.1,
+                    }}
+                    className="flex-1 pt-1"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white">
+                    <div className="mb-3 flex items-center gap-4">
+                      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/6 text-white">
                         <Icon size={18} />
                       </span>
-                      <span className="rounded-full border border-white/25 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white/90">
-                        {step.number}
-                      </span>
-                    </div>
-
-                    <div className="mt-7 flex flex-col gap-2">
-                      <h4 className="text-lg font-bold leading-snug text-white">
+                      <h4 className="text-xl font-bold leading-snug text-white">
                         {step.title}
                       </h4>
-                      <p className="mt-4 text-sm leading-6 text-white/88">
-                        {step.activity}
-                      </p>
-                      <div className="mt-5 rounded-2xl border border-white/12 bg-white/6 px-4 py-3">
-                        <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-red-200">
-                          TAT
-                        </div>
-                        <div className="mt-2 text-sm font-semibold text-white">
-                          {step.timeframe}
-                        </div>
-                      </div>
-                      <div className="mt-4 text-xs font-bold uppercase tracking-wide text-white/78">
-                        {step.team}
-                      </div>
                     </div>
-                  </motion.article>
-
-                  {!isLast && (
-                    <div className="hidden lg:flex items-center justify-center absolute -right-5 top-1/2 -translate-y-1/2 z-10">
-                      <span className="rounded-full bg-white/10 p-2 text-white/90">
-                        <ArrowRight size={16} />
-                      </span>
-                    </div>
-                  )}
+                    <ul className="ml-[56px] list-disc space-y-2 pl-5 text-sm leading-7 text-white/80 marker:text-red-300">
+                      {step.activity.map((line, lineIndex) => (
+                        <li key={lineIndex}>{line}</li>
+                      ))}
+                    </ul>
+                  </motion.div>
                 </div>
               );
             })}
           </div>
         </div>
 
-        <div className="mt-14">
-          <div className="mb-7">
-            <h3 className="text-2xl font-bold text-white">
-              {strings.workflowTitle}
-            </h3>
-          </div>
-          <div className="grid gap-5">
-            {strings.sequence.map((item, index) => (
-              <motion.article
-                key={item.title}
-                initial={{ opacity: 0, y: 22, filter: "blur(8px)" }}
-                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-                className="glass-card px-7 py-8 text-white"
-              >
-                <div className="flex flex-wrap items-center gap-4">
-                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-red-500/90 font-black text-white">
-                    {index + 1}
-                  </span>
-                  <h4 className="text-xl font-bold text-white">{item.title}</h4>
-                </div>
-                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {item.copy.map((line) => (
-                    <div
-                      key={line}
-                      className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/4 px-4 py-3"
-                    >
-                      <span className="mt-1 text-emerald-300">
-                        <CheckCircle2 size={15} />
-                      </span>
-                      <span className="text-sm leading-6 text-white/90">
-                        {line}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-8 rounded-2xl border border-white/16 bg-white/7 px-6 py-5 text-sm leading-7 text-white/90">
+        <div className="mx-auto mt-12 max-w-2xl text-center text-sm text-white/70">
           {strings.note}
         </div>
       </div>

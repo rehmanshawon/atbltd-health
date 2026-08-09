@@ -136,95 +136,52 @@ export const en = {
     eyebrow: "Claim Process & Workflow",
     title: "How your treatment claim works",
     description:
-      "A clear, member-friendly claim journey from admission to support payment.",
-    overviewTitle: "Quick overview table",
-    workflowTitle: "Step-by-step sequence",
+      "A clear, member-friendly financial claim journey from hospital admission to support payment.",
+    overviewTitle: "Step-by-step financial process flow",
+    workflowTitle: "Claim sequence",
     steps: [
       {
         number: "Step 1",
-        title: "Pre-notification",
-        activity:
-          "After hospital admission or before surgery, contact the support center and register the claim.",
-        timeframe: "12-24 hours before surgery",
-        team: "Customer Care (24/7)",
+        title: "Hospital admission & initial intimation",
+        activity: [
+          "When a patient is admitted to the hospital, the claim must be initiated through the 24/7 call center or website within 6 hours of admission.",
+          "NID and ATB card number must be provided. The OT note and doctor's prescription must be sent as a photo.",
+          "Before release, the money will be sent to the member's bKash account.",
+        ],
+        timeframe: "Within 6 hours of admission",
+        team: "24/7 Call Center / Website Support",
       },
       {
         number: "Step 2",
-        title: "Document Submission",
-        activity:
-          "After discharge, upload or submit the required documents through app, website or office.",
-        timeframe: "Within 7 days",
-        team: "Field Agent",
-      },
-      {
-        number: "Step 3",
-        title: "Initial Screening",
-        activity:
-          "The verification team checks that the member information and treatment documents are complete.",
-        timeframe: "24 hours",
-        team: "IT & Verification Team",
-      },
-      {
-        number: "Step 4",
-        title: "Medical & Legal Verification",
-        activity:
-          "The medical team verifies the discharge summary, operating theatre notes and doctor confirmation.",
-        timeframe: "24-48 hours",
-        team: "In-house Medical Team",
-      },
-      {
-        number: "Step 5",
-        title: "Disbursement",
-        activity:
-          "Approved claims are released to the member’s bKash or account after review and approval.",
-        timeframe: "12-24 hours",
-        team: "Finance & Accounts Team",
+        title: "Discharge & document submission",
+        activity: [
+          "After the hospital discharge summary is received, the original discharge summary and original cash memo for the operation and other paid bills with paid seal must be submitted through the app, website, or office.",
+        ],
+        timeframe: "After discharge",
+        team: "Member / Office / App / Website",
       },
     ],
     sequenceTitle: "Step-by-step sequence",
     sequence: [
       {
-        title: "Step 1: Hospital admission & initial notification",
+        title: "Step 1: Hospital admission & initial intimation",
         copy: [
-          "When a patient is admitted or surgery is scheduled, the member informs ATB's 24/7 call center.",
-          "The call center registers the member ID number and waiting period in the system.",
-          "A ticket number is created for the claim request.",
+          "The patient must be admitted to the hospital and the claim must be initiated through the 24/7 call center or website support within 6 hours of admission.",
+          "The member must provide the NID number and ATB card number.",
+          "The operation theatre note and doctor's prescription must be sent as a photo.",
+          "The money will be sent to the member's mobile account before the patient is discharged or released from the hospital.",
         ],
       },
       {
-        title: "Step 2: Document collection & submission",
+        title: "Step 2: Document collection after discharge",
         copy: [
-          "After discharge, the field agent submits documents through app, website or office.",
-          "Original hospital discharge summary is required.",
-          "OT note, prescription, paid bills and ID documents must be attached.",
-        ],
-      },
-      {
-        title: "Step 3: Initial & automated screening",
-        copy: [
-          "The team checks all member details and documents for clarity and completeness.",
-          "Any incomplete information is requested through SMS or phone call.",
-          "The review is intended to keep the claim process fast and accurate.",
-        ],
-      },
-      {
-        title: "Step 4: Medical verification & audit",
-        copy: [
-          "The medical team verifies the hospital discharge summary and OT notes.",
-          "The team confirms that the surgery was actually performed.",
-          "Suspicious cases may be spot-verified through the responsible hospital contact.",
-        ],
-      },
-      {
-        title: "Step 5: Approval & settlement",
-        copy: [
-          "After medical confirmation, the Claim Head approves the claim.",
-          "The finance team transfers the support amount to the member's bKash or account.",
-          "A confirmation SMS is sent to the member after successful payment.",
+          "After receiving the discharge summary from the hospital, the member submits the original discharge summary through the app, website or office.",
+          "The original cash memo of the operation and other paid bills with paid seal must also be submitted.",
+          "The submission supports the subsequent claim review and payment decision.",
         ],
       },
     ],
-    note: "This workflow is a front-end summary. The official claim policy and approved service list govern final eligibility, payment and settlement decisions.",
+    note: "This workflow is a front-end summary. The official claim policy, approved service list and final verification standards govern the final eligibility and payment decision.",
   },
   benefits: {
     heading: "Built around your wellbeing",
