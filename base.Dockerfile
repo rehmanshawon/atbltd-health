@@ -1,5 +1,5 @@
 # --- Frontend Build ---
-FROM node:18-alpine AS frontend-build
+FROM node:22-alpine AS frontend-build
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY apps/frontend/ ./
 RUN npm run build
 
 # --- Backend Build ---
-FROM node:18-alpine AS backend-build
+FROM node:22-alpine AS backend-build
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ COPY apps/backend/ ./
 RUN npm run build
 
 # --- Final Frontend Image ---
-FROM node:18-alpine AS frontend
+FROM node:22-alpine AS frontend
 
 WORKDIR /app
 
@@ -48,7 +48,7 @@ EXPOSE 3000
 CMD ["npx", "next", "start", "-p", "3000"]
 
 # --- Final Backend Image ---
-FROM node:18-alpine AS backend
+FROM node:22-alpine AS backend
 
 WORKDIR /app
 
