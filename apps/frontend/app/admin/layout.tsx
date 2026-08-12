@@ -13,6 +13,7 @@ import {
   Menu,
   ShieldAlert,
   Bell,
+  Building2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -25,6 +26,7 @@ const navItems = [
   { label: "Audit Logs", href: "/admin/audit", icon: ShieldAlert },
   { label: "Commissions", href: "/admin/commissions", icon: Banknote },
   { label: "Fraud Detection", href: "/admin/fraud", icon: ShieldAlert },
+  { label: "Hospitals", href: "/admin/hospitals", icon: Building2 },
 ];
 
 export default function AdminLayout({
