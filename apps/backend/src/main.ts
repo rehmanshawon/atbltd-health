@@ -8,14 +8,11 @@ async function bootstrap() {
   // Enable CORS for frontend (Next.js on port 3000)
   app.enableCors({
     origin: [
-      'http://localhost:3000', // Local frontend
+      'http://localhost:3000',
       'http://localhost:3001',
-      'http://localhost:3002',
-      'http://13.232.183.239:3000', // Frontend on EC2
-      'http://13.232.183.239:3001', // Backend on EC2
-      'https://atbltd.health', // Production frontend
-      'https://www.atbltd.health', // Production www subdomain
-      'http://13.232.183.239',
+      'https://atbltd.health',
+      'https://www.atbltd.health',
+      'https://api.atbltd.health',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
