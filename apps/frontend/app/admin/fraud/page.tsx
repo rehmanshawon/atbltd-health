@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../lib/auth-context";
 import { ShieldAlert, AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 interface FraudAlert {
   type: string;

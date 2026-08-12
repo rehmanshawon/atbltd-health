@@ -19,7 +19,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 const STATUS_COLORS: Record<
   string,

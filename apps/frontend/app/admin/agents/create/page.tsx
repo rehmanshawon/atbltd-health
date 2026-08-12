@@ -6,7 +6,7 @@ import { useAuth } from "../../../lib/auth-context";
 import { ArrowLeft, UserPlus, Loader2, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 export default function CreateAgentPage() {
   const router = useRouter();

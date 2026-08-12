@@ -18,7 +18,7 @@ import {
 import { FormEvent, useEffect, useState } from "react";
 
 // --- API base URL ---
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 interface MembershipModalProps {
   isOpen: boolean;
