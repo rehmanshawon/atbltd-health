@@ -491,13 +491,28 @@ export default function MembershipModal({
                       </span>
                       <span>
                         <strong>{strings.sendMoney}</strong>
-                        <small>{strings.sendMoneyDetail}</small>
+                        <small>Send 1,000 BDT to:</small>
+                        <span
+                          style={{
+                            fontSize: "1.1rem",
+                            fontWeight: "bold",
+                            color: "#ff8a8a",
+                            display: "block",
+                            marginTop: "4px",
+                          }}
+                        >
+                          01711993593
+                        </span>
+                        <small style={{ marginTop: "4px", display: "block" }}>
+                          ATB Official bKash (Personal)
+                        </small>
                       </span>
-                      {paymentMethod === "bkash" ? (
+                      {/* {paymentMethod === "bkash" ? (
                         <BadgeCheck size={20} color="#ff8a8a" />
                       ) : (
                         <div style={{ width: 20 }} />
-                      )}
+                      )} */}
+                      <BadgeCheck size={20} />
                     </button>
                   </div>
 
