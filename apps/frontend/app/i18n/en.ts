@@ -257,7 +257,8 @@ export const en = {
     service: "24/7 helpline & customer service",
     footerBottom: "Healthcare, with heart.",
     rights: "All rights reserved.",
-    address: "Lane 08, House 02, Road 11, Sector 06, Uttara, Dhaka-1270",
+    address:
+      "Madhobilota, Block - C, Flat - 1306, Sector - 18, RUAP, UTTORA, Dhaka - 1230.",
   },
   modal: {
     title: "Your protection starts with clarity.",

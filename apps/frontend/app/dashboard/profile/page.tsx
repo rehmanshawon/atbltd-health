@@ -86,7 +86,7 @@ export default function ProfilePage() {
         ))}
       </div>
       <p className="text-neutral-600 text-xs text-center">
-        To update your information, please contact ATB support at 01711-993597
+        To update your information, please contact ATB support at 01774-538889.
       </p>
     </div>
   );
