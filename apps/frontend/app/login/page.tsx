@@ -51,7 +51,7 @@ export default function LoginPage() {
   };
 
   // Show loading while checking auth state
-  if (authLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex bg-[#060d1a] items-center justify-center">
         <Loader2 size={28} className="animate-spin text-neutral-400" />

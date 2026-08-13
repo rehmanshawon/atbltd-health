@@ -32,24 +32,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // On mount, check localStorage for existing session
-  useEffect(() => {
-    const storedToken = localStorage.getItem("atb_token");
-    const storedUser = localStorage.getItem("atb_user");
-
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("atb_token");
-        localStorage.removeItem("atb_user");
-      }
-    }
-    setIsLoading(false);
-  }, []);
+  const [isLoading, setIsLoading] = useState(false); // Start false, no initial check needed
 
   const login = useCallback(async (mobileNumber: string, password: string) => {
     setIsLoading(true);
@@ -70,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("atb_token", data.accessToken);
       localStorage.setItem("atb_user", JSON.stringify(loggedInUser));
     } catch (error) {
-      throw error; // Re-throw so the login page can catch it
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -81,6 +64,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     localStorage.removeItem("atb_token");
     localStorage.removeItem("atb_user");
+  }, []);
+
+  // Optional: Restore session from localStorage on mount
+  useEffect(() => {
+    const storedToken = localStorage.getItem("atb_token");
+    const storedUser = localStorage.getItem("atb_user");
+
+    if (storedToken && storedUser) {
+      try {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      } catch {
+        localStorage.removeItem("atb_token");
+        localStorage.removeItem("atb_user");
+      }
+    }
   }, []);
 
   return (
