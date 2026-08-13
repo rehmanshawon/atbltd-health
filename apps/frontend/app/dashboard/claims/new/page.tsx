@@ -6,7 +6,8 @@ import { useAuth } from "../../../lib/auth-context";
 import { ArrowLeft, Upload, Loader2, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 interface Surgery {
   id: string;
@@ -52,8 +53,8 @@ export default function NewClaimPage() {
         }).then((r) => r.json()),
       ])
         .then(([surgeriesData, hospitalsData]) => {
-          setSurgeries(surgeriesData || []);
-          setHospitals(hospitalsData || []);
+          setSurgeries(Array.isArray(surgeriesData) ? surgeriesData : []);
+          setHospitals(Array.isArray(hospitalsData) ? hospitalsData : []);
         })
         .catch(console.error)
         .finally(() => setIsLoadingDropdowns(false));

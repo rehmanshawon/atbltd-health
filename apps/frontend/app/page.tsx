@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BackgroundGlow from "./components/BackgroundGlow";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
@@ -22,6 +22,13 @@ export default function Home() {
   const [language, setLanguage] = useState<"en" | "bn">("bn");
   const locale = language === "bn" ? bn : en;
 
+  useEffect(() => {
+    document.documentElement.lang = language === "bn" ? "bn" : "en";
+    document.body.style.fontFamily =
+      language === "bn"
+        ? "'Noto Sans Bengali', Times New Roman, serif"
+        : "Arial, Helvetica, sans-serif";
+  }, [language]);
   return (
     <div
       style={{

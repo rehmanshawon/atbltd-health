@@ -61,8 +61,8 @@ export class HospitalController {
    * GET /api/hospitals — List all hospitals (Admin only)
    */
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard)
+  //@Roles(UserRole.ADMIN)
   async getAllHospitals() {
     return this.hospitalService.getAllHospitals();
   }
