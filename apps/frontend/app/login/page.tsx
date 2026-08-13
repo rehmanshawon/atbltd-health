@@ -59,15 +59,6 @@ export default function LoginPage() {
     );
   }
 
-  // If already authenticated, show loading while redirecting
-  if (isAuthenticated && user) {
-    return (
-      <div className="min-h-screen flex bg-[#060d1a] items-center justify-center">
-        <Loader2 size={28} className="animate-spin text-neutral-400" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex bg-gray-50">
       {/* Left: Brand panel */}

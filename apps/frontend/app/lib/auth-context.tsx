@@ -4,7 +4,6 @@ import {
   createContext,
   useContext,
   useState,
-  useEffect,
   useCallback,
   type ReactNode,
 } from "react";
@@ -32,7 +31,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Start false, no initial check needed
+  const [isLoading, setIsLoading] = useState(false);
 
   const login = useCallback(async (mobileNumber: string, password: string) => {
     setIsLoading(true);
@@ -50,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.accessToken);
       setUser(loggedInUser);
 
+      // Store for refresh recovery
       localStorage.setItem("atb_token", data.accessToken);
       localStorage.setItem("atb_user", JSON.stringify(loggedInUser));
     } catch (error) {
@@ -66,21 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("atb_user");
   }, []);
 
-  // Optional: Restore session from localStorage on mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem("atb_token");
-    const storedUser = localStorage.getItem("atb_user");
-
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("atb_token");
-        localStorage.removeItem("atb_user");
-      }
-    }
-  }, []);
+  // DO NOT restore from localStorage automatically
+  // This causes infinite redirects when tokens expire
 
   return (
     <AuthContext.Provider
