@@ -282,10 +282,10 @@ export const en = {
     choosePayment:
       "Choose how you would like to pay. Online merchant checkout will be added when the respective accounts are approved.",
     sendMoney: "Send money",
-    sendMoneyDetail: "Send 1,000 BDT to ATB bKash: 01711993593",
+    sendMoneyDetail: "Send 1,000 BDT to ATB bKash: 01721719611",
     merchant: "Merchant checkout coming soon",
     safety:
-      "Only send money to the official ATB bKash number: 01711993593. Never send to any agent's personal account.",
+      "Only send money to the official ATB bKash number: 01721719611. Never send to any agent's personal account.",
     back: "Back",
     sentPayment: "I’ve sent the payment",
     verifyMobile: "Verify your mobile number",
