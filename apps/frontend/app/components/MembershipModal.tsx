@@ -169,11 +169,8 @@ export default function MembershipModal({
       setMemberId(data.memberId || "");
       setTempPassword(data.temporaryPassword || "");
 
-      // Move to OTP verification step
-      setStep("verification");
-
-      // Auto-send OTP
-      await sendOtp();
+      // Go directly to complete — no OTP step
+      setStep("complete");
     } catch (error) {
       const msg =
         error instanceof Error ? error.message : "An unexpected error occurred";
