@@ -83,9 +83,9 @@ export default function Footer({ strings }: FooterProps) {
                 <Mail size={16} />
                 info@atbltd.health
               </a>
-              <a href="tel:+8801711993597">
+              <a href="tel:+8801711993593">
                 <Phone size={16} />
-                01711-993597
+                01711-993593
               </a>
               <p className="footer-address">
                 <MapPin size={16} />
