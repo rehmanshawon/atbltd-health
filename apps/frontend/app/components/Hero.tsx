@@ -54,6 +54,7 @@ export default function Hero({ onJoin, strings, statsStrings }: Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.6 }}
             className="company-kicker"
+            style={{ marginTop: "10rem" }}
           >
             {strings.kicker}
           </motion.p>
@@ -103,14 +104,17 @@ export default function Hero({ onJoin, strings, statsStrings }: Props) {
             }}
             className="
               text-[clamp(3.5rem,9vw,7rem)]
-              leading-[0.9]
+              leading-[1.1]
               font-black
               tracking-[-0.05em]
             "
           >
             {strings.title}
             <br />
-            <span className="bg-gradient-to-r from-white via-white to-red-400 bg-clip-text text-transparent">
+            <span
+              className="bg-gradient-to-r from-white via-white to-red-400 bg-clip-text text-transparent"
+              //style={{ display: "block", marginTop: "1rem" }}
+            >
               {strings.titleTwo}
             </span>
           </motion.h1>
