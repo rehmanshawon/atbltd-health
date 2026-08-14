@@ -59,10 +59,10 @@ jobs:
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/atbltd-health-frontend:latest
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/atbltd-health-backend:latest
 
-            # Restart containers
+            # Restart containers with force recreate
             cd /home/ubuntu/apps/atbltd-health
-            docker-compose down
-            docker-compose up -d
+            docker compose down
+            docker compose up -d --force-recreate
 
             # Clean up
             docker image prune -f
