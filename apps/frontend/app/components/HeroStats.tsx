@@ -4,6 +4,16 @@ import { motion, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { STATS } from "../lib/constants";
 
+interface HeroStatsProps {
+  strings: {
+    stats: {
+      maximumCoverage: string;
+      hospitalStay: string;
+      monthsValidity: string;
+    };
+  };
+}
+
 function AnimatedNumber({
   value,
   isVisible,
