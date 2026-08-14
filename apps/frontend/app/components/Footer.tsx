@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Earth, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
 
 interface FooterProps {
@@ -28,7 +29,13 @@ export default function Footer({ strings }: FooterProps) {
   return (
     <footer id="contact" className="footer-wrap">
       <div className="container-xl">
-        <div className="footer-panel glass">
+        <motion.div
+          className="footer-panel glass"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div className="footer-main">
             <div className="footer-brand">
               <Image
@@ -40,7 +47,8 @@ export default function Footer({ strings }: FooterProps) {
               />
               <p>{strings.intro}</p>
               <div className="socials">
-                <a
+                <motion.a
+                  whileHover={{ scale: 1.15 }}
                   href="https://www.facebook.com/profile.php?id=61592163080085"
                   target="_blank"
                   rel="noreferrer"
@@ -49,15 +57,16 @@ export default function Footer({ strings }: FooterProps) {
                   <span className="facebook-mark" aria-hidden="true">
                     f
                   </span>
-                </a>
-                <a
+                </motion.a>
+                <motion.a
+                  whileHover={{ scale: 1.15 }}
                   href="https://atbltd.health"
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Visit atbltd.health"
                 >
                   <Earth size={18} />
-                </a>
+                </motion.a>
               </div>
             </div>
             <div>
@@ -100,7 +109,7 @@ export default function Footer({ strings }: FooterProps) {
             </span>
             <span>{strings.footerBottom}</span>
           </div>
-        </div>
+        </motion.div>
       </div>
     </footer>
   );

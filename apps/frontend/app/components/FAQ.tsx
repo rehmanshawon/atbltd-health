@@ -63,17 +63,33 @@ export default function FAQ({ strings }: FAQProps) {
   return (
     <section id="about" className="section-space faq-section">
       <div className="container-xl faq-layout">
-        <SectionHeading
-          eyebrow={strings.eyebrow}
-          title={strings.title}
-          description={strings.description}
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <SectionHeading
+            eyebrow={strings.eyebrow}
+            title={strings.title}
+            description={strings.description}
+          />
+        </motion.div>
+
         <div className="faq-list">
           {faqEntries.map((faq, index) => {
             const isOpen = openIndex === index;
             return (
-              <article
+              <motion.article
                 key={faq.question}
+                initial={{ opacity: 0, x: 24 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{
+                  delay: index * 0.08,
+                  duration: 0.5,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
                 className={`faq-item glass-card ${isOpen ? "faq-open" : ""}`}
               >
                 <button
@@ -83,10 +99,12 @@ export default function FAQ({ strings }: FAQProps) {
                   aria-controls={`faq-answer-${index}`}
                 >
                   <span>{faq.question}</span>
-                  <ChevronDown
-                    size={21}
-                    className={isOpen ? "rotate-180" : ""}
-                  />
+                  <motion.span
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                  >
+                    <ChevronDown size={21} />
+                  </motion.span>
                 </button>
                 <AnimatePresence initial={false}>
                   {isOpen && (
@@ -96,14 +114,14 @@ export default function FAQ({ strings }: FAQProps) {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.26, ease: "easeOut" }}
+                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                       className="faq-answer"
                     >
                       <p>{faq.answer}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </article>
+              </motion.article>
             );
           })}
         </div>

@@ -17,15 +17,59 @@ export default function SectionHeading({
 }: SectionHeadingProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 22, filter: "blur(8px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3, margin: "-80px" }}
+      variants={{
+        hidden: {},
+        visible: { transition: { staggerChildren: 0.12 } },
+      }}
       className={centered ? "mx-auto max-w-3xl text-center" : "max-w-3xl"}
     >
-      <p className="section-eyebrow">{eyebrow}</p>
-      <h2 className="section-title mt-5">{title}</h2>
-      <p className="section-subtitle">{description}</p>
+      <motion.p
+        variants={{
+          hidden: { opacity: 0, y: 20, filter: "blur(6px)" },
+          visible: {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0)",
+            transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+          },
+        }}
+        className="section-eyebrow"
+      >
+        {eyebrow}
+      </motion.p>
+
+      <motion.h2
+        variants={{
+          hidden: { opacity: 0, y: 24, filter: "blur(6px)" },
+          visible: {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0)",
+            transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+          },
+        }}
+        className="section-title mt-5"
+      >
+        {title}
+      </motion.h2>
+
+      <motion.p
+        variants={{
+          hidden: { opacity: 0, y: 20, filter: "blur(6px)" },
+          visible: {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0)",
+            transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+          },
+        }}
+        className="section-subtitle"
+      >
+        {description}
+      </motion.p>
     </motion.div>
   );
 }

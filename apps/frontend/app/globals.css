@@ -31,12 +31,24 @@
 }
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
 }
 
 body {
   min-height: 100vh;
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
+}
+
+/* Subtle grain texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
 html[lang="bn"] body {
@@ -129,6 +141,32 @@ html[lang="bn"] body {
 .secondary-button:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateY(-3px);
+}
+
+/* Smooth button transitions */
+.primary-button,
+.secondary-button {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.primary-button:hover::before {
+  transform: translateX(100%);
 }
 
 /* Keep all your existing landing page styles below */
@@ -255,6 +293,7 @@ html[lang="bn"] body {
 .section-space {
   padding: clamp(5.5rem, 11vw, 10rem) 0;
   scroll-margin-top: 9.5rem;
+  position: relative;
 }
 
 .section-eyebrow {
@@ -264,6 +303,22 @@ html[lang="bn"] body {
   letter-spacing: 0.19em;
   line-height: 1.2;
   text-transform: uppercase;
+}
+
+.section-space::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.06),
+    transparent
+  );
 }
 
 .company-kicker {
@@ -1715,6 +1770,93 @@ html[lang="bn"] body {
   }
 }
 
+/* Staggered reveal animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.reveal {
+  opacity: 0;
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.reveal-delay-1 {
+  animation-delay: 0.1s;
+}
+.reveal-delay-2 {
+  animation-delay: 0.2s;
+}
+.reveal-delay-3 {
+  animation-delay: 0.3s;
+}
+.reveal-delay-4 {
+  animation-delay: 0.4s;
+}
+
+/* Shimmer effect for premium feel */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #ff8a8a 25%,
+    #ffffff 50%,
+    #ff8a8a 75%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 4s linear infinite;
+}
+
+/* Card hover glow */
+.premium-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(211, 47, 47, 0.12),
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.premium-card:hover::after {
+  opacity: 1;
+}
+
+.premium-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+}
 /* Better focus */
 
 button:focus-visible,

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface NavbarProps {
   onJoin?: () => void;
@@ -31,6 +31,16 @@ export default function Navbar({
 }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const closeMenu = () => setIsMenuOpen(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 60);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <motion.nav
       initial={{ y: -80, opacity: 0 }}
@@ -41,7 +51,11 @@ export default function Navbar({
       }}
       className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-7xl"
     >
-      <div className="glass navbar-shell rounded-[30px] px-5 sm:px-7 lg:px-10 min-h-20 lg:h-24 flex items-center justify-between">
+      <div
+        className={`glass navbar-shell rounded-[30px] px-5 sm:px-7 lg:px-10 min-h-20 lg:h-24 flex items-center justify-between transition-all duration-500 ${
+          isScrolled ? "shadow-2xl border-white/20" : ""
+        }`}
+      >
         {/* Logo */}
 
         <Link href="/" className="flex items-center">

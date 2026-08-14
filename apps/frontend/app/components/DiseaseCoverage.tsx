@@ -45,11 +45,11 @@ export default function DiseaseCoverage({ strings }: DiseaseCoverageProps) {
         <div className="mt-16 grid gap-8 lg:grid-cols-2">
           {/* Included Card */}
           <motion.article
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className={includedCardStyles}
+            initial={{ opacity: 0, y: 32, filter: "blur(8px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className={includedCardStyles + " premium-card"}
           >
             <div className="mb-6 flex items-center gap-4">
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-300">
@@ -63,21 +63,28 @@ export default function DiseaseCoverage({ strings }: DiseaseCoverageProps) {
               {strings.coveredDescription}
             </p>
             <ul className="list-disc space-y-3 pl-5 marker:text-emerald-400">
-              {strings.coveredList.map((item) => (
-                <li key={item} className="leading-7 text-white/90">
+              {strings.coveredList.map((item, index) => (
+                <motion.li
+                  key={item}
+                  initial={{ opacity: 0, x: -12 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.15 + index * 0.04, duration: 0.4 }}
+                  className="leading-7 text-white/90"
+                >
                   {item}
-                </li>
+                </motion.li>
               ))}
             </ul>
           </motion.article>
 
           {/* Excluded Card */}
           <motion.article
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
-            className={excludedCardStyles}
+            initial={{ opacity: 0, y: 32, filter: "blur(8px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+            className={excludedCardStyles + " premium-card"}
           >
             <div className="mb-6 flex items-center gap-4">
               <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-rose-500/20 bg-rose-500/10 text-rose-300">
@@ -91,20 +98,32 @@ export default function DiseaseCoverage({ strings }: DiseaseCoverageProps) {
               {strings.notCoveredDescription}
             </p>
             <ul className="list-disc space-y-3 pl-5 marker:text-rose-400">
-              {strings.notCoveredList.map((item) => (
-                <li key={item} className="leading-7 text-white/90">
+              {strings.notCoveredList.map((item, index) => (
+                <motion.li
+                  key={item}
+                  initial={{ opacity: 0, x: -12 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.15 + index * 0.05, duration: 0.4 }}
+                  className="leading-7 text-white/90"
+                >
                   {item}
-                </li>
+                </motion.li>
               ))}
             </ul>
           </motion.article>
         </div>
 
-        {/* Note Box */}
-        <div className="mt-12 rounded-2xl border border-white/10 bg-white/5 px-6 py-5 text-sm leading-7 text-white/70 backdrop-blur-sm">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mt-12 rounded-2xl border border-white/10 bg-white/5 px-6 py-5 text-sm leading-7 text-white/70 backdrop-blur-sm"
+        >
           <span className="font-semibold text-white/90">Please Note:</span>{" "}
           {strings.note}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

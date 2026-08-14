@@ -55,24 +55,30 @@ export default function HowItWorks({ strings }: HowItWorksProps) {
                     : index === 1
                       ? strings.step2
                       : strings.step3;
+
                 return (
                   <motion.article
                     key={step.number}
-                    initial={{ opacity: 0, y: 28, filter: "blur(8px)" }}
+                    initial={{ opacity: 0, y: 36, filter: "blur(10px)" }}
                     whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    viewport={{ once: true, amount: 0.25 }}
+                    viewport={{ once: true, amount: 0.25, margin: "-40px" }}
                     transition={{
-                      duration: 0.6,
-                      delay: index * 0.12,
+                      duration: 0.7,
+                      delay: index * 0.15,
                       ease: [0.16, 1, 0.3, 1],
                     }}
-                    whileHover={{ y: -9 }}
-                    className="step-card"
+                    whileHover={{
+                      y: -10,
+                      scale: 1.02,
+                      transition: { duration: 0.3, ease: "easeOut" },
+                    }}
+                    className="step-card premium-card"
                   >
                     <span className="step-number">{step.number}</span>
                     <motion.div
                       className="icon-orb"
-                      whileHover={{ scale: 1.08, rotate: 4 }}
+                      whileHover={{ scale: 1.12, rotate: 6 }}
+                      transition={{ type: "spring", stiffness: 300 }}
                     >
                       <Icon size={27} strokeWidth={1.7} />
                     </motion.div>
