@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 interface Claim {
   id: string;
@@ -57,7 +58,7 @@ export default function HospitalDashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      setClaims(data || []);
+      setClaims(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
     } finally {
