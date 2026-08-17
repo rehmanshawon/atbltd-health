@@ -10,6 +10,7 @@ import { Agent } from '../../entities/agent.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { CommissionModule } from '../commission/commission.module';
 import { FraudService } from './fraud.service';
+import { SmsModule } from '../sms/sms.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -21,6 +22,7 @@ import { FraudService } from './fraud.service';
       AuditLog,
     ]),
     CommissionModule,
+    SmsModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, FraudService],

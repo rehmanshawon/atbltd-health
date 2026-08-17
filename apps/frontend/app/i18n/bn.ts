@@ -8,6 +8,7 @@ export const bn = {
     learnHowItWorks: "কীভাবে কাজ করে জানুন",
     scroll: "নিচে দেখুন",
     languageToggle: "EN",
+    login: "লগইন",
   },
   hero: {
     kicker: "আস্থা ট্রিটমেন্ট বিলস লিমিটেড",
@@ -21,6 +22,7 @@ export const bn = {
     becomeMember: "সদস্য হোন",
     learnHowItWorks: "কীভাবে কাজ করে জানুন",
     scroll: "নিচে দেখুন",
+    login: "লগইন",
   },
   stats: {
     maximumCoverage: "সর্বোচ্চ সহায়তা",
@@ -313,5 +315,10 @@ export const bn = {
     verifyingOtp: "যাচাই করা হচ্ছে...",
     errorOccurred: "একটি ত্রুটি ঘটেছে। আবার চেষ্টা করুন।",
     tryAgain: "বন্ধ করুন",
+    applicationReceived: "আবেদন গৃহীত হয়েছে!",
+    applicationReceivedDesc: "আপনার সদস্যতা আবেদন সফলভাবে জমা দেওয়া হয়েছে।",
+    pendingVerificationNote: "আপনার পেমেন্ট আমাদের টিম যাচাই করছে।",
+    whatHappensNext:
+      "পেমেন্ট নিশ্চিত হলে, আপনাকে SMS-এ মেম্বার আইডি এবং অস্থায়ী পাসওয়ার্ড পাঠানো হবে। ইমেইল দিয়ে থাকলে সেখানেও কনফার্মেশন ইমেইল পাবেন।",
   },
 };

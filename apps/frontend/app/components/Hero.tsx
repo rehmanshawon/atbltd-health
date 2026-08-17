@@ -19,6 +19,7 @@ interface Props {
     becomeMember: string;
     learnHowItWorks: string;
     scroll: string;
+    login: string;
   };
   statsStrings: {
     maximumCoverage: string;
@@ -174,7 +175,9 @@ export default function Hero({ onJoin, strings, statsStrings }: Props) {
             "
           >
             <CTAButton onClick={onJoin}>{strings.becomeMember}</CTAButton>
-
+            <a className="secondary-button" href="/login">
+              {strings.login || "Login"}
+            </a>
             <a className="secondary-button" href="#how-it-works">
               {strings.learnHowItWorks}
             </a>

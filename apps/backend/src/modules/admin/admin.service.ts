@@ -15,7 +15,7 @@ import { Agent } from '../../entities/agent.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { CommissionService } from '../commission/commission.service';
-
+import { SmsService } from '../sms/sms.service';
 @Injectable()
 export class AdminService {
   constructor(
@@ -32,6 +32,7 @@ export class AdminService {
     @InjectRepository(AuditLog)
     private readonly auditLogRepository: Repository<AuditLog>,
     private readonly commissionService: CommissionService,
+    private readonly smsService: SmsService,
   ) {}
 
   /**
@@ -222,6 +223,20 @@ export class AdminService {
     if (payment.user) {
       payment.user.isActive = true;
       await this.userRepository.save(payment.user);
+    }
+
+    // Send SMS with credentials
+    try {
+      await this.smsService.sendMembershipActivationSms(
+        payment.user.mobileNumber,
+        {
+          fullName: payment.user.fullName,
+          memberId: payment.user.memberId,
+          temporaryPassword: 'ATB@Welcome', // TODO: Generate random per user
+        },
+      );
+    } catch (error) {
+      console.error('Failed to send SMS:', error);
     }
 
     // Create commission for referring agent

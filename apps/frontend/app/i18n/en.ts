@@ -8,6 +8,7 @@ export const en = {
     learnHowItWorks: "Learn How It Works",
     scroll: "Scroll",
     languageToggle: "BN",
+    login: "Login",
   },
   hero: {
     kicker: "Astha Treatment Bills Ltd.",
@@ -21,6 +22,7 @@ export const en = {
     becomeMember: "Become a Member",
     learnHowItWorks: "Learn How It Works",
     scroll: "Scroll",
+    login: "Login",
   },
   stats: {
     maximumCoverage: "Maximum Coverage",
@@ -314,5 +316,11 @@ export const en = {
     verifyingOtp: "Verifying...",
     errorOccurred: "An error occurred. Please try again.",
     tryAgain: "Dismiss",
+    applicationReceived: "Application Received!",
+    applicationReceivedDesc:
+      "Your membership application has been submitted successfully.",
+    pendingVerificationNote: "Your payment is being verified by our team.",
+    whatHappensNext:
+      "Once payment is confirmed, you will receive an SMS with your Member ID and temporary password. If you provided an email, you'll also receive a confirmation email.",
   },
 };

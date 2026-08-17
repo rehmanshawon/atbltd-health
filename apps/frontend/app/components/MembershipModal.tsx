@@ -14,6 +14,7 @@ import {
   Smartphone,
   X,
   Loader2,
+  Clock,
 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -73,6 +74,10 @@ interface MembershipModalProps {
     verifyingOtp: string;
     errorOccurred: string;
     tryAgain: string;
+    applicationReceived: string;
+    applicationReceivedDesc: string;
+    pendingVerificationNote: string;
+    whatHappensNext: string;
   };
 }
 
@@ -673,37 +678,28 @@ export default function MembershipModal({
                   <CheckCircle2 size={52} />
                   <p className="section-eyebrow">{strings.membershipPreview}</p>
                   <h2>
-                    {strings.welcome} {fullName || strings.member}.
+                    {strings.applicationReceived || "Application Received!"}
                   </h2>
-                  <p>{strings.cardNote}</p>
-                  <div className="credential-card">
-                    <span>{strings.membershipId}</span>
-                    <strong>{memberId}</strong>
-                    <button
-                      type="button"
-                      aria-label="Copy membership ID"
-                      onClick={() => copyValue(memberId)}
-                    >
-                      <Copy size={15} />
-                    </button>
-                    {tempPassword && (
-                      <>
-                        <span>{strings.tempPassword}</span>
-                        <strong>{tempPassword}</strong>
-                        <button
-                          type="button"
-                          aria-label="Copy temporary password"
-                          onClick={() => copyValue(tempPassword)}
-                        >
-                          <Copy size={15} />
-                        </button>
-                      </>
-                    )}
-                  </div>
+                  <p>
+                    {strings.applicationReceivedDesc ||
+                      "Your membership application has been submitted."}
+                  </p>
+
                   <div className="activation-note">
                     <CreditCard size={18} />
-                    {strings.benefitsAvailable}
+                    {strings.pendingVerificationNote ||
+                      "Payment verification in progress."}
                   </div>
+
+                  <div
+                    className="activation-note"
+                    style={{ background: "rgba(37, 99, 235, 0.12)" }}
+                  >
+                    <Clock size={18} />
+                    {strings.whatHappensNext ||
+                      "SMS with login credentials will be sent after verification."}
+                  </div>
+
                   <button
                     className="primary-button modal-submit"
                     onClick={close}

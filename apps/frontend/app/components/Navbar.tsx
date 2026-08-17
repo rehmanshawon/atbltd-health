@@ -18,6 +18,7 @@ interface NavbarProps {
     learnHowItWorks: string;
     scroll: string;
     languageToggle: string;
+    login: string;
   };
   language: "en" | "bn";
   onLanguageChange: () => void;
@@ -110,20 +111,34 @@ export default function Navbar({
         </div>
 
         {/* CTA */}
+        <div className="hidden md:flex items-center gap-3">
+          <Link
+            href="/login"
+            className="secondary-button whitespace-nowrap"
+            style={{ padding: "8px 16px", fontSize: "0.8rem" }}
+          >
+            {strings.login || "Login"}
+          </Link>
+          <button
+            onClick={onJoin}
+            className="primary-button whitespace-nowrap"
+            style={{ padding: "12px 24px", fontSize: "0.9rem" }}
+          >
+            {strings.becomeMember}
+            <ArrowRight size={18} />
+          </button>
+          <button
+            className="language-toggle whitespace-nowrap"
+            onClick={onLanguageChange}
+            aria-label={
+              language === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"
+            }
+            style={{ padding: "8px 14px", minWidth: "auto" }}
+          >
+            {strings.languageToggle}
+          </button>
+        </div>
 
-        <button onClick={onJoin} className="primary-button hidden md:flex">
-          {strings.becomeMember}
-          <ArrowRight size={18} />
-        </button>
-        <button
-          className="language-toggle hidden sm:inline-flex"
-          onClick={onLanguageChange}
-          aria-label={
-            language === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"
-          }
-        >
-          {strings.languageToggle}
-        </button>
         <button
           className="mobile-menu-button lg:hidden"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -156,6 +171,13 @@ export default function Navbar({
                     : strings.contact}
             </Link>
           ))}
+          <Link
+            href="/login"
+            onClick={closeMenu}
+            className="secondary-button w-full text-center"
+          >
+            {strings.login || "Login"}
+          </Link>
           <button
             onClick={() => {
               closeMenu();
