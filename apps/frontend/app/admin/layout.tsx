@@ -21,7 +21,7 @@ const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Members", href: "/admin/members", icon: Users },
   { label: "Payments", href: "/admin/payments", icon: Banknote },
-  { label: "Claims", href: "/admin/claims", icon: FileText },
+  { label: "ATB Benefits", href: "/admin/claims", icon: FileText },
   { label: "Agents", href: "/admin/agents", icon: UserCheck },
   { label: "Audit Logs", href: "/admin/audit", icon: ShieldAlert },
   { label: "Commissions", href: "/admin/commissions", icon: Banknote },

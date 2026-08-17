@@ -19,7 +19,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 const STATUS_COLORS: Record<
   string,
@@ -65,7 +66,7 @@ const STATUS_COLORS: Record<
     bg: "bg-emerald-50",
     text: "text-emerald-700",
     border: "border-emerald-200",
-    label: "Payment Processed",
+    label: "Payment Settled",
   },
 };
 
@@ -208,9 +209,11 @@ export default function AdminClaimsPage() {
     <div className="space-y-5 max-w-[1400px] mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-brand-blue">Claims</h1>
+          <h1 className="text-2xl font-bold text-brand-blue">
+            Applications of Benefits
+          </h1>
           <p className="text-gray-500 text-sm mt-0.5">
-            Review and manage claim submissions
+            Review and manage application submissions
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -261,9 +264,9 @@ export default function AdminClaimsPage() {
         ) : claims.length === 0 ? (
           <div className="py-16 text-center">
             <FileSearch size={40} className="text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-600 font-medium">No claims found</p>
+            <p className="text-gray-600 font-medium">No applications found</p>
             <p className="text-gray-400 text-sm mt-1">
-              Claims submitted by members will appear here
+              Applications submitted by members will appear here
             </p>
           </div>
         ) : (
@@ -501,7 +504,7 @@ export default function AdminClaimsPage() {
                     <option value="approved">Approve Claim</option>
                     <option value="rejected">Reject Claim</option>
                     <option value="payment_processed">
-                      Mark Payment Processed
+                      Mark Payment Settled
                     </option>
                   </select>
 
