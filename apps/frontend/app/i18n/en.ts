@@ -321,5 +321,7 @@ export const en = {
     pendingVerificationNote: "Your payment is being verified by our team.",
     whatHappensNext:
       "Once payment is confirmed, you will receive an SMS with your Member ID and temporary password. If you provided an email, you'll also receive a confirmation email.",
+    benefits:
+      "আপনার প্রদত্ত ১,000 টাকার বিপরীতে ১২,000 টাকার মেম্বারশিপ আইডি সুবিধা গ্রহণ করুন।",
   },
 };
