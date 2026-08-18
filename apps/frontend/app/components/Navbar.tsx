@@ -89,14 +89,14 @@ export default function Navbar({
           </Link>
 
           <Link
-            href="#how-it-works"
+            href="#benefits"
             className="text-white/75 hover:text-white transition"
           >
             {strings.howItWorks}
           </Link>
 
           <Link
-            href="#benefits"
+            href="#diseaseCoverage"
             className="text-white/75 hover:text-white transition"
           >
             {strings.benefits}

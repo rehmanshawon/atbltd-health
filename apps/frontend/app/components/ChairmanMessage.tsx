@@ -41,7 +41,7 @@ export default function ChairmanMessage({ strings }: ChairmanProps) {
           </div>
           <div className="chairman-copy">
             <p className="section-eyebrow">{strings.eyebrow}</p>
-            <Quote className="chairman-quote" size={43} strokeWidth={1.15} />
+
             <h2>{strings.title}</h2>
             <p>{strings.body1}</p>
             <p>{strings.body2}</p>

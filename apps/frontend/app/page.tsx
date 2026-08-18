@@ -56,10 +56,10 @@ export default function Home() {
           strings={locale.hero}
           statsStrings={locale.stats}
         />
-        <MembershipDetails strings={locale.membership} />
+        {/* <MembershipDetails strings={locale.membership} /> */}
         <ChairmanMessage strings={locale.chairman} />
-        <HowItWorks strings={locale.howItWorks} />
-        <BenefitEligibility strings={locale.eligibility} />
+        {/* <HowItWorks strings={locale.howItWorks} /> */}
+        {/* <BenefitEligibility strings={locale.eligibility} /> */}
         <DiseaseCoverage strings={locale.diseaseCoverage} />
         <ClaimWorkflow strings={locale.claimWorkflow} />
         <Benefits strings={locale.benefits} />

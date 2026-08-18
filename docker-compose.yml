@@ -28,6 +28,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_DATABASE=atbltd
       - JWT_SECRET=${JWT_SECRET}
+      - GREENWEB_API_TOKEN=${GREENWEB_API_TOKEN}
+      - GREENWEB_SENDER_ID=ATBLTD
     depends_on:
       db:
         condition: service_healthy

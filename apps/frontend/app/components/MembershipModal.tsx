@@ -15,6 +15,8 @@ import {
   X,
   Loader2,
   Clock,
+  Gift,
+  Text,
 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 
@@ -78,6 +80,7 @@ interface MembershipModalProps {
     applicationReceivedDesc: string;
     pendingVerificationNote: string;
     whatHappensNext: string;
+    benefits: string;
   };
 }
 
@@ -680,13 +683,10 @@ export default function MembershipModal({
                   <h2>
                     {strings.applicationReceived || "Application Received!"}
                   </h2>
-                  <p>
-                    {strings.applicationReceivedDesc ||
-                      "Your membership application has been submitted."}
-                  </p>
+                  <p>{strings.applicationReceivedDesc}</p>
 
                   <div className="activation-note">
-                    <CreditCard size={18} />
+                    <Gift size={18} />
                     {strings.pendingVerificationNote ||
                       "Payment verification in progress."}
                   </div>
@@ -695,13 +695,21 @@ export default function MembershipModal({
                     className="activation-note"
                     style={{ background: "rgba(37, 99, 235, 0.12)" }}
                   >
-                    <Clock size={18} />
+                    <Text size={18} />
                     {strings.whatHappensNext ||
+                      "SMS with login credentials will be sent after verification."}
+                  </div>
+                  <div
+                    className="activation-note"
+                    style={{ background: "rgba(37, 99, 235, 0.12)" }}
+                  >
+                    <CreditCard size={18} />
+                    {strings.benefits ||
                       "SMS with login credentials will be sent after verification."}
                   </div>
 
                   <button
-                    className="primary-button modal-submit"
+                    className="secondary-button modal-submit"
                     onClick={close}
                   >
                     {strings.done}

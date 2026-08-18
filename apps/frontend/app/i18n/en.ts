@@ -243,8 +243,7 @@ export const en = {
     },
   },
   footer: {
-    intro:
-      "Healthcare support designed with care, clarity, and confidence. Customer service is available 24/7.",
+    intro: "Inability to pay will never stop your treatment.",
     explore: "Explore",
     support: "Support",
     getInTouch: "Get in touch",

@@ -28,7 +28,7 @@ interface ClaimWorkflowProps {
 }
 
 export default function ClaimWorkflow({ strings }: ClaimWorkflowProps) {
-  const icons = [Phone, Upload, FileCheck, FileCheck, Banknote];
+  const icons = [Banknote, Phone, FileCheck, FileCheck, Banknote];
 
   return (
     <section id="claim-process" className="section-space">

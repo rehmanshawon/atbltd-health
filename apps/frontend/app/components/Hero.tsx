@@ -144,7 +144,7 @@ export default function Hero({ onJoin, strings, statsStrings }: Props) {
             "
           >
             {strings.subtitleLead}
-            <span className="text-white font-bold"> 12,000 BDT </span>
+            {/* <span className="text-white font-bold"> 12,000 BDT </span> */}
             {strings.subtitleSupport}
             <span className="text-white font-bold">
               {strings.subtitlePrice}
