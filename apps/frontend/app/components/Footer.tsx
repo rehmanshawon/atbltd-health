@@ -103,11 +103,29 @@ export default function Footer({ strings }: FooterProps) {
               <p className="footer-service-note">{strings.service}</p>
             </address>
           </div>
+
+          {/* Footer Bottom with Powered By */}
           <div className="footer-bottom">
             <span>
               © {new Date().getFullYear()} ATB Ltd. {strings.rights}
             </span>
-            {/* <span>{strings.footerBottom}</span> */}
+
+            <a
+              href="https://www.ilogicmagic.com"
+              target="_blank"
+              rel="noreferrer"
+              className="powered-by"
+            >
+              <span>Crafted by</span>
+              <Image
+                src="/images/ilm_logo.png"
+                alt="ILM Industrial Logic & Magic"
+                width={28}
+                height={28}
+                className="powered-by-logo"
+              />
+              <span>ILM</span>
+            </a>
           </div>
         </motion.div>
       </div>

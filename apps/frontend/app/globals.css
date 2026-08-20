@@ -1877,3 +1877,24 @@ a:focus-visible {
 
   border-radius: 999px;
 }
+
+/* Powered by attribution */
+.powered-by {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.7rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  letter-spacing: 0.02em;
+}
+
+.powered-by:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.powered-by-logo {
+  object-fit: contain;
+  border-radius: 4px;
+}
