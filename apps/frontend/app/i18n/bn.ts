@@ -8,7 +8,7 @@ export const bn = {
     learnHowItWorks: "কিভাবে কাজ করে",
     scroll: "নিচে দেখুন",
     languageToggle: "EN",
-    login: "আপনার তথ্য",
+    login: "ATB লগিন",
   },
   hero: {
     kicker: "আস্থা ট্রিটমেন্ট বিলস লিমিটেড",
@@ -22,7 +22,7 @@ export const bn = {
     becomeMember: "ATB মেম্বার হোন",
     learnHowItWorks: "কিভাবে কাজ করে জানুন",
     scroll: "নিচে দেখুন",
-    login: "আপনার তথ্য",
+    login: "ATB লগিন",
   },
   stats: {
     maximumCoverage: "সর্বোচ্চ সহায়তা",

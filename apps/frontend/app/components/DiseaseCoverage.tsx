@@ -33,7 +33,7 @@ export default function DiseaseCoverage({ strings }: DiseaseCoverageProps) {
   const excludedCardStyles = `${cardStyles} border-rose-500/20 bg-rose-950/10 hover:border-rose-500/40`;
 
   return (
-    <section id="coverage-scope" className="section-space">
+    <section id="diseaseCoverage" className="section-space">
       <div className="container-xl">
         <SectionHeading
           eyebrow={strings.eyebrow}

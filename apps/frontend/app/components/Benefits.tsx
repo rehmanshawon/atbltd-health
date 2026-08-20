@@ -116,13 +116,13 @@ export default function Benefits({ strings }: BenefitsProps) {
       description: strings.meaningfulCoverDescription,
       points: strings.meaningfulPoints,
     },
-    {
-      artwork: "clarity",
-      eyebrow: strings.madeForLife,
-      title: strings.madeForLifeTitle,
-      description: strings.madeForLifeDescription,
-      points: strings.madeForLifePoints,
-    },
+    // {
+    //   artwork: "clarity",
+    //   eyebrow: strings.madeForLife,
+    //   title: strings.madeForLifeTitle,
+    //   description: strings.madeForLifeDescription,
+    //   points: strings.madeForLifePoints,
+    // },
   ];
 
   return (

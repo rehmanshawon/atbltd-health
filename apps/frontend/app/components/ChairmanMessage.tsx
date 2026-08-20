@@ -45,11 +45,14 @@ export default function ChairmanMessage({ strings }: ChairmanProps) {
             <h2>{strings.title}</h2>
             <p>{strings.body1}</p>
             <p>{strings.body2}</p>
-            <div
-              className="signature-placeholder"
-              aria-label="Signature placeholder for A.K.M. Moshiur Rahman"
-            >
-              <span>{strings.signature}</span>
+            <div className="signature-image-wrap">
+              <Image
+                src="/images/chairman-signature.png"
+                alt="Signature of A.K.M. Moshiur Rahman"
+                width={150}
+                height={130}
+                className="signature-image"
+              />
             </div>
             <div className="chairman-name">
               <strong>{strings.name}</strong>
