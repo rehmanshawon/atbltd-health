@@ -14,6 +14,7 @@ import { SurgeryModule } from './modules/surgery/surgery.module';
 import { HospitalModule } from './modules/hospital/hospital.module';
 import { CommissionModule } from './modules/commission/commission.module';
 import { AgentModule } from './modules/agent/agent.module';
+import { NotificationModule } from './modules/notification/notification.module';
 @Module({
   imports: [
     CoreModule,
@@ -26,6 +27,7 @@ import { AgentModule } from './modules/agent/agent.module';
     HospitalModule,
     CommissionModule,
     AgentModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

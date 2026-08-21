@@ -11,6 +11,7 @@ import { AuditLog } from '../../entities/audit-log.entity';
 import { CommissionModule } from '../commission/commission.module';
 import { FraudService } from './fraud.service';
 import { SmsModule } from '../sms/sms.module';
+import { NotificationModule } from '../notification/notification.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -23,6 +24,7 @@ import { SmsModule } from '../sms/sms.module';
     ]),
     CommissionModule,
     SmsModule,
+    NotificationModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, FraudService],

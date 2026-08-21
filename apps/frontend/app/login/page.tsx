@@ -53,15 +53,25 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Use the login function from useAuth
-      // This calls /auth/login with { identifier, password }
-      await login(staffId, password);
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          identifier: staffId,
+          password,
+        }),
+      });
 
-      // After login, redirect based on stored user role
-      const stored = JSON.parse(localStorage.getItem("atb_user") || "{}");
-      const isStaff = ["admin", "owner", "agent"].includes(stored.role);
-      // router.push(isStaff ? "/admin" : "/dashboard");
-      window.location.href = isStaff ? "/admin" : "/dashboard";
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Login failed");
+
+      // Store token and user
+      localStorage.setItem("atb_token", data.accessToken);
+      localStorage.setItem("atb_user", JSON.stringify(data.user));
+
+      // Redirect based on role
+      const dest = data.user.role === "member" ? "/dashboard" : "/admin";
+      window.location.href = dest; // Full page reload
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

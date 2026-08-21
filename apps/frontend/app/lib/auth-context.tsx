@@ -5,9 +5,12 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   type ReactNode,
 } from "react";
 import { authApi } from "./api";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface User {
   memberId: string;
@@ -23,7 +26,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (identifier: string, password: string) => Promise<void>;
-  memberLogin: (memberId: string) => Promise<void>; // New method
+  memberLogin: (memberId: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -34,50 +37,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  interface AuthContextType {
-    user: User | null;
-    token: string | null;
-    isLoading: boolean;
-    isAuthenticated: boolean;
-    login: (identifier: string, password: string) => Promise<void>;
-    memberLogin: (memberId: string) => Promise<void>; // New method
-    logout: () => void;
-  }
+  // Restore session from localStorage on mount
+  useEffect(() => {
+    const storedToken = localStorage.getItem("atb_token");
+    const storedUser = localStorage.getItem("atb_user");
 
-  // In AuthProvider:
-  const memberLogin = useCallback(async (memberId: string) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"}/auth/member-login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ memberId }),
-        },
-      );
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login failed");
-
-      const loggedInUser: User = {
-        memberId: data.user.memberId,
-        fullName: data.user.fullName,
-        role: data.user.role,
-        isActive: data.user.isActive,
-      };
-
-      setToken(data.accessToken);
-      setUser(loggedInUser);
-      localStorage.setItem("atb_token", data.accessToken);
-      localStorage.setItem("atb_user", JSON.stringify(loggedInUser));
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsLoading(false);
+    if (storedToken && storedUser) {
+      try {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      } catch {
+        localStorage.removeItem("atb_token");
+        localStorage.removeItem("atb_user");
+      }
     }
   }, []);
 
+  // Staff login (identifier = Staff ID or mobile, + password)
   const login = useCallback(async (identifier: string, password: string) => {
     setIsLoading(true);
     try {
@@ -88,7 +64,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fullName: data.user.fullName,
         role: data.user.role,
         isActive: data.user.isActive,
-        // Remove mobileNumber — it's not in the login response
+      };
+
+      setToken(data.accessToken);
+      setUser(loggedInUser);
+
+      localStorage.setItem("atb_token", data.accessToken);
+      localStorage.setItem("atb_user", JSON.stringify(loggedInUser));
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Member login (Member ID only, no password)
+  const memberLogin = useCallback(async (memberId: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/member-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Login failed");
+
+      const loggedInUser: User = {
+        memberId: data.user.memberId,
+        fullName: data.user.fullName,
+        role: data.user.role,
+        isActive: data.user.isActive,
       };
 
       setToken(data.accessToken);
@@ -109,9 +116,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("atb_token");
     localStorage.removeItem("atb_user");
   }, []);
-
-  // DO NOT restore from localStorage automatically
-  // This causes infinite redirects when tokens expire
 
   return (
     <AuthContext.Provider

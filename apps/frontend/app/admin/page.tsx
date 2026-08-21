@@ -438,13 +438,13 @@ export default function AdminDashboard() {
         </ResponsiveContainer>
       </div>
 
-      {/* Pending Verifications */}
+      {/* Pending Authorizations */}
       <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <Clock size={16} className="text-amber-600" />
             <h3 className="text-[#0A2A5E] font-semibold text-sm">
-              Pending Verifications
+              Pending Authorizations
             </h3>
             {pendingPayments.length > 0 && (
               <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-xs font-medium border border-amber-200">
@@ -536,7 +536,7 @@ export default function AdminDashboard() {
                       onClick={() => handleVerify(p.id)}
                       className="px-3 py-1.5 rounded-md bg-[#D32F2F] text-white text-xs font-medium hover:bg-[#b71c1c] transition-colors"
                     >
-                      Verify
+                      Authorize
                     </button>
                   </td>
                 </tr>

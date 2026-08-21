@@ -23,7 +23,8 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
-
+import { NotificationService } from '../notification/notification.service';
+import { NotificationType } from '../../entities/notification.entity';
 @Injectable()
 export class AuthService {
   // In production, store OTPs in Redis with TTL. This in-memory map is for development.
@@ -50,6 +51,7 @@ export class AuthService {
     private readonly agentRepository: Repository<Agent>,
     private readonly jwtService: JwtService,
     private readonly dataSource: DataSource,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -128,6 +130,15 @@ export class AuthService {
       });
 
       const savedUser = await queryRunner.manager.save(user);
+
+      await this.notificationService.notifyRoles(
+        [UserRole.ADMIN, UserRole.OWNER],
+        NotificationType.MEMBER_REGISTERED,
+        'New Member Registered',
+        `${savedUser.fullName} submitted a membership application.`,
+        '/admin/members',
+        savedUser.id,
+      );
 
       // 4. Create Membership record
       const membership = this.membershipRepository.create({

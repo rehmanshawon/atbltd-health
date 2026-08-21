@@ -16,6 +16,8 @@ import { AuditLog } from '../../entities/audit-log.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { CommissionService } from '../commission/commission.service';
 import { SmsService } from '../sms/sms.service';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationType } from '../../entities/notification.entity';
 @Injectable()
 export class AdminService {
   constructor(
@@ -33,6 +35,7 @@ export class AdminService {
     private readonly auditLogRepository: Repository<AuditLog>,
     private readonly commissionService: CommissionService,
     private readonly smsService: SmsService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -224,6 +227,24 @@ export class AdminService {
       payment.user.isActive = true;
       await this.userRepository.save(payment.user);
     }
+
+    //notify user about payment verification and membership activation
+    await this.notificationService.notifyUser(
+      payment.userId,
+      NotificationType.PAYMENT_VERIFIED,
+      'Membership Activated',
+      `Your membership has been activated. Your Member ID is ${payment.user.memberId}.`,
+      '/dashboard',
+    );
+
+    // Notify admins
+    await this.notificationService.notifyRoles(
+      [UserRole.ADMIN, UserRole.OWNER],
+      NotificationType.PAYMENT_VERIFIED,
+      'Payment Verified',
+      `Payment of ${payment.amount} BDT from ${payment.user.fullName} has been verified.`,
+      '/admin',
+    );
 
     // Send SMS with credentials
     try {

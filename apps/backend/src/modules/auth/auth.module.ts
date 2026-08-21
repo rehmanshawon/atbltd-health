@@ -10,7 +10,7 @@ import { Membership } from '../../entities/membership.entity';
 import { Payment } from '../../entities/payment.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { Agent } from '../../entities/agent.entity';
-
+import { NotificationModule } from '../notification/notification.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Membership, Payment, AuditLog, Agent]),
@@ -21,6 +21,7 @@ import { Agent } from '../../entities/agent.entity';
         expiresIn: '24h', // Token expires in 24 hours
       },
     }),
+    NotificationModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

@@ -16,6 +16,7 @@ import {
   Building2,
 } from "lucide-react";
 import Link from "next/link";
+import NotificationBell from "../components/NotificationBell";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -168,9 +169,7 @@ export default function AdminLayout({
             </button>
             <div className="flex-1" />
             <div className="flex items-center gap-3">
-              <button className="relative p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100">
-                <Bell size={18} />
-              </button>
+              <NotificationBell />
               <div className="hidden sm:flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[#D32F2F] flex items-center justify-center text-white text-xs font-bold">
                   {user?.fullName?.charAt(0) || "A"}
