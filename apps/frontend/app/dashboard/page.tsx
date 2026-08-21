@@ -265,7 +265,7 @@ export default function MemberDashboard() {
         {[
           {
             icon: FileText,
-            label: "Submit a Claim",
+            label: "Submit a Benefit Application",
             desc: "Request financial assistance",
             href: "/dashboard/claims/new",
             accent: "#D32F2F",

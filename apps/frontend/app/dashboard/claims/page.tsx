@@ -16,7 +16,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 const STATUS_CONFIG: Record<
   string,
@@ -137,7 +138,7 @@ export default function MemberClaimsPage() {
           href="/dashboard/claims/new"
           className="flex items-center gap-2 px-4 py-2 rounded-md bg-brand-red text-white text-sm font-medium hover:bg-brand-red/90 transition-colors"
         >
-          <Plus size={16} /> New Claim
+          <Plus size={16} /> New Benefit Application
         </Link>
       </div>
 
@@ -152,7 +153,7 @@ export default function MemberClaimsPage() {
             href="/dashboard/claims/new"
             className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-md bg-brand-blue text-white text-sm font-medium hover:bg-brand-blue/90 transition-colors"
           >
-            <Plus size={14} /> Submit a Claim
+            <Plus size={14} /> Submit a Benefit Application
           </Link>
         </div>
       ) : (

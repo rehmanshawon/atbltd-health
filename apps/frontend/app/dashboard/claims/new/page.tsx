@@ -108,9 +108,11 @@ export default function NewClaimPage() {
         <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 size={28} className="text-green-600" />
         </div>
-        <h2 className="text-brand-blue text-xl font-bold">Claim Submitted</h2>
+        <h2 className="text-brand-blue text-xl font-bold">
+          Benefit Application Submitted
+        </h2>
         <p className="text-gray-500 text-sm mt-1">
-          Your claim is being reviewed. Redirecting...
+          Your Application is being reviewed. Redirecting...
         </p>
       </div>
     );
@@ -126,7 +128,9 @@ export default function NewClaimPage() {
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold text-brand-blue">Submit a Claim</h1>
+        <h1 className="text-2xl font-bold text-brand-blue">
+          Submit a Benefit Application
+        </h1>
         <p className="text-gray-500 text-sm mt-0.5">
           Request financial assistance for eligible medical treatment
         </p>
@@ -294,7 +298,7 @@ export default function NewClaimPage() {
               ) : (
                 <CheckCircle2 size={15} />
               )}
-              {isSubmitting ? "Submitting..." : "Submit Claim"}
+              {isSubmitting ? "Submitting..." : "Submit Application"}
             </button>
           </div>
         </form>

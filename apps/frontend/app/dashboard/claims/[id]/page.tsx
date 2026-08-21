@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 const DOCUMENT_TYPES = [
   "Discharge Summary",
@@ -208,7 +209,7 @@ export default function ClaimDetailPage() {
   if (!claim) {
     return (
       <div className="text-center py-16">
-        <p className="text-gray-500">Claim not found</p>
+        <p className="text-gray-500">Benefit Application not found</p>
         <Link
           href="/dashboard/claims"
           className="text-brand-blue text-sm mt-2 inline-block"

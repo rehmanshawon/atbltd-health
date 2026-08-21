@@ -138,7 +138,7 @@ export const en = {
     title: "How ATB Ltd pays your treatment bill —",
     description: "",
     overviewTitle: "Step-by-step financial process",
-    workflowTitle: "Claim sequence",
+    workflowTitle: "Benefit Application sequence",
     steps: [
       {
         number: "Step 1",

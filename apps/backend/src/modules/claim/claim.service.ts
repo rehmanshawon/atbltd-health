@@ -17,6 +17,10 @@ import { AuditLog } from '../../entities/audit-log.entity';
 import { ClaimStatus } from '../../common/enums/claim-status.enum';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { ClaimDocument } from '../../entities/claim-document.entity';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationType } from '../../entities/notification.entity';
+import { SmsService } from '../sms/sms.service';
+import { User } from '../../entities/user.entity';
 @Injectable()
 export class ClaimService {
   constructor(
@@ -30,6 +34,10 @@ export class ClaimService {
     private readonly auditLogRepository: Repository<AuditLog>,
     @InjectRepository(ClaimDocument)
     private readonly claimDocumentRepository: Repository<ClaimDocument>,
+    private readonly notificationService: NotificationService,
+    private readonly smsService: SmsService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   /**
@@ -89,6 +97,28 @@ export class ClaimService {
 
     const savedClaim = await this.claimRepository.save(claim);
 
+    // Notify admins
+    await this.notificationService.notifyRoles(
+      [UserRole.ADMIN, UserRole.OWNER],
+      NotificationType.CLAIM_SUBMITTED,
+      'New ATB Benefit Application',
+      `${savedClaim.surgeryType} - ${savedClaim.hospitalName} by ${savedClaim.memberId}`,
+      '/admin/claims',
+      savedClaim.id,
+    );
+
+    // Get member for SMS
+    const memberUser = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (memberUser?.mobileNumber) {
+      await this.smsService.sendClaimStatusSms(
+        memberUser.mobileNumber,
+        savedClaim.id,
+        'submitted',
+      );
+    }
     await this.auditLogRepository.save({
       action: 'CLAIM_SUBMITTED',
       entity: 'Claim',
@@ -312,6 +342,30 @@ export class ClaimService {
 
     const updatedClaim = await this.claimRepository.save(claim);
 
+    // Notify member
+    await this.notificationService.notifyUser(
+      claim.memberId,
+      NotificationType.CLAIM_STATUS_UPDATED,
+      `ATB Benefit ${newStatus.replace(/_/g, ' ').toUpperCase()}`,
+      `Your application status changed to ${newStatus.replace(/_/g, ' ')}`,
+      '/dashboard/claims',
+      claimId,
+    );
+
+    // SMS to member
+    const claimWithMember = await this.claimRepository.findOne({
+      where: { id: claimId },
+      relations: ['member'],
+    });
+
+    if (claimWithMember?.member?.mobileNumber) {
+      await this.smsService.sendClaimStatusSms(
+        claimWithMember.member.mobileNumber,
+        claimId,
+        newStatus,
+      );
+    }
+
     await this.auditLogRepository.save({
       action: `CLAIM_${newStatus.toUpperCase()}`,
       entity: 'Claim',
@@ -398,6 +452,16 @@ export class ClaimService {
     }
 
     const updatedClaim = await this.claimRepository.save(claim);
+
+    // Notify admins that documents were uploaded
+    await this.notificationService.notifyRoles(
+      [UserRole.ADMIN, UserRole.OWNER],
+      NotificationType.CLAIM_STATUS_UPDATED,
+      'Documents Uploaded',
+      `${documents.length} document(s) uploaded for claim ${claimId}`,
+      '/admin/claims',
+      claimId,
+    );
 
     await this.auditLogRepository.save({
       action: 'CLAIM_DOCUMENTS_UPLOADED',

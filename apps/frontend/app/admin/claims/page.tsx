@@ -6,7 +6,6 @@ import {
   FileText,
   Search,
   Filter,
-  ChevronDown,
   Eye,
   X,
   CheckCircle2,
@@ -17,6 +16,7 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  Paperclip,
 } from "lucide-react";
 
 const API_BASE =
@@ -70,6 +70,16 @@ const STATUS_COLORS: Record<
   },
 };
 
+interface ClaimDocument {
+  id: string;
+  documentType: string;
+  fileName: string;
+  fileUrl: string;
+  notes: string | null;
+  isVerified: boolean;
+  createdAt: string;
+}
+
 interface Claim {
   id: string;
   memberId: string;
@@ -100,6 +110,8 @@ export default function AdminClaimsPage() {
     text: string;
   } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [claimDocuments, setClaimDocuments] = useState<ClaimDocument[]>([]);
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
 
   // Review form state
   const [reviewStatus, setReviewStatus] = useState("");
@@ -133,13 +145,28 @@ export default function AdminClaimsPage() {
     }
   };
 
-  const openReview = (claim: Claim) => {
+  const openReview = async (claim: Claim) => {
     setSelectedClaim(claim);
     setReviewStatus("");
     setApprovedAmount(claim.claimedAmount?.toString() || "");
     setRejectionReason("");
     setReviewNotes("");
     setActionMsg(null);
+    setClaimDocuments([]);
+    setLoadingDocuments(true);
+
+    // Fetch documents for this claim
+    try {
+      const res = await fetch(`${API_BASE}/claims/${claim.id}/documents`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const docs = await res.json();
+      setClaimDocuments(Array.isArray(docs) ? docs : []);
+    } catch {
+      setClaimDocuments([]);
+    } finally {
+      setLoadingDocuments(false);
+    }
   };
 
   const handleStatusUpdate = async () => {
@@ -166,25 +193,21 @@ export default function AdminClaimsPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        // Show the error from the backend (e.g., Maker-Checker message)
         setActionMsg({ type: "error", text: data.message || "Update failed" });
         setActionLoading(false);
         return;
       }
 
-      // Success — update the claim in the list immediately
       setClaims((prev) =>
         prev.map((c) => (c.id === selectedClaim.id ? { ...c, ...data } : c)),
       );
 
-      // Close modal and refresh from server
       setSelectedClaim(null);
       setActionMsg({
         type: "success",
-        text: `Claim ${reviewStatus.replace(/_/g, " ")} successfully`,
+        text: `Application ${reviewStatus.replace(/_/g, " ")} successfully`,
       });
 
-      // Refresh the full list after a short delay
       setTimeout(() => {
         setActionMsg(null);
         loadClaims();
@@ -259,7 +282,7 @@ export default function AdminClaimsPage() {
               size={28}
               className="animate-spin text-brand-red mx-auto mb-3"
             />
-            <p className="text-gray-500 text-sm">Loading claims...</p>
+            <p className="text-gray-500 text-sm">Loading applications...</p>
           </div>
         ) : claims.length === 0 ? (
           <div className="py-16 text-center">
@@ -350,7 +373,7 @@ export default function AdminClaimsPage() {
             {/* Pagination */}
             <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
               <p className="text-gray-500 text-xs">
-                Showing {claims.length} of {total} claims
+                Showing {claims.length} of {total} applications
               </p>
               <div className="flex items-center gap-1">
                 <button
@@ -387,7 +410,7 @@ export default function AdminClaimsPage() {
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-brand-blue">
-                Review Claim
+                Review Application
               </h2>
               <button
                 onClick={() => setSelectedClaim(null)}
@@ -397,7 +420,7 @@ export default function AdminClaimsPage() {
               </button>
             </div>
 
-            {/* Claim Details */}
+            {/* Application Details */}
             <div className="px-6 py-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -463,26 +486,75 @@ export default function AdminClaimsPage() {
                 </div>
               )}
 
-              {selectedClaim.documents &&
-                selectedClaim.documents.length > 0 && (
-                  <div>
-                    <p className="text-gray-400 text-xs font-semibold uppercase mb-2">
-                      Documents ({selectedClaim.documents.length})
+              {/* Uploaded Documents */}
+              <div>
+                <p className="text-gray-400 text-xs font-semibold uppercase mb-2">
+                  Uploaded Documents
+                  {claimDocuments.length > 0 && ` (${claimDocuments.length})`}
+                </p>
+
+                {loadingDocuments ? (
+                  <div className="py-4 text-center">
+                    <Loader2
+                      size={18}
+                      className="animate-spin text-gray-400 mx-auto"
+                    />
+                  </div>
+                ) : claimDocuments.length === 0 ? (
+                  <div className="py-4 text-center bg-gray-50 rounded-md">
+                    <Paperclip
+                      size={20}
+                      className="text-gray-300 mx-auto mb-1"
+                    />
+                    <p className="text-gray-400 text-xs">
+                      No documents uploaded yet
                     </p>
-                    <div className="space-y-1">
-                      {selectedClaim.documents.map((doc, i) => (
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {claimDocuments.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <FileText
+                            size={16}
+                            className="text-gray-400 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="text-gray-700 text-sm font-medium">
+                                {doc.documentType}
+                              </p>
+                              {doc.isVerified && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-green-100 text-green-700 text-[10px] font-medium">
+                                  <CheckCircle2 size={10} /> Verified
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-gray-400 text-xs truncate">
+                              {doc.fileName}
+                            </p>
+                            {doc.notes && (
+                              <p className="text-gray-500 text-xs mt-0.5">
+                                {doc.notes}
+                              </p>
+                            )}
+                          </div>
+                        </div>
                         <a
-                          key={i}
-                          href={doc}
+                          href={doc.fileUrl}
                           target="_blank"
-                          className="block text-brand-blue text-sm hover:underline"
+                          className="text-brand-blue text-xs hover:underline shrink-0 ml-2"
                         >
-                          {doc.split("/").pop()}
+                          View
                         </a>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 )}
+              </div>
 
               {/* Review Actions */}
               <div className="border-t border-gray-100 pt-4">
@@ -501,8 +573,8 @@ export default function AdminClaimsPage() {
                     <option value="hospital_verification">
                       Send for Hospital Verification
                     </option>
-                    <option value="approved">Approve Claim</option>
-                    <option value="rejected">Reject Claim</option>
+                    <option value="approved">Approve Application</option>
+                    <option value="rejected">Reject Application</option>
                     <option value="payment_processed">
                       Mark Payment Settled
                     </option>
@@ -532,7 +604,7 @@ export default function AdminClaimsPage() {
                         onChange={(e) => setRejectionReason(e.target.value)}
                         rows={2}
                         className="w-full px-3 py-2 rounded-md border border-gray-200 text-gray-700 text-sm focus:outline-none focus:border-brand-red resize-none"
-                        placeholder="Explain why this claim is being rejected..."
+                        placeholder="Explain why this application is being rejected..."
                       />
                     </div>
                   )}

@@ -11,7 +11,7 @@ import { Hospital } from '../../entities/hospital.entity';
 import { Claim } from '../../entities/claim.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { ClaimStatus } from '../../common/enums/claim-status.enum';
-
+import { ClaimDocument } from '../../entities/claim-document.entity';
 @Injectable()
 export class HospitalService {
   constructor(
@@ -21,6 +21,8 @@ export class HospitalService {
     private readonly claimRepository: Repository<Claim>,
     @InjectRepository(AuditLog)
     private readonly auditLogRepository: Repository<AuditLog>,
+    @InjectRepository(ClaimDocument)
+    private readonly claimDocumentRepository: Repository<ClaimDocument>,
   ) {}
 
   /**
@@ -130,6 +132,25 @@ export class HospitalService {
     });
 
     return updatedClaim;
+  }
+
+  async getClaimDocuments(claimId: string, hospitalId: string): Promise<any[]> {
+    const claim = await this.claimRepository.findOne({
+      where: { id: claimId, hospitalVerifiedBy: hospitalId },
+    });
+
+    if (!claim) {
+      // Check if claim is assigned to this hospital
+      const unassigned = await this.claimRepository.findOne({
+        where: { id: claimId, status: ClaimStatus.HOSPITAL_VERIFICATION },
+      });
+      if (!unassigned) throw new NotFoundException('Claim not found');
+    }
+
+    return this.claimDocumentRepository.find({
+      where: { claimId },
+      order: { createdAt: 'DESC' },
+    });
   }
 
   /**

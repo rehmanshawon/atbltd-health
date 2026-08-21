@@ -49,6 +49,25 @@ export class HospitalController {
     }
   }
 
+  @Get('claims/:id/documents')
+  async getClaimDocuments(
+    @Param('id') claimId: string,
+    @Headers('authorization') authHeader: string,
+  ) {
+    const token = authHeader?.replace('Bearer ', '');
+    if (!token) throw new UnauthorizedException('Missing token');
+
+    try {
+      const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
+      return this.hospitalService.getClaimDocuments(
+        claimId,
+        decoded.hospitalId,
+      );
+    } catch {
+      throw new UnauthorizedException('Invalid token');
+    }
+  }
+
   /**
    * PUT /api/hospitals/claims/:id/verify — Hospital verifies claim
    */

@@ -72,10 +72,16 @@ export default function NotificationBell() {
   };
 
   const loadUnreadCount = async () => {
+    if (!token) return; // Guard against undefined token
     try {
       const res = await fetch(`${API_BASE}/notifications/unread-count`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!res.ok) {
+        // Token might be expired — silently fail
+        console.error("Failed to load notifications:", res.status);
+        return;
+      }
       const data = await res.json();
       setUnreadCount(data.unreadCount || 0);
     } catch (err) {
