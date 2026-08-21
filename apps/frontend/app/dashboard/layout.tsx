@@ -158,6 +158,13 @@ export default function DashboardLayout({
             <div className="flex-1" />
             <div className="flex items-center gap-3">
               <NotificationBell />
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-50 text-xs font-medium transition-colors"
+              >
+                <LogOut size={14} />
+                <span className="hidden sm:inline">Sign out</span>
+              </button>
               <div className="hidden sm:flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[#D32F2F] flex items-center justify-center text-white text-xs font-bold">
                   {user?.fullName?.charAt(0) || "M"}

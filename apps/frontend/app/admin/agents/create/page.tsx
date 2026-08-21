@@ -6,7 +6,8 @@ import { useAuth } from "../../../lib/auth-context";
 import { ArrowLeft, UserPlus, Loader2, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 export default function CreateAgentPage() {
   const router = useRouter();
@@ -22,13 +23,17 @@ export default function CreateAgentPage() {
     password: "",
     role: "agent" as "owner" | "agent",
     commissionRate: "10",
-    parentAgentId: "",
+    parentAgentCode: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    if (form.role === "agent" && !form.parentAgentCode) {
+      setError("Please enter the Parent Owner's Agent Code");
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -41,8 +46,8 @@ export default function CreateAgentPage() {
         commissionRate: parseFloat(form.commissionRate),
       };
 
-      if (form.role === "agent" && form.parentAgentId) {
-        body.parentAgentId = form.parentAgentId;
+      if (form.role === "agent" && form.parentAgentCode) {
+        body.parentAgentCode = form.parentAgentCode;
       }
 
       const res = await fetch(`${API_BASE}/agents`, {
@@ -67,7 +72,7 @@ export default function CreateAgentPage() {
         password: "",
         role: "agent",
         commissionRate: "10",
-        parentAgentId: "",
+        parentAgentCode: "",
       });
     } catch (err: any) {
       setError(err.message);
@@ -200,14 +205,15 @@ export default function CreateAgentPage() {
           {form.role === "agent" && (
             <div>
               <label className="block text-gray-600 text-xs font-semibold mb-1.5">
-                Parent Owner (Agent ID)
+                Parent Owner (Agent Code)
               </label>
               <input
-                value={form.parentAgentId}
+                required={form.role === "agent"}
+                value={form.parentAgentCode}
                 onChange={(e) =>
-                  setForm({ ...form, parentAgentId: e.target.value })
+                  setForm({ ...form, parentAgentCode: e.target.value })
                 }
-                placeholder="Owner's agent ID"
+                placeholder="e.g., ATB-26-OW-1"
                 className="w-full px-3 py-2.5 rounded-md border border-gray-300 text-gray-900 text-sm focus:border-brand-red focus:outline-none"
               />
             </div>

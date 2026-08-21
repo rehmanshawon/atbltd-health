@@ -34,7 +34,7 @@ export class AgentService {
       password: string;
       role: UserRole.OWNER | UserRole.AGENT;
       commissionRate: number;
-      parentAgentId?: string; // Only for agents under an owner
+      parentAgentCode?: string; // Agent code for the parent (e.g., ATB-26-OW-1)
     },
     createdBy: string,
   ): Promise<{ user: User; agent: Agent }> {
@@ -44,19 +44,22 @@ export class AgentService {
     }
 
     // Agents must have a parent agent
-    if (data.role === UserRole.AGENT && !data.parentAgentId) {
+    if (data.role === UserRole.AGENT && !data.parentAgentCode) {
       throw new BadRequestException('Agent must be assigned to an Owner');
     }
 
-    // Verify parent agent exists and is active
-    if (data.parentAgentId) {
+    // Find parent agent by agent code
+    let parentAgentId: string | null = null;
+    if (data.parentAgentCode) {
       const parent = await this.agentRepository.findOne({
-        where: { id: data.parentAgentId, isActive: true },
-        relations: ['user'],
+        where: { agentCode: data.parentAgentCode, isActive: true },
       });
       if (!parent) {
-        throw new NotFoundException('Parent agent not found or inactive');
+        throw new NotFoundException(
+          `Parent agent with code ${data.parentAgentCode} not found or inactive`,
+        );
       }
+      parentAgentId = parent.id; // Store the UUID, not the code
     }
 
     // Check duplicate mobile
@@ -89,18 +92,20 @@ export class AgentService {
 
     const savedUser = await this.userRepository.save(user);
 
-    // Generate agent code
-    const agentCount = await this.agentRepository.count();
-    const agentCode = `AGT-${new Date().getFullYear()}-${String(
-      agentCount + 1,
-    ).padStart(6, '0')}`;
+    // Generate agent code (use the same format as member ID)
+    const currentYear = new Date().getFullYear().toString().slice(-2);
+    // const agentCount = await this.agentRepository.count();
+    // const agentCode = `ATB-${currentYear}-${
+    //   data.role === 'owner' ? 'OW' : 'AG'
+    // }-${agentCount + 1}`;
+    const agentCode = memberId;
 
-    // Create agent record
+    // Create agent record with parent UUID
     const agent = this.agentRepository.create({
       userId: savedUser.id,
       agentCode,
       commissionRate: data.commissionRate,
-      parentAgentId: data.parentAgentId || null,
+      parentAgentId: parentAgentId, // UUID or null
       isActive: true,
     });
 
@@ -118,6 +123,7 @@ export class AgentService {
         role: savedUser.role,
         agentCode: savedAgent.agentCode,
         commissionRate: data.commissionRate,
+        parentAgentCode: data.parentAgentCode || null,
       },
     });
 

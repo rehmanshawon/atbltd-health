@@ -36,7 +36,7 @@ export class AgentController {
       password: string;
       role: UserRole.OWNER | UserRole.AGENT;
       commissionRate: number;
-      parentAgentId?: string;
+      parentAgentCode?: string;
     },
   ) {
     return this.agentService.createAgent(body, user.sub);
