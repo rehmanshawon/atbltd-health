@@ -30,10 +30,13 @@ interface Props {
 
 export default function Hero({ onJoin, strings, statsStrings }: Props) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section
+      className="relative min-h-screen flex items-center justify-center overflow-hidden scroll-mt-[120px]"
+      id="hero"
+    >
       <HeroVideo />
 
-      <div className="relative z-10 container-xl">
+      <div className="relative z-10 container-xl pt-36 pb-24">
         <motion.div
           initial={{
             opacity: 0,
@@ -55,7 +58,7 @@ export default function Hero({ onJoin, strings, statsStrings }: Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.6 }}
             className="company-kicker"
-            style={{ marginTop: "10rem" }}
+            // style={{ marginTop: "10rem" }}
           >
             {strings.kicker}
           </motion.p>

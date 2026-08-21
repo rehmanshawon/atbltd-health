@@ -59,7 +59,20 @@ export default function Navbar({
       >
         {/* Logo */}
 
-        <Link href="/" className="flex items-center">
+        <Link
+          // href="/"
+          href="/#hero"
+          className="flex items-center"
+          // onClick={(e) => {
+          //   // If already on the homepage, scroll to top
+          //   if (window.location.pathname === "/") {
+          //     e.preventDefault();
+          //     window.scrollTo({ top: 0, behavior: "smooth" });
+          //     // Update URL to root (remove hash)
+          //     history.pushState(null, "", "/");
+          //   }
+          // }}
+        >
           <div className="relative h-15 w-[190px] sm:h-20 sm:w-[240px] lg:w-[280px] overflow-hidden">
             <Image
               src="/images/atb-logo-Photoroom.png"
@@ -67,13 +80,13 @@ export default function Navbar({
               fill
               priority
               className="
-                object-contain
-                object-left
-                scale-[1.18]
-                origin-left
-                select-none
-                pointer-events-none
-              "
+        object-contain
+        object-left
+        scale-[1.18]
+        origin-left
+        select-none
+        pointer-events-none
+      "
             />
           </div>
         </Link>
@@ -115,7 +128,11 @@ export default function Navbar({
           <Link
             href="/login"
             className="secondary-button whitespace-nowrap"
-            style={{ padding: "8px 16px", fontSize: "0.8rem" }}
+            style={{
+              marginLeft: "32px",
+              padding: "8px 16px",
+              fontSize: "0.8rem",
+            }}
           >
             {strings.login || "Login"}
           </Link>

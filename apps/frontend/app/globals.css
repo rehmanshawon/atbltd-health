@@ -31,13 +31,15 @@
 }
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 6rem;
+  /* scroll-padding-top: 8rem; */
+  background: #06152d;
 }
 
 body {
   min-height: 100vh;
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
+  margin-top: 0; /* Make sure there's no top offset */
 }
 
 /* Subtle grain texture overlay */
@@ -458,7 +460,7 @@ html[lang="bn"] body {
 
 /* Benefits */
 .benefits-section {
-  padding-top: clamp(0rem, 0vw, 0rem);
+  padding-top: clamp(3rem, 0vw, 0rem);
 }
 .benefits-list {
   display: grid;
@@ -755,7 +757,7 @@ html[lang="bn"] body {
   opacity: 0.75;
 }
 .chairman-copy h2 {
-  max-width: 17h;
+  max-width: 17ch;
   margin-top: 0.75rem;
   font-size: clamp(2.35rem, 5vw, 4.35rem);
   font-weight: 750;
@@ -857,7 +859,8 @@ html[lang="bn"] body {
 .footer-wrap {
   position: relative;
   z-index: 2;
-  padding: 1rem 0 2.5rem;
+  padding: 1rem 0 0rem;
+  scroll-margin-top: 0 0 1rem;
 }
 .footer-panel {
   border-radius: 2rem;
@@ -1615,7 +1618,7 @@ html[lang="bn"] body {
   }
   .section-space {
     padding: 5rem 0;
-    scroll-margin-top: 6.8rem;
+    scroll-margin-top: 5rem;
   }
   .how-panel {
     padding: 2.5rem 1rem;
