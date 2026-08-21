@@ -88,4 +88,14 @@ export class AuthController {
       mobileNumber: user.mobileNumber,
     };
   }
+
+  /**
+   * POST /api/auth/member-login — Login with only Member ID
+   */
+  @Public()
+  @Post('member-login')
+  @HttpCode(HttpStatus.OK)
+  async memberLogin(@Body('memberId') memberId: string) {
+    return this.authService.memberLogin(memberId);
+  }
 }

@@ -22,7 +22,8 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (mobileNumber: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
+  memberLogin: (memberId: string) => Promise<void>; // New method
   logout: () => void;
 }
 
@@ -33,23 +34,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const login = useCallback(async (mobileNumber: string, password: string) => {
+  interface AuthContextType {
+    user: User | null;
+    token: string | null;
+    isLoading: boolean;
+    isAuthenticated: boolean;
+    login: (identifier: string, password: string) => Promise<void>;
+    memberLogin: (memberId: string) => Promise<void>; // New method
+    logout: () => void;
+  }
+
+  // In AuthProvider:
+  const memberLogin = useCallback(async (memberId: string) => {
     setIsLoading(true);
     try {
-      const data = await authApi.login({ mobileNumber, password });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api"}/auth/member-login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ memberId }),
+        },
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Login failed");
 
       const loggedInUser: User = {
         memberId: data.user.memberId,
         fullName: data.user.fullName,
         role: data.user.role,
         isActive: data.user.isActive,
-        mobileNumber,
+      };
+
+      setToken(data.accessToken);
+      setUser(loggedInUser);
+      localStorage.setItem("atb_token", data.accessToken);
+      localStorage.setItem("atb_user", JSON.stringify(loggedInUser));
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const login = useCallback(async (identifier: string, password: string) => {
+    setIsLoading(true);
+    try {
+      const data = await authApi.login({ identifier, password });
+
+      const loggedInUser: User = {
+        memberId: data.user.memberId,
+        fullName: data.user.fullName,
+        role: data.user.role,
+        isActive: data.user.isActive,
+        // Remove mobileNumber — it's not in the login response
       };
 
       setToken(data.accessToken);
       setUser(loggedInUser);
 
-      // Store for refresh recovery
       localStorage.setItem("atb_token", data.accessToken);
       localStorage.setItem("atb_user", JSON.stringify(loggedInUser));
     } catch (error) {
@@ -77,6 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!token && !!user,
         login,
+        memberLogin,
         logout,
       }}
     >

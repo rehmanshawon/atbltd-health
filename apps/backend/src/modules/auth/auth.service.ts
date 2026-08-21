@@ -206,7 +206,7 @@ export class AuthService {
   }
 
   /**
-   * Step 2: Login with mobile number and password
+   * Staff login with Staff ID or Mobile Number + password
    */
   async login(loginDto: LoginDto): Promise<{
     accessToken: string;
@@ -217,27 +217,46 @@ export class AuthService {
       isActive: boolean;
     };
   }> {
-    const user = await this.userRepository.findOne({
-      where: { mobileNumber: loginDto.mobileNumber },
+    const { identifier, password } = loginDto;
+
+    // Normalize: uppercase for staff IDs
+    const normalizedIdentifier = identifier.includes('ATB')
+      ? identifier.toUpperCase()
+      : identifier;
+
+    // Try to find user by staff ID first, then by mobile number
+    let user = await this.userRepository.findOne({
+      where: { memberId: normalizedIdentifier },
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid mobile number or password');
+      // Try mobile number
+      user = await this.userRepository.findOne({
+        where: { mobileNumber: identifier },
+      });
+    }
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid Staff ID or Mobile Number');
+    }
+
+    // Only staff (admin, owner, agent) can use this login
+    if (user.role === UserRole.MEMBER) {
+      throw new UnauthorizedException(
+        'Members must login with Member ID only. Use Member Login.',
+      );
     }
 
     if (!user.isActive) {
       throw new UnauthorizedException(
-        'Your account is not yet active. Please wait for payment verification.',
+        'Your account is not active. Please contact support.',
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      loginDto.password,
-      user.password,
-    );
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid mobile number or password');
+      throw new UnauthorizedException('Invalid password');
     }
 
     // Update last login
@@ -251,10 +270,8 @@ export class AuthService {
       mobileNumber: user.mobileNumber,
     };
 
-    const accessToken = this.jwtService.sign(payload);
-
     return {
-      accessToken,
+      accessToken: this.jwtService.sign(payload),
       user: {
         memberId: user.memberId,
         fullName: user.fullName,
@@ -368,16 +385,14 @@ export class AuthService {
    * Format: ATB-{current year}-{6-digit sequential number}
    */
   private async generateMemberId(queryRunner: any): Promise<string> {
-    const currentYear = new Date().getFullYear();
+    const currentYear = new Date().getFullYear().toString().slice(-2); // "26"
 
-    // Get the highest numeric member ID for the current year
-    // Only match IDs with 6-digit numeric suffix: ATB-YYYY-NNNNNN
     const result = await queryRunner.manager
       .createQueryBuilder()
       .select('MAX(user.memberId)', 'maxId')
       .from(User, 'user')
       .where('user.memberId ~ :pattern', {
-        pattern: `^ATB-${currentYear}-[0-9]{6}$`,
+        pattern: `^ATB-${currentYear}-[0-9]{2}$`,
       })
       .getRawOne();
 
@@ -393,7 +408,7 @@ export class AuthService {
       }
     }
 
-    return `ATB-${currentYear}-${String(sequentialNumber).padStart(6, '0')}`;
+    return `ATB-${currentYear}-${String(sequentialNumber).padStart(2, '0')}`;
   }
   /**
    * Generate a secure temporary password
@@ -491,5 +506,58 @@ export class AuthService {
     // Remove sensitive data
     delete user.password;
     return user;
+  }
+
+  /**
+   * Member login with only Member ID (no password, no mobile)
+   */
+  async memberLogin(memberId: string): Promise<{
+    accessToken: string;
+    user: {
+      memberId: string;
+      fullName: string;
+      role: UserRole;
+      isActive: boolean;
+    };
+  }> {
+    // Normalize input - allow "ATB-26-01" or "26-01"
+    let normalizedId = memberId.trim().toUpperCase();
+    if (!normalizedId.startsWith('ATB-')) {
+      normalizedId = `ATB-${normalizedId}`;
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { memberId: normalizedId, role: UserRole.MEMBER },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid Member ID');
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException(
+        'Your membership is not yet active. Please contact support.',
+      );
+    }
+
+    user.lastLoginAt = new Date();
+    await this.userRepository.save(user);
+
+    const payload: JwtPayload = {
+      sub: user.id,
+      memberId: user.memberId,
+      role: user.role,
+      mobileNumber: user.mobileNumber,
+    };
+
+    return {
+      accessToken: this.jwtService.sign(payload),
+      user: {
+        memberId: user.memberId,
+        fullName: user.fullName,
+        role: user.role,
+        isActive: user.isActive,
+      },
+    };
   }
 }

@@ -3,107 +3,107 @@
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../lib/auth-context";
-import { LogIn, Loader2, ArrowLeft } from "lucide-react";
+import { LogIn, Loader2, ArrowLeft, Shield } from "lucide-react";
 import Link from "next/link";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated, user, isLoading: authLoading } = useAuth();
-  const [mobileNumber, setMobileNumber] = useState("");
+  const {
+    login,
+    memberLogin,
+    isAuthenticated,
+    user,
+    isLoading: authLoading,
+  } = useAuth();
+
+  const [isStaffLogin, setIsStaffLogin] = useState(false);
+  const [memberId, setMemberId] = useState("");
+  const [staffId, setStaffId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [shouldRedirect, setShouldRedirect] = useState(false);
 
-  // Only redirect after login completes AND auth state is confirmed
+  // Redirect if already authenticated
   useEffect(() => {
-    if (shouldRedirect && isAuthenticated && user && !authLoading) {
-      const dest =
-        user.role === "admin" || user.role === "owner"
-          ? "/admin"
-          : "/dashboard";
+    if (isAuthenticated && user) {
+      const dest = user.role === "member" ? "/dashboard" : "/admin";
       router.replace(dest);
     }
-  }, [shouldRedirect, isAuthenticated, user, authLoading, router]);
+  }, [isAuthenticated, user]);
 
-  // Handle already-authenticated users on mount
-  useEffect(() => {
-    if (!authLoading && isAuthenticated && user) {
-      const dest =
-        user.role === "admin" || user.role === "owner"
-          ? "/admin"
-          : "/dashboard";
-      router.replace(dest);
-    }
-  }, []); // Only run on mount
-
-  const handleSubmit = async (e: FormEvent) => {
+  const handleMemberLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
     try {
-      await login(mobileNumber, password);
-      setShouldRedirect(true); // Trigger redirect after state updates
+      await memberLogin(memberId);
+      router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
       setIsLoading(false);
     }
   };
 
-  // Show loading while checking auth state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex bg-[#060d1a] items-center justify-center">
-        <Loader2 size={28} className="animate-spin text-neutral-400" />
-      </div>
-    );
-  }
+  const handleStaffLogin = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    try {
+      // Use the login function from useAuth
+      // This calls /auth/login with { identifier, password }
+      await login(staffId, password);
+
+      // After login, redirect based on stored user role
+      const stored = JSON.parse(localStorage.getItem("atb_user") || "{}");
+      const isStaff = ["admin", "owner", "agent"].includes(stored.role);
+      // router.push(isStaff ? "/admin" : "/dashboard");
+      window.location.href = isStaff ? "/admin" : "/dashboard";
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex bg-gray-50">
-      {/* Left: Brand panel */}
+      {/* Left brand panel */}
       <div className="hidden lg:flex lg:w-[480px] bg-[#0A2A5E] relative overflow-hidden flex-col justify-between p-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-red-600/5" />
-        <div className="relative z-10">
-          <Link
-            href="/"
-            className="text-white font-bold text-xl tracking-tight"
-          >
-            ATB<span className="text-red-400"> Ltd</span>
+        <div>
+          <Link href="/" className="text-white font-bold text-xl">
+            ATB<span className="text-red-300"> Ltd</span>
           </Link>
-          <p className="text-gray-500 text-sm mt-1">
-            Astha Treatment Bills Ltd
-          </p>
+          <p className="text-neutral-300 text-sm mt-1">Member Portal</p>
         </div>
-        <div className="relative z-10">
-          <p className="text-neutral-300 text-lg font-medium leading-relaxed">
-            &ldquo;Medical treatment will not stop due to lack of money.&rdquo;
+        <div>
+          <p className="text-neutral-200 text-lg font-medium">
+            &ldquo;টাকার অভাবে থামবে না চিকিৎসা&rdquo;
           </p>
-          <p className="text-neutral-500 text-sm mt-3">
-            — A.K.M. Moshiur Rahman, Founder & Chairman
-          </p>
-        </div>
-        <div className="relative z-10 flex items-center gap-4 text-neutral-500 text-xs">
-          <span>© {new Date().getFullYear()} ATB Ltd</span>
-          <span>·</span>
-          <span>Secure Portal</span>
         </div>
       </div>
 
-      {/* Right: Login form */}
+      {/* Right login form */}
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="w-full max-w-[400px]">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-neutral-300 mb-12 transition-colors text-sm"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-10 text-sm"
           >
             <ArrowLeft size={15} /> Back to home
           </Link>
 
-          <div className="mb-8 ">
-            <h1 className="text-2xl font-bold text-[#0A2A5E]">Sign in</h1>
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-[#0A2A5E]">
+              {isStaffLogin ? "Staff Login" : "Member Login"}
+            </h1>
             <p className="text-gray-500 text-sm mt-1.5">
-              Enter your mobile number and password
+              {isStaffLogin
+                ? "Sign in with your Staff ID and password"
+                : "Enter your Member ID to sign in"}
             </p>
           </div>
 
@@ -113,60 +113,87 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-gray-600 text-xs font-medium mb-1.5">
-                Mobile Number
-              </label>
-              <input
-                type="tel"
-                required
-                value={mobileNumber}
-                onChange={(e) => setMobileNumber(e.target.value)}
-                placeholder="01XXXXXXXXX"
+          {!isStaffLogin ? (
+            <form onSubmit={handleMemberLogin} className="space-y-4">
+              <div>
+                <label className="block text-gray-600 text-xs font-semibold mb-1.5">
+                  Member ID
+                </label>
+                <input
+                  required
+                  value={memberId}
+                  onChange={(e) => setMemberId(e.target.value)}
+                  placeholder="e.g., ATB-26-01"
+                  className="w-full px-4 py-2.5 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-[#D32F2F] focus:outline-none focus:ring-1 focus:ring-[#D32F2F]/20 text-sm"
+                />
+              </div>
+              <button
+                type="submit"
                 disabled={isLoading}
-                className="w-full px-4 py-2.5 rounded-lg bg-white/[0.03] border border-gray-500/[0.08]] text-gray-900 placeholder-neutral-500 focus:border-white/25 focus:outline-none focus:ring-0 transition-colors text-sm disabled:opacity-40"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-600 text-xs font-medium mb-1.5">
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md bg-[#D32F2F] text-white text-sm font-medium hover:bg-[#b71c1c] transition-colors disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <LogIn size={16} />
+                )}
+                {isLoading ? "Signing in..." : "Sign in"}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleStaffLogin} className="space-y-4">
+              <div>
+                <label className="block text-gray-600 text-xs font-semibold mb-1.5">
+                  Staff ID
+                </label>
+                <input
+                  required
+                  value={staffId}
+                  onChange={(e) => setStaffId(e.target.value)}
+                  placeholder="e.g., ATB-26-SA-1"
+                  className="w-full px-4 py-2.5 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-[#D32F2F] focus:outline-none focus:ring-1 focus:ring-[#D32F2F]/20 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-600 text-xs font-semibold mb-1.5">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  className="w-full px-4 py-2.5 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-[#D32F2F] focus:outline-none focus:ring-1 focus:ring-[#D32F2F]/20 text-sm"
+                />
+              </div>
+              <button
+                type="submit"
                 disabled={isLoading}
-                className="w-full px-4 py-2.5 rounded-lg bg-white/[0.03] border border-gray-500/[0.08]] text-gray-900 placeholder-neutral-500 focus:border-white/25 focus:outline-none focus:ring-0 transition-colors text-sm disabled:opacity-40"
-              />
-            </div>
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md bg-[#0A2A5E] text-white text-sm font-medium hover:bg-[#0a2a5e]/90 transition-colors disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Shield size={16} />
+                )}
+                {isLoading ? "Signing in..." : "Staff Sign in"}
+              </button>
+            </form>
+          )}
 
+          {/* Switcher */}
+          <div className="text-center mt-6">
             <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-brand-blue hover:bg-brand-blue/90 text-white border border-gray-500/[0.08]]text-black font-medium text-sm  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => {
+                setIsStaffLogin(!isStaffLogin);
+                setError("");
+              }}
+              className="text-sm text-gray-500 hover:text-[#D32F2F] transition-colors"
             >
-              {isLoading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <LogIn size={16} />
-              )}
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isStaffLogin ? "← Member Login" : "Staff Login →"}
             </button>
-          </form>
-
-          <p className="text-center text-gray-400 text-xs mt-6">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/"
-              className="text-white hover:text-neutral-300 transition-colors underline underline-offset-4"
-            >
-              Become a member
-            </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>

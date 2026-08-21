@@ -39,30 +39,50 @@ async function bootstrap() {
     // ============================================================
     // 1. Create Super Admin
     // ============================================================
-    const adminPassword = await bcrypt.hash('Admin@ATB2026', 12);
+    const superAdminPassword = await bcrypt.hash('Admin@ATB2026', 12);
 
-    const admin = queryRunner.manager.create(User, {
-      memberId: 'ATB-2026-000000',
+    const superAdmin = queryRunner.manager.create(User, {
+      memberId: 'ATB-26-SA-1',
       fullName: 'System Administrator',
       mobileNumber: '01700000000',
       email: 'admin@atbltd.health',
-      password: adminPassword,
+      password: superAdminPassword,
       role: UserRole.ADMIN,
       isActive: true,
       isKycVerified: true,
       permanentAddress: 'ATB Headquarters, Uttara, Dhaka',
     });
 
-    const savedAdmin = await queryRunner.manager.save(admin);
-    console.log(`✅ Admin created: ${savedAdmin.memberId}`);
+    const savedSuperAdmin = await queryRunner.manager.save(superAdmin);
+    console.log(`✅ Super Admin created: ${savedSuperAdmin.memberId}`);
 
     // ============================================================
-    // 2. Create an Owner
+    // 2. Create Second Admin
+    // ============================================================
+    const secondAdminPassword = await bcrypt.hash('Admin2@ATB2026', 12);
+
+    const secondAdmin = queryRunner.manager.create(User, {
+      memberId: 'ATB-26-A-1',
+      fullName: 'Finance Manager',
+      mobileNumber: '01700000001',
+      email: 'finance@atbltd.health',
+      password: secondAdminPassword,
+      role: UserRole.ADMIN,
+      isActive: true,
+      isKycVerified: true,
+      permanentAddress: 'ATB Headquarters, Uttara, Dhaka',
+    });
+
+    const savedSecondAdmin = await queryRunner.manager.save(secondAdmin);
+    console.log(`✅ Second Admin created: ${savedSecondAdmin.memberId}`);
+
+    // ============================================================
+    // 3. Create an Owner
     // ============================================================
     const ownerPassword = await bcrypt.hash('Owner@ATB2026', 12);
 
     const owner = queryRunner.manager.create(User, {
-      memberId: 'ATB-2026-000001',
+      memberId: 'ATB-26-OW-1',
       fullName: 'A.K.M. Moshiur Rahman',
       mobileNumber: '01711993597',
       email: 'chairman@atbltd.health',
@@ -80,7 +100,7 @@ async function bootstrap() {
     // Create Agent record for the Owner (so they can manage agent network)
     const ownerAgent = queryRunner.manager.create(Agent, {
       userId: savedOwner.id,
-      agentCode: 'AGT-2026-000001',
+      agentCode: 'ATB-26-OW-1',
       commissionRate: 15.0, // 15% - direct acquisition rate per agenda
       isActive: true,
     });
@@ -89,12 +109,12 @@ async function bootstrap() {
     console.log(`✅ Owner agent record created: ${ownerAgent.agentCode}`);
 
     // ============================================================
-    // 3. Create a Sample Agent
+    // 4. Create a Sample Agent
     // ============================================================
     const agentPassword = await bcrypt.hash('Agent@ATB2026', 12);
 
     const agentUser = queryRunner.manager.create(User, {
-      memberId: 'ATB-2026-000002',
+      memberId: 'ATB-26-AG-1',
       fullName: 'Sample Agent',
       mobileNumber: '01710000001',
       email: 'agent@atbltd.health',
@@ -110,9 +130,9 @@ async function bootstrap() {
     // Create Agent record
     const agent = queryRunner.manager.create(Agent, {
       userId: savedAgentUser.id,
-      agentCode: 'AGT-2026-000002',
+      agentCode: 'ATB-26-AG-1',
       commissionRate: 10.0, // 10% - standard agent rate per agenda
-      parentAgentId: null, // Set via API when hierarchy is established
+      parentAgentId: null,
       isActive: true,
     });
 
@@ -120,12 +140,12 @@ async function bootstrap() {
     console.log(`✅ Agent created: ${agent.agentCode}`);
 
     // ============================================================
-    // 4. Create a Sample Member (fully activated)
+    // 5. Create a Sample Member (fully activated)
     // ============================================================
     const memberPassword = await bcrypt.hash('Member@ATB2026', 12);
 
     const member = queryRunner.manager.create(User, {
-      memberId: 'ATB-2026-000003',
+      memberId: 'ATB-26-01',
       fullName: 'Sample Member',
       fatherName: 'Sample Father',
       motherName: 'Sample Mother',
@@ -140,7 +160,7 @@ async function bootstrap() {
       permanentAddress: '123 Sample Street, Dhaka',
       currentAddress: '123 Sample Street, Dhaka',
       emergencyContact: '01710000003',
-      referralId: 'AGT-2026-000002', // Referred by the sample agent
+      referralId: 'ATB-26-AG-1', // Referred by the sample agent
     });
 
     const savedMember = await queryRunner.manager.save(member);
@@ -153,12 +173,10 @@ async function bootstrap() {
       isPaymentVerified: true,
       paymentMethod: 'bkash',
       transactionId: 'TXNSAMPLE001',
-      paymentVerifiedBy: savedAdmin.id,
+      paymentVerifiedBy: savedSuperAdmin.id,
       paymentVerifiedAt: new Date(),
-      membershipStartDate: new Date(),
-      membershipEndDate: new Date(
-        new Date().setFullYear(new Date().getFullYear() + 1),
-      ),
+      membershipStartDate: new Date('2026-06-01'),
+      membershipEndDate: new Date('2027-06-01'),
       isActive: true,
       remainingBenefit: 12000.0,
       renewalFee: 850.0,
@@ -175,9 +193,9 @@ async function bootstrap() {
       method: 'bkash',
       transactionId: 'TXNSAMPLE001',
       senderAccount: '01710000002',
-      recipientAccount: '01XXXXXXXXX', // ATB Official bKash
+      recipientAccount: '01721719611', // ATB Official bKash
       status: PaymentStatus.VERIFIED,
-      verifiedBy: savedAdmin.id,
+      verifiedBy: savedSuperAdmin.id,
       verifiedAt: new Date(),
     });
 
@@ -190,171 +208,135 @@ async function bootstrap() {
     await queryRunner.manager.save(agent);
 
     // ============================================================
-    // 5. Seed Surgeries (Covered Diseases List)
+    // 6. Seed Surgeries (Covered Diseases List)
     // ============================================================
     const surgeries = [
       {
-        nameEn: 'High Fever / Dengue',
-        nameBn: 'উচ্চ জ্বর / ডেঙ্গু',
+        nameEn: 'Dengue Fever',
+        nameBn: 'ডেঙ্গু জ্বর',
+        category: 'General Medicine',
+      },
+      {
+        nameEn: 'Chikungunya',
+        nameBn: 'চিকুনগুনিয়া',
         category: 'General Medicine',
       },
       { nameEn: 'Pneumonia', nameBn: 'নিউমোনিয়া', category: 'Respiratory' },
       { nameEn: 'Typhoid', nameBn: 'টাইফয়েড', category: 'General Medicine' },
       {
-        nameEn: 'Severe Diarrhea / Cholera',
-        nameBn: 'গুরুতর ডায়রিয়া / কলেরা',
+        nameEn: 'Severe Diarrhea',
+        nameBn: 'ডায়রিয়া (গুরুতর)',
         category: 'General Medicine',
       },
-      { nameEn: 'Meningitis', nameBn: 'মেনিনজাইটিস', category: 'Neurology' },
-      { nameEn: 'Tonsillitis', nameBn: 'টনসিলাইটিস', category: 'ENT' },
+      { nameEn: 'Cholera', nameBn: 'কলেরা', category: 'General Medicine' },
       {
-        nameEn: 'Kidney Conditions & Kidney Stone',
-        nameBn: 'কিডনি-সংক্রান্ত অবস্থা ও কিডনি স্টোন',
+        nameEn: 'Malaria',
+        nameBn: 'ম্যালেরিয়া',
+        category: 'General Medicine',
+      },
+      { nameEn: 'Jaundice', nameBn: 'জন্ডিস', category: 'General Medicine' },
+      {
+        nameEn: 'Kidney-related Complications',
+        nameBn: 'কিডনি সংক্রান্ত জটিলতা',
         category: 'Urology',
       },
       {
-        nameEn: 'Cancer / Tumor Treatment',
-        nameBn: 'ক্যান্সার / টিউমার চিকিৎসা',
-        category: 'Oncology',
+        nameEn: 'Liver Disease',
+        nameBn: 'লিভারের রোগ',
+        category: 'Gastroenterology',
       },
       {
-        nameEn: 'Asthma Attack',
-        nameBn: 'অ্যাজমা অ্যাটাক',
+        nameEn: 'Respiratory Disease',
+        nameBn: 'শ্বাসকষ্টজনিত রোগ',
         category: 'Respiratory',
+      },
+      {
+        nameEn: 'Asthma Complications',
+        nameBn: 'হাঁপানি (Asthma) জটিলতা',
+        category: 'Respiratory',
+      },
+      {
+        nameEn: 'Diabetes-related Complications',
+        nameBn: 'ডায়াবেটিসজনিত জটিলতা',
+        category: 'Endocrinology',
+      },
+      {
+        nameEn: 'High Blood Pressure Complications',
+        nameBn: 'উচ্চ রক্তচাপজনিত জটিলতা',
+        category: 'Cardiology',
       },
       { nameEn: 'Stroke', nameBn: 'স্ট্রোক', category: 'Neurology' },
       {
-        nameEn: 'High Blood Pressure',
-        nameBn: 'উচ্চ রক্তচাপ',
+        nameEn: 'Heart Attack',
+        nameBn: 'হার্ট অ্যাটাক',
         category: 'Cardiology',
       },
       {
-        nameEn: 'Accident / ICU Admission',
-        nameBn: 'দুর্ঘটনা / ICU ভর্তি',
+        nameEn: 'ICU Admission',
+        nameBn: 'ICU-তে ভর্তি রোগী',
         category: 'Emergency',
       },
-      { nameEn: 'Burn Injuries', nameBn: 'পোড়া রোগী', category: 'Emergency' },
       {
-        nameEn: 'Snakebite / Poisoning',
-        nameBn: 'সাপ/বিষাক্ত প্রাণী দংশন',
+        nameEn: 'Road Accident Injuries',
+        nameBn: 'সড়ক দুর্ঘটনাজনিত আহত',
         category: 'Emergency',
+      },
+      {
+        nameEn: 'Burn Injuries',
+        nameBn: 'আগুনে দগ্ধ রোগী',
+        category: 'Emergency',
+      },
+      {
+        nameEn: 'Snake Bite & Rabies',
+        nameBn: 'সাপে কাটা ও জলাতঙ্ক',
+        category: 'Emergency',
+      },
+      {
+        nameEn: 'Uterine Tumor Removal',
+        nameBn: 'জরায়ুর টিউমার অপসারণ',
+        category: 'Gynecology',
       },
       {
         nameEn: 'Fissure & Fistula Surgery',
-        nameBn: 'ফিসার ও ফিস্টুলা সার্জারি',
+        nameBn: 'ফিশার ও ফিস্টুলা সার্জারি',
         category: 'General Surgery',
       },
       {
-        nameEn: 'Orthopedic & Trauma',
-        nameBn: 'অর্থোপেডিক ও ট্রমা',
+        nameEn: 'Orthopedic & Trauma Surgery',
+        nameBn: 'অর্থোপেডিক ও ট্রমা সার্জারি (হাড় ও জোড়ার চিকিৎসা)',
         category: 'Orthopedic',
       },
       {
-        nameEn: 'C-Section',
-        nameBn: 'সিজারিয়ান সেকশন',
-        category: 'Obstetrics',
+        nameEn: 'Various Accident-related Surgeries',
+        nameBn: 'দুর্ঘটনাজনিত বিভিন্ন অস্ত্রোপচার বা অপারেশন',
+        category: 'Emergency',
+      },
+      { nameEn: 'Head Injury', nameBn: 'মাথায় আঘাত', category: 'Emergency' },
+      { nameEn: 'Eye Injury', nameBn: 'চোখে আঘাত', category: 'Ophthalmology' },
+      {
+        nameEn: 'Laceration / Cut Wound',
+        nameBn: 'কেটে যাওয়া',
+        category: 'Emergency',
       },
       {
-        nameEn: 'Appendectomy',
-        nameBn: 'অ্যাপেন্ডেকটমি',
-        category: 'General Surgery',
+        nameEn: 'Road Accident',
+        nameBn: 'রোড এক্সিডেন্ট',
+        category: 'Emergency',
       },
       {
-        nameEn: 'Gallbladder Surgery (Cholecystectomy)',
-        nameBn: 'গলব্লাডার সার্জারি',
-        category: 'General Surgery',
+        nameEn: 'Electric Shock',
+        nameBn: 'বিদ্যুৎ স্পৃষ্ট',
+        category: 'Emergency',
       },
       {
-        nameEn: 'Hernia Repair',
-        nameBn: 'হার্নিয়া রিপেয়ার',
-        category: 'General Surgery',
+        nameEn: 'Fall from Height',
+        nameBn: 'ছাদ বা উঁচু স্থান থেকে পড়ে আঘাত',
+        category: 'Emergency',
       },
       {
-        nameEn: 'Hysterectomy',
-        nameBn: 'হিস্টারেকটমি',
-        category: 'Gynecology',
-      },
-      { nameEn: 'Myomectomy', nameBn: 'মায়োমেকটমি', category: 'Gynecology' },
-      {
-        nameEn: 'Kidney Stone Removal',
-        nameBn: 'কিডনি স্টোন অপসারণ',
-        category: 'Urology',
-      },
-      {
-        nameEn: 'Prostate Surgery (TURP)',
-        nameBn: 'প্রোস্টেট সার্জারি',
-        category: 'Urology',
-      },
-      {
-        nameEn: 'Hemorrhoid / Piles Surgery',
-        nameBn: 'হেমোরয়েড / পাইলস সার্জারি',
-        category: 'General Surgery',
-      },
-      {
-        nameEn: 'Cataract Surgery (Phaco)',
-        nameBn: 'ক্যাটারাক্ট সার্জারি',
-        category: 'Ophthalmology',
-      },
-      { nameEn: 'Tonsillectomy', nameBn: 'টনসিলেক্টমি', category: 'ENT' },
-      {
-        nameEn: 'Septoplasty / Rhinoplasty',
-        nameBn: 'সেপ্টোপ্লাস্টি / রাইনোপ্লাস্টি',
-        category: 'ENT',
-      },
-      {
-        nameEn: 'Tympanoplasty',
-        nameBn: 'টাইমপ্যানোপ্লাস্টি',
-        category: 'ENT',
-      },
-      {
-        nameEn: 'Bone Fracture Fixation',
-        nameBn: 'বোন ফ্র্যাকচার ফিক্সেশন',
-        category: 'Orthopedic',
-      },
-      {
-        nameEn: 'Knee Replacement',
-        nameBn: 'হাঁটু রিপ্লেসমেন্ট',
-        category: 'Orthopedic',
-      },
-      {
-        nameEn: 'Hip Replacement',
-        nameBn: 'হিপ রিপ্লেসমেন্ট',
-        category: 'Orthopedic',
-      },
-      {
-        nameEn: 'Brain Tumor Surgery (Craniotomy)',
-        nameBn: 'ব্রেইন টিউমার সার্জারি',
-        category: 'Neurosurgery',
-      },
-      {
-        nameEn: 'Spinal Surgery (Laminectomy)',
-        nameBn: 'স্পাইনাল সার্জারি',
-        category: 'Neurosurgery',
-      },
-      {
-        nameEn: 'CABG (Heart Bypass)',
-        nameBn: 'করোনারি আর্টারি বাইপাস',
-        category: 'Cardiac Surgery',
-      },
-      {
-        nameEn: 'Angioplasty / Stenting',
-        nameBn: 'অ্যাঞ্জিওপ্লাস্টি / স্টেন্টিং',
-        category: 'Cardiology',
-      },
-      {
-        nameEn: 'Pacemaker Implantation',
-        nameBn: 'পেসমেকার ইমপ্ল্যান্টেশন',
-        category: 'Cardiology',
-      },
-      {
-        nameEn: 'Thyroid Surgery',
-        nameBn: 'থাইরয়েড সার্জারি',
-        category: 'Endocrine Surgery',
-      },
-      {
-        nameEn: 'Gastrectomy / Intestinal Surgery',
-        nameBn: 'গ্যাস্ট্রেকটমি / ইন্টেস্টাইনাল সার্জারি',
-        category: 'General Surgery',
+        nameEn: 'Respiratory Infection Surgery',
+        nameBn: 'শ্বাস-প্রশ্বাস সমস্যা (শুধু ইনফেকশন অস্ত্রোপচার)',
+        category: 'Respiratory',
       },
     ];
 
@@ -375,7 +357,7 @@ async function bootstrap() {
     console.log(`✅ ${surgeries.length} surgeries seeded`);
 
     // ============================================================
-    // 6. Seed Hospitals
+    // 7. Seed Hospitals
     // ============================================================
     const hospitals = [
       {
@@ -481,25 +463,30 @@ async function bootstrap() {
       await queryRunner.manager.save(hospital);
     }
     console.log(`✅ ${hospitals.length} hospitals seeded`);
+
     await queryRunner.commitTransaction();
 
     console.log('\n========================================');
     console.log('🌱 SEED COMPLETE');
     console.log('========================================');
     console.log('\n📋 Login Credentials:\n');
-    console.log('┌──────────┬──────────────────┬─────────────────┐');
-    console.log('│ Role     │ Mobile           │ Password        │');
-    console.log('├──────────┼──────────────────┼─────────────────┤');
-    console.log('│ Admin    │ 01700000000      │ Admin@ATB2026   │');
-    console.log('│ Owner    │ 01711993597      │ Owner@ATB2026   │');
-    console.log('│ Agent    │ 01710000001      │ Agent@ATB2026   │');
-    console.log('│ Member   │ 01710000002      │ Member@ATB2026  │');
-    console.log('└──────────┴──────────────────┴─────────────────┘');
+    console.log('┌──────────────┬──────────────────┬─────────────────┐');
+    console.log('│ Role         │ Staff ID         │ Password        │');
+    console.log('├──────────────┼──────────────────┼─────────────────┤');
+    console.log('│ Super Admin  │ ATB-26-SA-1      │ Admin@ATB2026   │');
+    console.log('│ Admin        │ ATB-26-A-1       │ Admin2@ATB2026  │');
+    console.log('│ Owner        │ ATB-26-OW-1      │ Owner@ATB2026   │');
+    console.log('│ Agent        │ ATB-26-AG-1      │ Agent@ATB2026   │');
+    console.log('├──────────────┼──────────────────┼─────────────────┤');
+    console.log('│ Member       │ ATB-26-01        │ No password     │');
+    console.log('└──────────────┴──────────────────┴─────────────────┘');
     console.log('\n⚠️  CHANGE ALL PASSWORDS IN PRODUCTION!');
     console.log('========================================\n');
   } catch (error) {
     await queryRunner.rollbackTransaction();
-    console.error('❌ Seed failed:', error.message);
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
+    console.error('❌ Seed failed:', errorMessage);
     throw error;
   } finally {
     await queryRunner.release();
@@ -509,7 +496,9 @@ async function bootstrap() {
 
 bootstrap()
   .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
+  .catch((error: unknown) => {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
+    console.error(errorMessage);
     process.exit(1);
   });

@@ -183,11 +183,26 @@ export class AgentService {
   }
 
   private async generateAgentMemberId(role: string): Promise<string> {
-    const currentYear = new Date().getFullYear();
-    const prefix = role === 'owner' ? 'OWN' : 'AGT';
+    const currentYear = new Date().getFullYear().toString().slice(-2);
+
+    let prefix = '';
+    switch (role) {
+      case 'admin':
+        prefix = 'SA'; // Super Admin
+        break;
+      case 'owner':
+        prefix = 'OW';
+        break;
+      case 'agent':
+        prefix = 'AG';
+        break;
+      default:
+        prefix = 'A'; // Regular Admin
+    }
+
     const count = await this.userRepository.count({
       where: { role: role as UserRole },
     });
-    return `${prefix}-${currentYear}-${String(count + 1).padStart(6, '0')}`;
+    return `ATB-${currentYear}-${prefix}-${count + 1}`;
   }
 }

@@ -1,4 +1,5 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 interface ApiOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -42,7 +43,7 @@ export async function apiCall<T = any>(
 export const authApi = {
   register: (data: any) =>
     apiCall("/auth/register", { method: "POST", body: data, isPublic: true }),
-  login: (data: { mobileNumber: string; password: string }) =>
+  login: (data: { identifier: string; password: string }) =>
     apiCall("/auth/login", { method: "POST", body: data, isPublic: true }),
   sendOtp: (mobileNumber: string) =>
     apiCall("/auth/send-otp", {

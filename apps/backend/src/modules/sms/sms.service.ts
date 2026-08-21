@@ -69,9 +69,9 @@ export class SmsService {
 
   async sendMembershipActivationSms(
     to: string,
-    data: { fullName: string; memberId: string; temporaryPassword: string },
+    data: { fullName: string; memberId: string; temporaryPassword?: string },
   ): Promise<boolean> {
-    const message = `(ATB Ltd) Welcome ${data.fullName}! Member ID: ${data.memberId}. Temp Password: ${data.temporaryPassword}. Login: https://atbltd.health/login`;
+    const message = `ধন্যবাদ, আপনার ৳১০০০ প্রদানের মাধ্যমে ATB LTD মেম্বারশিপ নিবন্ধন সম্পন্ন হয়েছে। আপনার ID NO. ${data.memberId}`;
     return this.sendSms(to, message);
   }
 
