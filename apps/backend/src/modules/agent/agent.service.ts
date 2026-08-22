@@ -194,7 +194,7 @@ export class AgentService {
     let prefix = '';
     switch (role) {
       case 'admin':
-        prefix = 'SA'; // Super Admin
+        prefix = 'AD'; // Regular Admin
         break;
       case 'owner':
         prefix = 'OW';
@@ -203,7 +203,7 @@ export class AgentService {
         prefix = 'AG';
         break;
       default:
-        prefix = 'A'; // Regular Admin
+        prefix = 'AD'; // Regular Admin
     }
 
     const count = await this.userRepository.count({

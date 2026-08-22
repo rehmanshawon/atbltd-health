@@ -62,7 +62,7 @@ async function bootstrap() {
     const secondAdminPassword = await bcrypt.hash('Admin2@ATB2026', 12);
 
     const secondAdmin = queryRunner.manager.create(User, {
-      memberId: 'ATB-26-A-1',
+      memberId: 'ATB-26-AD-1',
       fullName: 'Finance Manager',
       mobileNumber: '01700000001',
       email: 'finance@atbltd.health',
@@ -145,7 +145,7 @@ async function bootstrap() {
     const memberPassword = await bcrypt.hash('Member@ATB2026', 12);
 
     const member = queryRunner.manager.create(User, {
-      memberId: 'ATB-26-01',
+      memberId: 'ATB-26-ME-01',
       fullName: 'Sample Member',
       fatherName: 'Sample Father',
       motherName: 'Sample Mother',
@@ -474,11 +474,11 @@ async function bootstrap() {
     console.log('│ Role         │ Staff ID         │ Password        │');
     console.log('├──────────────┼──────────────────┼─────────────────┤');
     console.log('│ Super Admin  │ ATB-26-SA-1      │ Admin@ATB2026   │');
-    console.log('│ Admin        │ ATB-26-A-1       │ Admin2@ATB2026  │');
+    console.log('│ Admin        │ ATB-26-AD-1       │ Admin2@ATB2026  │');
     console.log('│ Owner        │ ATB-26-OW-1      │ Owner@ATB2026   │');
     console.log('│ Agent        │ ATB-26-AG-1      │ Agent@ATB2026   │');
     console.log('├──────────────┼──────────────────┼─────────────────┤');
-    console.log('│ Member       │ ATB-26-01        │ No password     │');
+    console.log('│ Member       │ ATB-26-ME-01        │ No password     │');
     console.log('└──────────────┴──────────────────┴─────────────────┘');
     console.log('\n⚠️  CHANGE ALL PASSWORDS IN PRODUCTION!');
     console.log('========================================\n');

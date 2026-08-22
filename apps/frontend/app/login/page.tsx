@@ -133,7 +133,7 @@ export default function LoginPage() {
                   required
                   value={memberId}
                   onChange={(e) => setMemberId(e.target.value)}
-                  placeholder="e.g., ATB-26-01"
+                  placeholder="e.g., ATB-26-ME-01"
                   className="w-full px-4 py-2.5 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-[#D32F2F] focus:outline-none focus:ring-1 focus:ring-[#D32F2F]/20 text-sm"
                 />
               </div>

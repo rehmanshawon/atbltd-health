@@ -419,7 +419,7 @@ export class AuthService {
       }
     }
 
-    return `ATB-${currentYear}-${String(sequentialNumber).padStart(2, '0')}`;
+    return `ATB-${currentYear}-ME-${String(sequentialNumber).padStart(2, '0')}`;
   }
   /**
    * Generate a secure temporary password
