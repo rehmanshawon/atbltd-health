@@ -63,7 +63,7 @@ export default function Hero({ onJoin, strings, statsStrings }: Props) {
             {strings.kicker}
           </motion.p>
 
-          <motion.div
+          {/* <motion.div
             initial={{
               opacity: 0,
               y: 15,
@@ -90,7 +90,7 @@ export default function Hero({ onJoin, strings, statsStrings }: Props) {
             <span className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
 
             <span className="text-white/80">{strings.trustedMembers}</span>
-          </motion.div>
+          </motion.div> */}
 
           {/* Heading */}
 

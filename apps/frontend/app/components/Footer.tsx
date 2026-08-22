@@ -39,10 +39,10 @@ export default function Footer({ strings }: FooterProps) {
           <div className="footer-main">
             <div className="footer-brand">
               <Image
-                src="/images/atb-logo-Photoroom.png"
+                src="/images/logo.png"
                 alt="ATB Ltd"
-                width={270}
-                height={76}
+                width={370}
+                height={215}
                 className="object-contain object-left"
               />
               <p>{strings.intro}</p>

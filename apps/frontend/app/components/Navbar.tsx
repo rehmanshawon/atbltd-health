@@ -75,14 +75,14 @@ export default function Navbar({
         >
           <div className="relative h-15 w-[190px] sm:h-20 sm:w-[240px] lg:w-[280px] overflow-hidden">
             <Image
-              src="/images/atb-logo-Photoroom.png"
+              src="/images/logo.png"
               alt="ATB"
               fill
               priority
               className="
         object-contain
         object-left
-        scale-[1.18]
+        
         origin-left
         select-none
         pointer-events-none

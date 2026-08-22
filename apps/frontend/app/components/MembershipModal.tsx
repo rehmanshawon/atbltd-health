@@ -303,7 +303,7 @@ export default function MembershipModal({
 
             {step !== "complete" && (
               <>
-                <p className="section-eyebrow">ATB membership</p>
+                <p className="section-eyebrow">ATB Ltd membership</p>
                 <h2 id="membership-title">{strings.title}</h2>
                 <div
                   className="enrollment-steps"
