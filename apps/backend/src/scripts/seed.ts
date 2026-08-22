@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { DataSource } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { User } from '../entities/user.entity';
 import { UserRole } from '../common/enums/user-role.enum';
 import { Membership } from '../entities/membership.entity';
