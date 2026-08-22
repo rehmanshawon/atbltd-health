@@ -38,13 +38,28 @@ export default function Footer({ strings }: FooterProps) {
         >
           <div className="footer-main">
             <div className="footer-brand">
-              <Image
+              {/* <Image
                 src="/images/logo.png"
                 alt="ATB Ltd"
                 width={370}
                 height={215}
                 className="object-contain object-left"
-              />
+              /> */}
+              <div>
+                <Link href="/" className="block w-fit">
+                  <div className="bg-white rounded-lg p-2 shadow-lg">
+                    <div className="relative h-10 w-[150px] sm:h-20 sm:w-[150px] overflow-hidden">
+                      <Image
+                        src="/images/logo.png"
+                        alt="ATB"
+                        fill
+                        priority
+                        className="object-contain object-left select-none pointer-events-none"
+                      />
+                    </div>
+                  </div>
+                </Link>
+              </div>
               <p>{strings.intro}</p>
               <div className="socials">
                 <motion.a

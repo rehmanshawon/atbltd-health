@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../lib/auth-context";
 import { LogIn, Loader2, ArrowLeft, Shield, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-
+import Image from "next/image";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function LoginPage() {
@@ -84,10 +84,20 @@ export default function LoginPage() {
       {/* Left brand panel */}
       <div className="hidden lg:flex lg:w-[480px] bg-[#0A2A5E] relative overflow-hidden flex-col justify-between p-10">
         <div>
-          <Link href="/" className="text-white font-bold text-xl">
-            ATB<span className="text-red-300"> Ltd</span>
+          <Link href="/" className="block w-fit">
+            <div className="bg-white rounded-lg p-2 shadow-lg">
+              <div className="relative h-10 w-[150px] sm:h-15 sm:w-[100px] overflow-hidden">
+                <Image
+                  src="/images/logo.png"
+                  alt="ATB"
+                  fill
+                  priority
+                  className="object-contain object-left select-none pointer-events-none"
+                />
+              </div>
+            </div>
           </Link>
-          <p className="text-neutral-300 text-sm mt-1">Member Portal</p>
+          <p className="text-neutral-300 text-sm mt-3">Member Portal</p>
         </div>
         <div>
           <p className="text-neutral-200 text-lg font-medium">
