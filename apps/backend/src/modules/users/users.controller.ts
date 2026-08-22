@@ -47,13 +47,19 @@ export class UsersController {
    * Admin/Owner - Get all users with pagination
    */
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.AGENT)
   async findAll(
+    @CurrentUser() user: JwtPayload,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
     @Query('role') role?: UserRole,
   ) {
-    return this.usersService.findAll(page, limit, role);
+    if (user.role === UserRole.ADMIN) {
+      return this.usersService.findAll(page, limit, role);
+    }
+
+    // Owner/Agent: only members they referred
+    return this.usersService.findByReferrer(user.sub, page, limit);
   }
 
   /**

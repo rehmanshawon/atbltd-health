@@ -331,4 +331,53 @@ export class AdminService {
       order: { createdAt: 'ASC' },
     });
   }
+
+  /**
+   * Get dashboard stats for Owner/Agent (their own data only)
+   */
+  async getAgentDashboardStats(userId: string): Promise<any> {
+    // Find the agent record for this user
+    const agent = await this.agentRepository.findOne({
+      where: { userId, isActive: true },
+    });
+
+    if (!agent) {
+      return {
+        members: { total: 0, active: 0 },
+        commissions: { totalEarned: 0, totalPaid: 0 },
+      };
+    }
+
+    // Count members referred by this agent
+    const totalMembers = await this.userRepository.count({
+      where: { referralId: agent.agentCode, role: UserRole.MEMBER },
+    });
+
+    const activeMembers = await this.userRepository.count({
+      where: {
+        referralId: agent.agentCode,
+        role: UserRole.MEMBER,
+        isActive: true,
+      },
+    });
+
+    // Count sub-agents (for owners)
+    const subAgents = await this.agentRepository.count({
+      where: { parentAgentId: agent.id },
+    });
+
+    return {
+      members: {
+        total: totalMembers,
+        active: activeMembers,
+      },
+      commissions: {
+        totalEarned: Number(agent.totalCommissionEarned),
+        totalPaid: Number(agent.totalCommissionPaid),
+      },
+      agents: {
+        total: subAgents,
+      },
+    };
+  }
 }

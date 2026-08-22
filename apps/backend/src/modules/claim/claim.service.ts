@@ -107,18 +107,6 @@ export class ClaimService {
       savedClaim.id,
     );
 
-    // Get member for SMS
-    const memberUser = await this.userRepository.findOne({
-      where: { id: userId },
-    });
-
-    if (memberUser?.mobileNumber) {
-      await this.smsService.sendClaimStatusSms(
-        memberUser.mobileNumber,
-        savedClaim.id,
-        'submitted',
-      );
-    }
     await this.auditLogRepository.save({
       action: 'CLAIM_SUBMITTED',
       entity: 'Claim',

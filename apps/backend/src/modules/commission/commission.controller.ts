@@ -7,6 +7,8 @@ import {
   Query,
   Body,
   UseGuards,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { CommissionService } from './commission.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -16,21 +18,46 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { CommissionStatus } from '../../entities/commission.entity';
 import { JwtPayload } from '../auth/strategies/jwt.strategy';
-
+import { AgentService } from '../agent/agent.service';
 @Controller('commissions')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN, UserRole.OWNER)
 export class CommissionController {
-  constructor(private readonly commissionService: CommissionService) {}
+  constructor(
+    private readonly commissionService: CommissionService,
+    private readonly agentService: AgentService,
+  ) {}
 
   @Get()
+  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.AGENT)
   async findAll(
+    @CurrentUser() user: JwtPayload,
     @Query('agentId') agentId?: string,
     @Query('status') status?: CommissionStatus,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
-    return this.commissionService.findAll({ agentId, status, page, limit });
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 20;
+
+    if (user.role === UserRole.ADMIN) {
+      return this.commissionService.findAll({
+        agentId,
+        status,
+        page: pageNum,
+        limit: limitNum,
+      });
+    }
+
+    const agent = await this.agentService.getAgentByUserId(user.sub);
+    if (!agent)
+      return { commissions: [], total: 0, page: pageNum, totalPages: 1 };
+    return this.commissionService.findAll({
+      agentId: agent.id,
+      status,
+      page: pageNum,
+      limit: limitNum,
+    });
   }
 
   @Get('agent/:agentId/summary')

@@ -21,7 +21,7 @@ import { FraudService } from './fraud.service';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.OWNER)
+//@Roles(UserRole.ADMIN, UserRole.OWNER)
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,
@@ -33,8 +33,19 @@ export class AdminController {
    * Dashboard statistics
    */
   @Get('dashboard')
-  async getDashboard() {
-    return this.adminService.getDashboardStats();
+  async getDashboard(@CurrentUser() user: JwtPayload) {
+    if (user.role === UserRole.ADMIN) {
+      return this.adminService.getDashboardStats();
+    }
+    if (user.role === UserRole.OWNER || user.role === UserRole.AGENT) {
+      return this.adminService.getAgentDashboardStats(user.sub);
+    }
+    return {
+      members: { total: 0 },
+      payments: { totalCollection: 0 },
+      claims: { submitted: 0 },
+      agents: { total: 0 },
+    };
   }
 
   /**
@@ -42,6 +53,7 @@ export class AdminController {
    * List all payments with optional status filter
    */
   @Get('payments')
+  @Roles(UserRole.ADMIN)
   async getPayments(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
@@ -55,6 +67,7 @@ export class AdminController {
    * Get all pending payments that need verification
    */
   @Get('payments/pending')
+  @Roles(UserRole.ADMIN)
   async getPendingPayments() {
     return this.adminService.getPendingPayments();
   }
@@ -64,6 +77,7 @@ export class AdminController {
    * Verify a payment (Maker role)
    */
   @Post('payments/:id/verify')
+  @Roles(UserRole.ADMIN)
   async verifyPayment(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,
@@ -76,6 +90,7 @@ export class AdminController {
    * View audit logs
    */
   @Get('audit-logs')
+  @Roles(UserRole.ADMIN)
   async getAuditLogs(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
@@ -87,6 +102,7 @@ export class AdminController {
    * GET /api/admin/fraud-check — Run all fraud checks
    */
   @Get('fraud-check')
+  @Roles(UserRole.ADMIN)
   async runFraudChecks() {
     return this.fraudService.runFraudChecks();
   }
@@ -95,6 +111,7 @@ export class AdminController {
    * GET /api/admin/fraud-check/:userId — Check specific user
    */
   @Get('fraud-check/:userId')
+  @Roles(UserRole.ADMIN)
   async checkUserFraud(@Param('userId') userId: string) {
     return this.fraudService.checkUser(userId);
   }

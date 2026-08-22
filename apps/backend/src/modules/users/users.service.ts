@@ -7,12 +7,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
+import { Agent } from '../../entities/agent.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Agent)
+    private readonly agentRepository: Repository<Agent>,
   ) {}
 
   /**
@@ -86,6 +89,31 @@ export class UsersService {
       total,
       page: pageNum,
       totalPages: Math.ceil(total / limitNum) || 1,
+    };
+  }
+
+  async findByReferrer(userId: string, page: number, limit: number) {
+    // Find the agent record
+    const agent = await this.agentRepository.findOne({
+      where: { userId },
+    });
+
+    if (!agent) return { users: [], total: 0, page, totalPages: 1 };
+
+    const [users, total] = await this.userRepository.findAndCount({
+      where: { referralId: agent.agentCode, role: UserRole.MEMBER },
+      order: { createdAt: 'DESC' },
+      skip: (Number(page) - 1) * Number(limit),
+      take: Number(limit),
+    });
+
+    users.forEach((u) => delete u.password);
+
+    return {
+      users,
+      total,
+      page: Number(page),
+      totalPages: Math.ceil(total / Number(limit)) || 1,
     };
   }
 

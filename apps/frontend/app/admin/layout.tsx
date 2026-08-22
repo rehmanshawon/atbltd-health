@@ -20,14 +20,54 @@ import NotificationBell from "../components/NotificationBell";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Members", href: "/admin/members", icon: Users },
-  { label: "Payments", href: "/admin/payments", icon: Banknote },
-  { label: "ATB Benefits", href: "/admin/claims", icon: FileText },
-  { label: "Agents", href: "/admin/agents", icon: UserCheck },
-  { label: "Audit Logs", href: "/admin/audit", icon: ShieldAlert },
-  { label: "Commissions", href: "/admin/commissions", icon: Banknote },
-  { label: "Fraud Detection", href: "/admin/fraud", icon: ShieldAlert },
-  { label: "Hospitals", href: "/admin/hospitals", icon: Building2 },
+  {
+    label: "Members",
+    href: "/admin/members",
+    icon: Users,
+    roles: ["admin", "owner", "agent"],
+  },
+  {
+    label: "Payments",
+    href: "/admin/payments",
+    icon: Banknote,
+    roles: ["admin"],
+  },
+  {
+    label: "ATB Benefits",
+    href: "/admin/claims",
+    icon: FileText,
+    roles: ["admin"],
+  },
+  {
+    label: "Agents",
+    href: "/admin/agents",
+    icon: UserCheck,
+    roles: ["admin", "owner"],
+  },
+  {
+    label: "Audit Logs",
+    href: "/admin/audit",
+    icon: ShieldAlert,
+    roles: ["admin"],
+  },
+  {
+    label: "Commissions",
+    href: "/admin/commissions",
+    icon: Banknote,
+    roles: ["admin", "owner", "agent"],
+  },
+  {
+    label: "Fraud Detection",
+    href: "/admin/fraud",
+    icon: ShieldAlert,
+    roles: ["admin"],
+  },
+  {
+    label: "Hospitals",
+    href: "/admin/hospitals",
+    icon: Building2,
+    roles: ["admin"],
+  },
 ];
 
 export default function AdminLayout({
@@ -39,7 +79,10 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
-
+  // Filter by role
+  const visibleNavItems = navItems.filter(
+    (item) => !item.roles || (user && item.roles.includes(user.role)),
+  );
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.replace("/login");
@@ -70,7 +113,7 @@ export default function AdminLayout({
               </Link>
             </div>
             <nav className="flex-1 py-4 px-3 space-y-0.5">
-              {navItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
                   <Link
@@ -114,7 +157,7 @@ export default function AdminLayout({
               </Link>
             </div>
             <nav className="flex-1 py-4 px-3 space-y-0.5">
-              {navItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
                   <Link

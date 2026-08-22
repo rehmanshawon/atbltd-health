@@ -6,9 +6,12 @@ import { User } from '../../entities/user.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { CommissionService } from './commission.service';
 import { CommissionController } from './commission.controller';
-
+import { AgentModule } from '../agent/agent.module';
 @Module({
-  imports: [TypeOrmModule.forFeature([Commission, Agent, User, AuditLog])],
+  imports: [
+    TypeOrmModule.forFeature([Commission, Agent, User, AuditLog]),
+    AgentModule,
+  ],
   controllers: [CommissionController],
   providers: [CommissionService],
   exports: [CommissionService],
