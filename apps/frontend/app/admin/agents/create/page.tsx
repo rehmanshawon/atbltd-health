@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../lib/auth-context";
-import { ArrowLeft, UserPlus, Loader2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, UserPlus, Loader2, CheckCircle2, Lock } from "lucide-react";
 import Link from "next/link";
 
 const API_BASE =
@@ -11,10 +11,13 @@ const API_BASE =
 
 export default function CreateAgentPage() {
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // If current user is an Owner, auto-set parentAgentCode to their own code
+  const isOwnerCreating = user?.role === "owner";
 
   const [form, setForm] = useState({
     fullName: "",
@@ -22,7 +25,7 @@ export default function CreateAgentPage() {
     email: "",
     password: "",
     commissionRate: "10",
-    parentAgentCode: "",
+    parentAgentCode: isOwnerCreating ? user?.memberId || "" : "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,7 +48,9 @@ export default function CreateAgentPage() {
         password: form.password,
         role: "agent",
         commissionRate: parseFloat(form.commissionRate),
-        parentAgentCode: form.parentAgentCode,
+        parentAgentCode: isOwnerCreating
+          ? user?.memberId
+          : form.parentAgentCode,
       };
 
       const res = await fetch(`${API_BASE}/agents`, {
@@ -69,7 +74,7 @@ export default function CreateAgentPage() {
         email: "",
         password: "",
         commissionRate: "10",
-        parentAgentCode: "",
+        parentAgentCode: isOwnerCreating ? user?.memberId || "" : "",
       });
     } catch (err: any) {
       setError(err.message);
@@ -183,17 +188,31 @@ export default function CreateAgentPage() {
           </div>
           <div>
             <label className="block text-gray-600 text-xs font-semibold mb-1.5">
-              Parent Owner ID *
+              Parent Owner (Agent Code) *
             </label>
-            <input
-              required
-              value={form.parentAgentCode}
-              onChange={(e) =>
-                setForm({ ...form, parentAgentCode: e.target.value })
-              }
-              placeholder="e.g., ATB-26-OW-1"
-              className="w-full px-3 py-2.5 rounded-md border border-gray-300 text-gray-900 text-sm focus:border-brand-red focus:outline-none"
-            />
+            {isOwnerCreating ? (
+              <div className="relative">
+                <input
+                  value={form.parentAgentCode}
+                  readOnly
+                  className="w-full px-3 py-2.5 rounded-md border border-gray-200 bg-gray-50 text-gray-500 text-sm focus:outline-none cursor-not-allowed pr-10"
+                />
+                <Lock
+                  size={14}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+              </div>
+            ) : (
+              <input
+                required
+                value={form.parentAgentCode}
+                onChange={(e) =>
+                  setForm({ ...form, parentAgentCode: e.target.value })
+                }
+                placeholder="e.g., ATB-26-OW-1"
+                className="w-full px-3 py-2.5 rounded-md border border-gray-300 text-gray-900 text-sm focus:border-brand-red focus:outline-none"
+              />
+            )}
           </div>
         </div>
 
