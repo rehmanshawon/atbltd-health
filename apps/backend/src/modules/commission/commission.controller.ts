@@ -67,7 +67,7 @@ export class CommissionController {
 
   @Post(':id/approve')
   async approve(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.commissionService.approveCommission(id, user.sub);
+    return this.commissionService.approveCommission(id, user.sub, user.role);
   }
 
   @Post(':id/confirm-payment')

@@ -18,55 +18,62 @@ import {
 import Link from "next/link";
 import NotificationBell from "../components/NotificationBell";
 
+const { user } = useAuth();
+
 const navItems = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  {
+    label: "Dashboard",
+    href: "/admin",
+    icon: LayoutDashboard,
+    roles: ["super_admin", "admin", "owner", "agent"],
+  },
   {
     label: "Members",
     href: "/admin/members",
     icon: Users,
-    roles: ["admin", "owner", "agent"],
+    roles: ["super_admin", "admin", "owner", "agent"],
   },
   {
     label: "Payments",
     href: "/admin/payments",
     icon: Banknote,
-    roles: ["admin"],
+    roles: ["super_admin", "admin"],
   },
   {
     label: "ATB Benefits",
     href: "/admin/claims",
     icon: FileText,
-    roles: ["admin"],
+    roles: ["super_admin", "admin"],
   },
   {
     label: "Agents",
     href: "/admin/agents",
     icon: UserCheck,
-    roles: ["admin", "owner"],
+    roles: ["super_admin", "admin", "owner"],
   },
   {
     label: "Audit Logs",
     href: "/admin/audit",
     icon: ShieldAlert,
-    roles: ["admin"],
+    roles: ["super_admin"],
   },
   {
     label: "Commissions",
     href: "/admin/commissions",
     icon: Banknote,
-    roles: ["admin", "owner", "agent"],
+    roles: ["super_admin", "admin", "owner", "agent"],
   },
   {
     label: "Fraud Detection",
     href: "/admin/fraud",
     icon: ShieldAlert,
-    roles: ["admin"],
+    roles: ["super_admin"],
   },
   {
     label: "Hospitals",
     href: "/admin/hospitals",
     icon: Building2,
-    roles: ["admin"],
+    roles: ["super_admin", "admin"],
   },
 ];
 

@@ -34,7 +34,7 @@ export class AdminController {
    */
   @Get('dashboard')
   async getDashboard(@CurrentUser() user: JwtPayload) {
-    if (user.role === UserRole.ADMIN) {
+    if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN) {
       return this.adminService.getDashboardStats();
     }
     if (user.role === UserRole.OWNER || user.role === UserRole.AGENT) {
@@ -53,11 +53,11 @@ export class AdminController {
    * List all payments with optional status filter
    */
   @Get('payments')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async getPayments(
+    @Query('status') status?: PaymentStatus,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
-    @Query('status') status?: PaymentStatus,
   ) {
     return this.adminService.getPayments(status, page, limit);
   }
@@ -67,7 +67,7 @@ export class AdminController {
    * Get all pending payments that need verification
    */
   @Get('payments/pending')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async getPendingPayments() {
     return this.adminService.getPendingPayments();
   }
@@ -77,12 +77,12 @@ export class AdminController {
    * Verify a payment (Maker role)
    */
   @Post('payments/:id/verify')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async verifyPayment(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.adminService.verifyPayment(id, user.sub);
+    return this.adminService.verifyPayment(id, user.sub, user.role);
   }
 
   /**
@@ -90,7 +90,7 @@ export class AdminController {
    * View audit logs
    */
   @Get('audit-logs')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   async getAuditLogs(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
@@ -102,8 +102,9 @@ export class AdminController {
    * GET /api/admin/fraud-check — Run all fraud checks
    */
   @Get('fraud-check')
-  @Roles(UserRole.ADMIN)
-  async runFraudChecks() {
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async runFraudChecks(@CurrentUser() user: JwtPayload) {
+    // Admin gets view-only results, SA gets full results with action buttons
     return this.fraudService.runFraudChecks();
   }
 
@@ -111,7 +112,7 @@ export class AdminController {
    * GET /api/admin/fraud-check/:userId — Check specific user
    */
   @Get('fraud-check/:userId')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async checkUserFraud(@Param('userId') userId: string) {
     return this.fraudService.checkUser(userId);
   }

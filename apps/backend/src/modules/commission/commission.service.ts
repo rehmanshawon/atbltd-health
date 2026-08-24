@@ -13,7 +13,7 @@ import {
 import { Agent } from '../../entities/agent.entity';
 import { User } from '../../entities/user.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
-
+import { UserRole } from '../../common/enums/user-role.enum';
 @Injectable()
 export class CommissionService {
   constructor(
@@ -138,6 +138,7 @@ export class CommissionService {
   async approveCommission(
     commissionId: string,
     adminId: string,
+    adminRole: string,
   ): Promise<Commission> {
     const commission = await this.commissionRepository.findOne({
       where: { id: commissionId },
@@ -150,9 +151,17 @@ export class CommissionService {
       );
     }
 
-    commission.status = CommissionStatus.APPROVED;
-    commission.approvedBy = adminId;
-    commission.approvedAt = new Date();
+    if (adminRole === UserRole.SUPER_ADMIN) {
+      // SA directly approves
+      commission.status = CommissionStatus.APPROVED;
+      commission.approvedBy = adminId;
+      commission.approvedAt = new Date();
+    } else {
+      // Admin (Maker) — marks as reviewed
+      commission.approvedBy = adminId;
+      commission.approvedAt = new Date();
+      commission.notes = 'Reviewed by Admin. Awaiting SA confirmation.';
+    }
 
     return this.commissionRepository.save(commission);
   }

@@ -251,7 +251,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid Staff ID or Mobile Number');
     }
 
-    // Only staff (admin, owner, agent) can use this login
+    // Only staff (super_admin, admin, owner, agent) can use this login
     if (user.role === UserRole.MEMBER) {
       throw new UnauthorizedException(
         'Members must login with Member ID only. Use Member Login.',

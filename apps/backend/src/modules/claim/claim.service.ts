@@ -258,24 +258,30 @@ export class ClaimService {
 
     // Maker-Checker: APPROVED requires two admins
     if (newStatus === ClaimStatus.APPROVED) {
-      if (!claim.reviewedBy) {
-        // First admin (Maker) sets to APPROVED but requires checker
+      if (adminRole === UserRole.SUPER_ADMIN) {
+        // SA directly approves (Checker + Maker combined for SA)
+        claim.status = ClaimStatus.APPROVED;
+        claim.approvedBy = adminId;
+        claim.checkerApprovedBy = adminId;
         claim.reviewedBy = adminId;
         claim.reviewedAt = new Date();
-        claim.approvedBy = adminId;
-        claim.status = ClaimStatus.APPROVED;
         claim.approvedAmount = data?.approvedAmount || claim.claimedAmount;
-
         if (data?.notes) claim.notes = data?.notes;
-      } else if (claim.reviewedBy !== adminId) {
-        // Second admin (Checker) confirms
-        claim.checkerApprovedBy = adminId;
-        claim.status = ClaimStatus.APPROVED;
-        // Status stays APPROVED, now fully approved by both
+      } else if (adminRole === UserRole.ADMIN) {
+        // Admin is Maker — first approval
+        if (claim.reviewedBy === adminId) {
+          throw new BadRequestException(
+            'You have already reviewed this application. Awaiting Super Admin final approval.',
+          );
+        }
+        claim.reviewedBy = adminId;
+        claim.reviewedAt = new Date();
+        claim.approvedBy = adminId; // Maker
+        claim.status = ClaimStatus.UNDER_REVIEW; // Still needs SA
+        claim.approvedAmount = data?.approvedAmount || claim.claimedAmount;
+        if (data?.notes) claim.notes = data?.notes;
       } else {
-        throw new BadRequestException(
-          'This claim has already been approved by you. A different admin must confirm this approval (Maker-Checker policy).',
-        );
+        throw new BadRequestException('Only Admin or Super Admin can approve');
       }
     } else if (newStatus === ClaimStatus.REJECTED) {
       claim.status = ClaimStatus.REJECTED;
@@ -329,6 +335,21 @@ export class ClaimService {
     }
 
     const updatedClaim = await this.claimRepository.save(claim);
+
+    // After saving updatedClaim, if Admin did first approval:
+    if (newStatus === ClaimStatus.APPROVED && adminRole === UserRole.ADMIN) {
+      await this.notificationService.notifyRoles(
+        [UserRole.SUPER_ADMIN],
+        NotificationType.CLAIM_STATUS_UPDATED,
+        'Application Awaiting Final Approval',
+        `Application ${claimId.substring(
+          0,
+          8,
+        )} reviewed by Admin. Needs SA approval.`,
+        '/admin/claims',
+        claimId,
+      );
+    }
 
     // Notify member
     await this.notificationService.notifyUser(

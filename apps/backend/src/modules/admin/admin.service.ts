@@ -184,7 +184,12 @@ export class AdminService {
   async verifyPayment(
     paymentId: string,
     adminUserId: string,
-  ): Promise<{ success: boolean; message: string }> {
+    adminRole: string,
+  ): Promise<{
+    success: boolean;
+    message: string;
+    requiresFinalApproval?: boolean;
+  }> {
     const payment = await this.paymentRepository.findOne({
       where: { id: paymentId },
       relations: ['user'],
@@ -198,12 +203,47 @@ export class AdminService {
       throw new BadRequestException(`Payment is already ${payment.status}`);
     }
 
-    // Update payment
-    payment.status = PaymentStatus.VERIFIED;
-    payment.verifiedBy = adminUserId;
-    payment.verifiedAt = new Date();
-    await this.paymentRepository.save(payment);
+    if (adminRole === UserRole.SUPER_ADMIN) {
+      // SA directly authorizes — no maker-checker needed
+      payment.status = PaymentStatus.VERIFIED;
+      payment.verifiedBy = adminUserId;
+      payment.verifiedAt = new Date();
+      await this.paymentRepository.save(payment);
 
+      await this.activateMembership(payment, adminUserId);
+
+      return {
+        success: true,
+        message: 'Payment authorized and membership activated',
+      };
+    } else {
+      // Admin (Maker) — marks as reviewed, awaits SA
+      payment.verifiedBy = adminUserId;
+      payment.verifiedAt = new Date();
+      payment.notes = 'Reviewed by Admin. Awaiting Super Admin authorization.';
+      await this.paymentRepository.save(payment);
+
+      // Notify SA
+      await this.notificationService.notifyRoles(
+        [UserRole.SUPER_ADMIN],
+        NotificationType.PAYMENT_VERIFIED,
+        'Payment Awaiting Authorization',
+        `${payment.user.fullName} (${payment.user.memberId}) - ${payment.amount} BDT reviewed by Admin. Needs SA authorization.`,
+        '/admin',
+      );
+
+      return {
+        success: true,
+        message: 'Payment reviewed. Awaiting Super Admin authorization.',
+        requiresFinalApproval: true,
+      };
+    }
+  }
+
+  private async activateMembership(
+    payment: Payment,
+    adminUserId: string,
+  ): Promise<void> {
     // Activate membership
     const membership = await this.membershipRepository.findOne({
       where: { userId: payment.userId },
@@ -214,11 +254,9 @@ export class AdminService {
       membership.isPaymentVerified = true;
       membership.isActive = true;
       membership.membershipStartDate = today;
-
       const endDate = new Date(today);
       endDate.setFullYear(endDate.getFullYear() + 1);
       membership.membershipEndDate = endDate;
-
       await this.membershipRepository.save(membership);
     }
 
@@ -228,7 +266,7 @@ export class AdminService {
       await this.userRepository.save(payment.user);
     }
 
-    //notify user about payment verification and membership activation
+    // Notify user
     await this.notificationService.notifyUser(
       payment.userId,
       NotificationType.PAYMENT_VERIFIED,
@@ -237,30 +275,31 @@ export class AdminService {
       '/dashboard',
     );
 
-    // Notify admins
+    // Notify admins/owners
     await this.notificationService.notifyRoles(
       [UserRole.ADMIN, UserRole.OWNER],
       NotificationType.PAYMENT_VERIFIED,
-      'Payment Verified',
-      `Payment of ${payment.amount} BDT from ${payment.user.fullName} has been verified.`,
+      'Payment Authorized',
+      `Payment of ${payment.amount} BDT from ${payment.user.fullName} authorized by SA.`,
       '/admin',
     );
 
-    // Send SMS with credentials
-    try {
-      await this.smsService.sendMembershipActivationSms(
-        payment.user.mobileNumber,
-        {
-          fullName: payment.user.fullName,
-          memberId: payment.user.memberId,
-          temporaryPassword: 'ATB@Welcome', // TODO: Generate random per user
-        },
-      );
-    } catch (error) {
-      console.error('Failed to send SMS:', error);
+    // Send SMS
+    if (payment.user?.mobileNumber) {
+      try {
+        await this.smsService.sendMembershipActivationSms(
+          payment.user.mobileNumber,
+          {
+            fullName: payment.user.fullName,
+            memberId: payment.user.memberId,
+          },
+        );
+      } catch (error) {
+        console.error('Failed to send SMS:', error);
+      }
     }
 
-    // Create commission for referring agent
+    // Create commission
     if (payment.user?.referralId) {
       try {
         await this.commissionService.createRegistrationCommission(
@@ -268,7 +307,6 @@ export class AdminService {
           Number(payment.amount),
         );
       } catch (error) {
-        // Don't fail payment verification if commission fails
         console.error('Failed to create commission:', error);
       }
     }
@@ -277,7 +315,7 @@ export class AdminService {
     await this.auditLogRepository.save({
       action: 'PAYMENT_VERIFIED',
       entity: 'Payment',
-      entityId: paymentId,
+      entityId: payment.id,
       performedById: adminUserId,
       newValue: {
         status: 'verified',
@@ -285,11 +323,6 @@ export class AdminService {
         memberId: payment.user?.memberId,
       },
     });
-
-    return {
-      success: true,
-      message: 'Payment verified and membership activated',
-    };
   }
 
   /**

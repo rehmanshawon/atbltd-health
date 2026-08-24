@@ -47,7 +47,7 @@ async function bootstrap() {
       mobileNumber: '01700000000',
       email: 'admin@atbltd.health',
       password: superAdminPassword,
-      role: UserRole.ADMIN,
+      role: UserRole.SUPER_ADMIN,
       isActive: true,
       isKycVerified: true,
       permanentAddress: 'ATB Headquarters, Uttara, Dhaka',
