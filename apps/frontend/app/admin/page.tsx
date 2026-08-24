@@ -66,7 +66,8 @@ interface PendingPayment {
   id: string;
   amount: number;
   method: string;
-  transactionId: string;
+  //transactionId: string;
+  senderAccount: string;
   status: string;
   createdAt: string;
   user?: { memberId: string; fullName: string; mobileNumber: string };
@@ -558,8 +559,11 @@ export default function AdminDashboard() {
                     <th className="text-right py-3 px-6 text-gray-500 text-xs font-semibold uppercase tracking-wider">
                       Date
                     </th>
-                    <th className="text-right py-3 px-6 text-gray-500 text-xs font-semibold uppercase tracking-wider">
+                    {/* <th className="text-right py-3 px-6 text-gray-500 text-xs font-semibold uppercase tracking-wider">
                       Transaction ID
+                    </th> */}
+                    <th className="text-right py-3 px-6 text-gray-500 text-xs font-semibold uppercase tracking-wider">
+                      Sender Account
                     </th>
                     <th className="text-right py-3 px-6 text-gray-500 text-xs font-semibold uppercase tracking-wider">
                       Action
@@ -595,8 +599,11 @@ export default function AdminDashboard() {
                           year: "numeric",
                         })}
                       </td>
-                      <td className="py-3.5 px-6 text-right text-gray-400 text-xs font-mono">
+                      {/* <td className="py-3.5 px-6 text-right text-gray-400 text-xs font-mono">
                         {p.transactionId}
+                      </td> */}
+                      <td className="py-3.5 px-6 text-right text-gray-400 text-xs font-mono">
+                        {p.senderAccount || "—"}
                       </td>
                       <td className="py-3.5 px-6 text-right">
                         <button

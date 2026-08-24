@@ -121,7 +121,7 @@ export class AuthService {
         email: registerDto.email,
         permanentAddress: registerDto.permanentAddress,
         currentAddress: registerDto.currentAddress,
-        emergencyContact: registerDto.emergencyContact,
+        // emergencyContact: registerDto.emergencyContact,
         password: hashedPassword,
         role: UserRole.MEMBER,
         referralId: registerDto.referralId,
@@ -146,7 +146,7 @@ export class AuthService {
         membershipFee: 1000.0,
         isPaymentVerified: false,
         paymentMethod: registerDto.paymentMethod,
-        transactionId: registerDto.transactionId,
+        //transactionId: registerDto.transactionId,
         isActive: false,
         remainingBenefit: 12000.0,
         renewalFee: 850.0,
@@ -160,7 +160,7 @@ export class AuthService {
         paymentType: PaymentType.MEMBERSHIP_FEE,
         amount: 1000.0,
         method: registerDto.paymentMethod,
-        transactionId: registerDto.transactionId,
+        //transactionId: registerDto.transactionId,
         senderAccount: registerDto.senderAccount || registerDto.mobileNumber,
         recipientAccount: recipientAccount,
         status: PaymentStatus.PENDING,
@@ -403,7 +403,7 @@ export class AuthService {
       .select('MAX(user.memberId)', 'maxId')
       .from(User, 'user')
       .where('user.memberId ~ :pattern', {
-        pattern: `^ATB-${currentYear}-[0-9]{2}$`,
+        pattern: `^ATB-${currentYear}-ME-[0-9]{2}$`, // New pattern for ATB-26-ME-01
       })
       .getRawOne();
 
@@ -411,8 +411,8 @@ export class AuthService {
 
     if (result?.maxId) {
       const parts = result.maxId.split('-');
-      if (parts.length === 3) {
-        const lastNumber = parseInt(parts[2], 10);
+      if (parts.length === 4) {
+        const lastNumber = parseInt(parts[3], 10);
         if (!isNaN(lastNumber)) {
           sequentialNumber = lastNumber + 1;
         }

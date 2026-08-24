@@ -107,7 +107,7 @@ export default function MembershipModal({
 
   // Payment
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("bkash");
-  const [transactionId, setTransactionId] = useState("");
+  //const [transactionId, setTransactionId] = useState("");
   const [senderAccount, setSenderAccount] = useState("");
 
   // OTP
@@ -163,7 +163,7 @@ export default function MembershipModal({
           currentAddress: currentAddress || undefined,
           referralId: referralId || undefined,
           paymentMethod,
-          transactionId,
+          //transactionId,
           senderAccount: senderAccount || phone,
         }),
       });

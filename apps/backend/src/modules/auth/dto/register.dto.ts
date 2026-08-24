@@ -1,9 +1,7 @@
 import {
   IsString,
   IsOptional,
-  IsMobilePhone,
   IsEmail,
-  IsDateString,
   MinLength,
   MaxLength,
 } from 'class-validator';
@@ -16,16 +14,14 @@ export class RegisterDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(100)
   fatherName?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(100)
   motherName?: string;
 
   @IsOptional()
-  @IsDateString()
+  @IsString()
   dateOfBirth?: string;
 
   @IsOptional()
@@ -51,21 +47,13 @@ export class RegisterDto {
 
   @IsOptional()
   @IsString()
-  emergencyContact?: string;
-
-  @IsOptional()
-  @IsString()
   referralId?: string;
 
   @IsString()
-  @MinLength(4)
-  @MaxLength(20)
-  paymentMethod: string; // bkash, nagad, rocket, bank
+  paymentMethod: string; // bkash, nagad, rocket
 
   @IsString()
-  transactionId: string;
+  senderAccount: string; // REQUIRED - the bKash number that sent money
 
-  @IsOptional()
-  @IsString()
-  senderAccount?: string; // Phone number that sent the payment
+  // transactionId removed - no longer needed
 }
