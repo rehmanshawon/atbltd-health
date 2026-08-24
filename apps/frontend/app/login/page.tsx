@@ -34,7 +34,9 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await memberLogin(memberId);
-      window.location.href = "/dashboard";
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 300);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

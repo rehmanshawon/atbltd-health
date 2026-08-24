@@ -51,19 +51,21 @@ interface DashboardData {
 }
 
 export default function MemberDashboard() {
-  const { token, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { token, user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated && !token) {
-      router.replace("/login");
+    if (user && user.role !== "member") {
+      router.replace("/admin");
       return;
     }
-    if (token && isAuthenticated) loadDashboard();
-  }, [authLoading, isAuthenticated, token]);
+    if (token && isAuthenticated) {
+      loadDashboard();
+    }
+  }, [user, token, isAuthenticated]);
 
   const loadDashboard = async () => {
     try {
