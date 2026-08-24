@@ -30,6 +30,8 @@ interface Owner {
     memberId: string;
   };
   subAgents?: Owner[];
+  createdBy?: string;
+  createdByName?: string;
 }
 
 export default function OwnersPage() {
@@ -162,6 +164,9 @@ export default function OwnersPage() {
                 <th className="text-center py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
                   Earned
                 </th>
+                <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
+                  Created By
+                </th>
                 <th className="text-center py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
                   Status
                 </th>
@@ -220,6 +225,16 @@ export default function OwnersPage() {
                       </td>
                       <td className="py-2.5 px-4 text-center text-green-600 text-sm font-medium">
                         {formatCurrency(Number(owner.totalCommissionEarned))}
+                      </td>
+                      <td className="py-2.5 px-4 text-gray-600 text-sm">
+                        <div>
+                          <p className="text-gray-700 text-sm">
+                            {owner.createdByName || "—"}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            {owner.createdBy || "—"}
+                          </p>
+                        </div>
                       </td>
                       <td className="py-2.5 px-4 text-center">
                         <span

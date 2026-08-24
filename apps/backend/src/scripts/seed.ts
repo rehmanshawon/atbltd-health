@@ -103,6 +103,9 @@ async function bootstrap() {
       agentCode: 'ATB-26-OW-1',
       commissionRate: 15.0, // 15% - direct acquisition rate per agenda
       isActive: true,
+      createdBy: savedSuperAdmin.memberId, // 'ATB-26-SA-1'
+      createdByName: savedSuperAdmin.fullName, // 'System Administrator'
+      createdByRole: 'super_admin',
     });
 
     await queryRunner.manager.save(ownerAgent);
@@ -134,6 +137,9 @@ async function bootstrap() {
       commissionRate: 10.0, // 10% - standard agent rate per agenda
       parentAgentId: null,
       isActive: true,
+      createdBy: savedSuperAdmin.memberId,
+      createdByName: savedSuperAdmin.fullName,
+      createdByRole: 'super_admin',
     });
 
     await queryRunner.manager.save(agent);

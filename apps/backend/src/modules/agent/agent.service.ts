@@ -100,6 +100,11 @@ export class AgentService {
     // }-${agentCount + 1}`;
     const agentCode = memberId;
 
+    // Find the admin who is creating
+    const creator = await this.userRepository.findOne({
+      where: { id: createdBy },
+    });
+
     // Create agent record with parent UUID
     const agent = this.agentRepository.create({
       userId: savedUser.id,
@@ -107,6 +112,9 @@ export class AgentService {
       commissionRate: data.commissionRate,
       parentAgentId: parentAgentId, // UUID or null
       isActive: true,
+      createdBy: creator?.memberId || createdBy, // Store admin's member ID
+      createdByName: creator?.fullName || 'Unknown', // Store admin's full name
+      createdByRole: creator?.role || 'unknown', // Add this to know who created
     });
 
     const savedAgent = await this.agentRepository.save(agent);
@@ -222,6 +230,25 @@ export class AgentService {
       order: { createdAt: 'DESC' },
     });
 
-    return agents.filter((a) => a.user?.role === UserRole.AGENT);
+    const agentsOnly = agents.filter((a) => a.user?.role === UserRole.AGENT);
+
+    // Load members for each agent
+    for (const agent of agentsOnly) {
+      const members = await this.userRepository.find({
+        where: { referralId: agent.agentCode, role: UserRole.MEMBER },
+        select: [
+          'id',
+          'memberId',
+          'fullName',
+          'mobileNumber',
+          'isActive',
+          'createdAt',
+        ],
+        order: { createdAt: 'DESC' },
+      });
+      (agent as any).members = members;
+    }
+
+    return agentsOnly;
   }
 }

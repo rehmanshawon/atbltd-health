@@ -82,4 +82,13 @@ export class Agent {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @Column({ nullable: true })
+  createdBy: string; // Admin's member ID who created this agent/owner
+
+  @Column({ nullable: true })
+  createdByName: string; // Admin's full name
+
+  @Column({ nullable: true })
+  createdByRole: string; // super_admin / admin / owner
 }

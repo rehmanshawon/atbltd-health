@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { useAuth } from "../../lib/auth-context";
 import {
   UserCheck,
@@ -10,40 +10,44 @@ import {
   Plus,
   Users,
   TrendingUp,
-  Circle,
 } from "lucide-react";
 import Link from "next/link";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
+interface Member {
+  id: string;
+  memberId: string;
+  fullName: string;
+  mobileNumber: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
 interface AgentData {
   id: string;
   agentCode: string;
   commissionRate: number;
   totalCommissionEarned: number;
-  totalCommissionPaid: number;
   totalMembersRegistered: number;
-  activeMembers: number;
   isActive: boolean;
-  createdAt: string;
   user?: {
-    id: string;
-    memberId: string;
     fullName: string;
     mobileNumber: string;
+    memberId: string;
     role: string;
-    isActive: boolean;
   };
   parentAgent?: {
     id: string;
     agentCode: string;
     user?: { fullName: string };
   };
+  members?: Member[];
 }
 
 export default function AgentsPage() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [agents, setAgents] = useState<AgentData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -58,13 +62,10 @@ export default function AgentsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      // Only show agents (not owners)
-      const agentsOnly = Array.isArray(data)
-        ? data.filter((a: any) => a.user?.role === "agent")
-        : [];
-      setAgents(agentsOnly);
+      setAgents(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
+      setAgents([]);
     } finally {
       setIsLoading(false);
     }
@@ -80,6 +81,13 @@ export default function AgentsPage() {
   const formatCurrency = (amount: number) =>
     `${amount?.toLocaleString() || 0} BDT`;
 
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -94,7 +102,7 @@ export default function AgentsPage() {
         <div>
           <h1 className="text-2xl font-bold text-brand-blue">Agents</h1>
           <p className="text-gray-500 text-sm mt-0.5">
-            Manage agents and view hierarchy
+            Manage agents and their members
           </p>
         </div>
         <Link
@@ -117,7 +125,7 @@ export default function AgentsPage() {
         </div>
         <div className="bg-white border border-gray-200 rounded-md p-4">
           <p className="text-gray-400 text-xs font-semibold uppercase">
-            Total Members Registered
+            Total Members
           </p>
           <p className="text-brand-blue text-2xl font-bold mt-1">
             {agents.reduce(
@@ -141,7 +149,7 @@ export default function AgentsPage() {
         </div>
       </div>
 
-      {/* Agents List */}
+      {/* Agents Table */}
       <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
           <UserCheck size={16} className="text-gray-400" />
@@ -184,48 +192,118 @@ export default function AgentsPage() {
               </tr>
             </thead>
             <tbody>
-              {agents.map((agent, i) => (
-                <tr
-                  key={agent.id}
-                  className={`border-b border-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/20"}`}
-                >
-                  <td className="py-2.5 px-4 text-brand-blue text-sm font-mono">
-                    {agent.agentCode}
-                  </td>
-                  <td className="py-2.5 px-4 text-gray-800 text-sm font-medium">
-                    {agent.user?.fullName}
-                  </td>
-                  <td className="py-2.5 px-4 text-gray-600 text-sm">
-                    {agent.user?.mobileNumber}
-                  </td>
-                  <td className="py-2.5 px-4 text-gray-600 text-sm">
-                    {agent.parentAgent?.agentCode || "—"}
-                  </td>
-                  <td className="py-2.5 px-4 text-center text-gray-700 text-sm font-semibold">
-                    {agent.commissionRate}%
-                  </td>
-                  <td className="py-2.5 px-4 text-center text-gray-700 text-sm">
-                    {agent.totalMembersRegistered || 0}
-                  </td>
-                  <td className="py-2.5 px-4 text-center text-green-600 text-sm font-medium">
-                    {formatCurrency(Number(agent.totalCommissionEarned))}
-                  </td>
-                  <td className="py-2.5 px-4 text-center">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
-                        agent.isActive
-                          ? "bg-green-50 text-green-700"
-                          : "bg-gray-100 text-gray-500"
-                      }`}
+              {agents.map((agent, i) => {
+                const isExpanded = expandedIds.has(agent.id);
+                const memberCount =
+                  agent.members?.length || agent.totalMembersRegistered || 0;
+
+                return (
+                  <Fragment key={agent.id}>
+                    {/* Agent Row */}
+                    <tr
+                      className={`border-b border-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/20"}`}
                     >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${agent.isActive ? "bg-green-500" : "bg-gray-400"}`}
-                      />
-                      {agent.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                      <td className="py-2.5 px-4">
+                        <div className="flex items-center gap-2">
+                          {memberCount > 0 && (
+                            <button
+                              onClick={() => toggleExpand(agent.id)}
+                              className="p-1 rounded hover:bg-gray-100 transition-colors"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown
+                                  size={16}
+                                  className="text-gray-400"
+                                />
+                              ) : (
+                                <ChevronRight
+                                  size={16}
+                                  className="text-gray-400"
+                                />
+                              )}
+                            </button>
+                          )}
+                          <span className="text-brand-blue text-sm font-mono">
+                            {agent.agentCode}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-4 text-gray-800 text-sm font-medium">
+                        {agent.user?.fullName}
+                      </td>
+                      <td className="py-2.5 px-4 text-gray-600 text-sm">
+                        {agent.user?.mobileNumber}
+                      </td>
+                      <td className="py-2.5 px-4 text-gray-600 text-sm">
+                        {agent.parentAgent?.agentCode || "—"}
+                      </td>
+                      <td className="py-2.5 px-4 text-center text-gray-700 text-sm font-semibold">
+                        {agent.commissionRate}%
+                      </td>
+                      <td className="py-2.5 px-4 text-center text-gray-700 text-sm">
+                        {memberCount}
+                      </td>
+                      <td className="py-2.5 px-4 text-center text-green-600 text-sm font-medium">
+                        {formatCurrency(Number(agent.totalCommissionEarned))}
+                      </td>
+                      <td className="py-2.5 px-4 text-center">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+                            agent.isActive
+                              ? "bg-green-50 text-green-700"
+                              : "bg-gray-100 text-gray-500"
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${agent.isActive ? "bg-green-500" : "bg-gray-400"}`}
+                          />
+                          {agent.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                    </tr>
+
+                    {/* Members (expanded) */}
+                    {isExpanded &&
+                      agent.members?.map((member) => (
+                        <tr
+                          key={member.id}
+                          className="bg-gray-50/50 border-b border-gray-50"
+                        >
+                          <td className="py-2 px-4 pl-12 text-gray-600 text-xs font-mono">
+                            {member.memberId}
+                          </td>
+                          <td className="py-2 px-4 text-gray-600 text-sm">
+                            {member.fullName}
+                          </td>
+                          <td className="py-2 px-4 text-gray-500 text-sm">
+                            {member.mobileNumber}
+                          </td>
+                          <td className="py-2 px-4 text-gray-400 text-sm">—</td>
+                          <td className="py-2 px-4 text-center text-gray-400 text-sm">
+                            —
+                          </td>
+                          <td className="py-2 px-4 text-center text-gray-400 text-sm">
+                            —
+                          </td>
+                          <td className="py-2 px-4 text-center text-gray-400 text-sm">
+                            —
+                          </td>
+                          <td className="py-2 px-4 text-center">
+                            <span
+                              className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
+                                member.isActive
+                                  ? "bg-green-50 text-green-700"
+                                  : "bg-gray-100 text-gray-500"
+                              }`}
+                            >
+                              {member.isActive ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         )}
