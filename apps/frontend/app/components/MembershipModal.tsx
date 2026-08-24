@@ -37,6 +37,7 @@ interface MembershipModalProps {
     mobileNumber: string;
     emailAddress: string;
     optional: string;
+    required: string;
     nid: string;
     permanentAddress: string;
     currentAddress: string;
@@ -522,7 +523,7 @@ export default function MembershipModal({
                     </button>
                   </div>
 
-                  <label>
+                  {/* <label>
                     {strings.transactionId || "Transaction ID"}
                     <input
                       required
@@ -531,13 +532,14 @@ export default function MembershipModal({
                       placeholder="e.g., TXN123456"
                       disabled={isLoading}
                     />
-                  </label>
+                  </label> */}
 
                   <label>
                     {strings.paymentMethod ||
                       "Sender Account (your bKash number)"}
-                    <span>{strings.optional}</span>
+                    <span>{strings.required}</span>
                     <input
+                      required
                       inputMode="tel"
                       value={senderAccount}
                       onChange={(e) => setSenderAccount(e.target.value)}

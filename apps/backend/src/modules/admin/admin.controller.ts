@@ -55,9 +55,9 @@ export class AdminController {
   @Get('payments')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async getPayments(
-    @Query('status') status?: PaymentStatus,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('status') status?: PaymentStatus,
   ) {
     return this.adminService.getPayments(status, page, limit);
   }
