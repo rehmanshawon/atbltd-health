@@ -5,64 +5,48 @@ import { useAuth } from "../../lib/auth-context";
 import {
   UserCheck,
   Loader2,
-  ChevronRight,
-  ChevronDown,
   Plus,
+  ChevronRight,
   Users,
   TrendingUp,
-  Circle,
 } from "lucide-react";
 import Link from "next/link";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
-interface AgentData {
+interface Owner {
   id: string;
   agentCode: string;
   commissionRate: number;
   totalCommissionEarned: number;
-  totalCommissionPaid: number;
   totalMembersRegistered: number;
   activeMembers: number;
   isActive: boolean;
-  createdAt: string;
   user?: {
-    id: string;
-    memberId: string;
     fullName: string;
     mobileNumber: string;
-    role: string;
-    isActive: boolean;
+    memberId: string;
   };
-  parentAgent?: {
-    id: string;
-    agentCode: string;
-    user?: { fullName: string };
-  };
+  subAgents?: Owner[];
 }
 
-export default function AgentsPage() {
-  const { token, user } = useAuth();
-  const [agents, setAgents] = useState<AgentData[]>([]);
+export default function OwnersPage() {
+  const { token } = useAuth();
+  const [owners, setOwners] = useState<Owner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (token) loadAgents();
+    if (token) loadOwners();
   }, [token]);
 
-  const loadAgents = async () => {
+  const loadOwners = async () => {
     try {
-      const res = await fetch(`${API_BASE}/agents`, {
+      const res = await fetch(`${API_BASE}/agents/owners`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      // Only show agents (not owners)
-      const agentsOnly = Array.isArray(data)
-        ? data.filter((a: any) => a.user?.role === "agent")
-        : [];
-      setAgents(agentsOnly);
+      setOwners(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -70,95 +54,44 @@ export default function AgentsPage() {
     }
   };
 
-  const toggleExpand = (id: string) => {
-    const next = new Set(expandedIds);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setExpandedIds(next);
-  };
-
   const formatCurrency = (amount: number) =>
     `${amount?.toLocaleString() || 0} BDT`;
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 size={28} className="animate-spin text-brand-red" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-brand-blue">Agents</h1>
+          <h1 className="text-2xl font-bold text-brand-blue">Owners</h1>
           <p className="text-gray-500 text-sm mt-0.5">
-            Manage agents and view hierarchy
+            Manage all owners in the network
           </p>
         </div>
         <Link
-          href="/admin/agents/create"
+          href="/admin/owners/create"
           className="flex items-center gap-2 px-4 py-2 rounded-md bg-brand-red text-white text-sm font-medium hover:bg-brand-red/90 transition-colors"
         >
-          <Plus size={16} /> Create Agent
+          <Plus size={16} /> Create Owner
         </Link>
       </div>
 
-      {/* Stats Summary */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white border border-gray-200 rounded-md p-4">
-          <p className="text-gray-400 text-xs font-semibold uppercase">
-            Total Agents
-          </p>
-          <p className="text-brand-blue text-2xl font-bold mt-1">
-            {agents.length}
-          </p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-md p-4">
-          <p className="text-gray-400 text-xs font-semibold uppercase">
-            Total Members Registered
-          </p>
-          <p className="text-brand-blue text-2xl font-bold mt-1">
-            {agents.reduce(
-              (sum, a) => sum + (a.totalMembersRegistered || 0),
-              0,
-            )}
-          </p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-md p-4">
-          <p className="text-gray-400 text-xs font-semibold uppercase">
-            Total Commission Earned
-          </p>
-          <p className="text-brand-blue text-2xl font-bold mt-1">
-            {formatCurrency(
-              agents.reduce(
-                (sum, a) => sum + Number(a.totalCommissionEarned || 0),
-                0,
-              ),
-            )}
-          </p>
-        </div>
-      </div>
-
-      {/* Agents List */}
       <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
-          <UserCheck size={16} className="text-gray-400" />
-          <span className="text-gray-700 text-sm font-medium">All Agents</span>
-          <span className="text-gray-400 text-xs">({agents.length})</span>
-        </div>
-
-        {agents.length === 0 ? (
+        {isLoading ? (
+          <div className="py-16 text-center">
+            <Loader2
+              size={28}
+              className="animate-spin text-brand-red mx-auto"
+            />
+          </div>
+        ) : owners.length === 0 ? (
           <div className="py-16 text-center text-gray-400 text-sm">
-            No agents found
+            No owners found
           </div>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
-                  Agent Code
+                  Owner Code
                 </th>
                 <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
                   Name
@@ -166,14 +99,14 @@ export default function AgentsPage() {
                 <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
                   Mobile
                 </th>
-                <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
-                  Parent Owner
-                </th>
                 <th className="text-center py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
                   Commission
                 </th>
                 <th className="text-center py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
                   Members
+                </th>
+                <th className="text-center py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
+                  Sub-Agents
                 </th>
                 <th className="text-center py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
                   Earned
@@ -184,44 +117,44 @@ export default function AgentsPage() {
               </tr>
             </thead>
             <tbody>
-              {agents.map((agent, i) => (
+              {owners.map((owner, i) => (
                 <tr
-                  key={agent.id}
+                  key={owner.id}
                   className={`border-b border-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/20"}`}
                 >
                   <td className="py-2.5 px-4 text-brand-blue text-sm font-mono">
-                    {agent.agentCode}
+                    {owner.agentCode}
                   </td>
                   <td className="py-2.5 px-4 text-gray-800 text-sm font-medium">
-                    {agent.user?.fullName}
+                    {owner.user?.fullName}
                   </td>
                   <td className="py-2.5 px-4 text-gray-600 text-sm">
-                    {agent.user?.mobileNumber}
-                  </td>
-                  <td className="py-2.5 px-4 text-gray-600 text-sm">
-                    {agent.parentAgent?.agentCode || "—"}
+                    {owner.user?.mobileNumber}
                   </td>
                   <td className="py-2.5 px-4 text-center text-gray-700 text-sm font-semibold">
-                    {agent.commissionRate}%
+                    {owner.commissionRate}%
                   </td>
                   <td className="py-2.5 px-4 text-center text-gray-700 text-sm">
-                    {agent.totalMembersRegistered || 0}
+                    {owner.totalMembersRegistered || 0}
+                  </td>
+                  <td className="py-2.5 px-4 text-center text-gray-700 text-sm">
+                    {owner.subAgents?.length || 0}
                   </td>
                   <td className="py-2.5 px-4 text-center text-green-600 text-sm font-medium">
-                    {formatCurrency(Number(agent.totalCommissionEarned))}
+                    {formatCurrency(Number(owner.totalCommissionEarned))}
                   </td>
                   <td className="py-2.5 px-4 text-center">
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
-                        agent.isActive
+                        owner.isActive
                           ? "bg-green-50 text-green-700"
                           : "bg-gray-100 text-gray-500"
                       }`}
                     >
                       <span
-                        className={`w-1.5 h-1.5 rounded-full ${agent.isActive ? "bg-green-500" : "bg-gray-400"}`}
+                        className={`w-1.5 h-1.5 rounded-full ${owner.isActive ? "bg-green-500" : "bg-gray-400"}`}
                       />
-                      {agent.isActive ? "Active" : "Inactive"}
+                      {owner.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
                 </tr>

@@ -88,4 +88,14 @@ export class AgentController {
   ) {
     return this.agentService.deactivateAgent(id, user.sub);
   }
+
+  /**
+   * GET /api/agents/owners — SA/Admin gets all owners only
+   */
+  @Get('owners')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async getOwners() {
+    const agents = await this.agentService.getAllAgents();
+    return agents.filter((a) => a.user?.role === UserRole.OWNER);
+  }
 }

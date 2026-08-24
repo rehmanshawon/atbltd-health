@@ -9,7 +9,7 @@ import Link from "next/link";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
-export default function CreateAgentPage() {
+export default function CreateOwnerPage() {
   const router = useRouter();
   const { token } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,31 +21,23 @@ export default function CreateAgentPage() {
     mobileNumber: "",
     email: "",
     password: "",
-    commissionRate: "10",
-    parentAgentCode: "",
+    commissionRate: "15",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-
-    if (!form.parentAgentCode) {
-      setError("Please enter the Parent Owner's Agent Code");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      const body: any = {
+      const body = {
         fullName: form.fullName,
         mobileNumber: form.mobileNumber,
         email: form.email || undefined,
         password: form.password,
-        role: "agent",
+        role: "owner",
         commissionRate: parseFloat(form.commissionRate),
-        parentAgentCode: form.parentAgentCode,
       };
 
       const res = await fetch(`${API_BASE}/agents`, {
@@ -58,18 +50,17 @@ export default function CreateAgentPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to create agent");
+      if (!res.ok) throw new Error(data.message || "Failed to create owner");
 
       setSuccess(
-        `Agent created successfully! Agent Code: ${data.agent?.agentCode}`,
+        `Owner created successfully! Owner Code: ${data.agent?.agentCode}`,
       );
       setForm({
         fullName: "",
         mobileNumber: "",
         email: "",
         password: "",
-        commissionRate: "10",
-        parentAgentCode: "",
+        commissionRate: "15",
       });
     } catch (err: any) {
       setError(err.message);
@@ -81,16 +72,16 @@ export default function CreateAgentPage() {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <Link
-        href="/admin/agents"
+        href="/admin/owners"
         className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm"
       >
-        <ArrowLeft size={15} /> Back to agents
+        <ArrowLeft size={15} /> Back to owners
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold text-brand-blue">Create Agent</h1>
+        <h1 className="text-2xl font-bold text-brand-blue">Create Owner</h1>
         <p className="text-gray-500 text-sm mt-0.5">
-          Add a new agent to the network
+          Add a new owner to the network
         </p>
       </div>
 
@@ -163,43 +154,27 @@ export default function CreateAgentPage() {
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-600 text-xs font-semibold mb-1.5">
-              Commission Rate (%) *
-            </label>
-            <input
-              type="number"
-              required
-              value={form.commissionRate}
-              onChange={(e) =>
-                setForm({ ...form, commissionRate: e.target.value })
-              }
-              min="0"
-              max="100"
-              step="0.5"
-              className="w-full px-3 py-2.5 rounded-md border border-gray-300 text-gray-900 text-sm focus:border-brand-red focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-600 text-xs font-semibold mb-1.5">
-              Parent Owner ID *
-            </label>
-            <input
-              required
-              value={form.parentAgentCode}
-              onChange={(e) =>
-                setForm({ ...form, parentAgentCode: e.target.value })
-              }
-              placeholder="e.g., ATB-26-OW-1"
-              className="w-full px-3 py-2.5 rounded-md border border-gray-300 text-gray-900 text-sm focus:border-brand-red focus:outline-none"
-            />
-          </div>
+        <div>
+          <label className="block text-gray-600 text-xs font-semibold mb-1.5">
+            Commission Rate (%) *
+          </label>
+          <input
+            type="number"
+            required
+            value={form.commissionRate}
+            onChange={(e) =>
+              setForm({ ...form, commissionRate: e.target.value })
+            }
+            min="0"
+            max="100"
+            step="0.5"
+            className="w-full px-3 py-2.5 rounded-md border border-gray-300 text-gray-900 text-sm focus:border-brand-red focus:outline-none"
+          />
         </div>
 
         <div className="flex items-center gap-3 pt-2">
           <Link
-            href="/admin/agents"
+            href="/admin/owners"
             className="px-4 py-2.5 rounded-md border border-gray-200 text-gray-600 text-sm hover:bg-gray-50"
           >
             Cancel
@@ -214,7 +189,7 @@ export default function CreateAgentPage() {
             ) : (
               <UserPlus size={15} />
             )}
-            {isSubmitting ? "Creating..." : "Create Agent"}
+            {isSubmitting ? "Creating..." : "Create Owner"}
           </button>
         </div>
       </form>

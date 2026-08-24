@@ -27,6 +27,18 @@ const navItems = [
     roles: ["super_admin", "admin", "owner", "agent"],
   },
   {
+    label: "Owners",
+    href: "/admin/owners",
+    icon: UserCheck,
+    roles: ["super_admin", "admin"],
+  },
+  {
+    label: "Agents",
+    href: "/admin/agents",
+    icon: UserCheck,
+    roles: ["super_admin", "admin", "owner"],
+  },
+  {
     label: "Members",
     href: "/admin/members",
     icon: Users,
@@ -43,12 +55,6 @@ const navItems = [
     href: "/admin/claims",
     icon: FileText,
     roles: ["super_admin", "admin"],
-  },
-  {
-    label: "Agents",
-    href: "/admin/agents",
-    icon: UserCheck,
-    roles: ["super_admin", "admin", "owner"],
   },
   {
     label: "Audit Logs",
