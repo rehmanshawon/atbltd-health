@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
 interface AgentData {
   id: string;
@@ -58,9 +59,10 @@ export default function AgentsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      setAgents(data || []);
+      setAgents(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
+      setAgents([]);
     } finally {
       setIsLoading(false);
     }

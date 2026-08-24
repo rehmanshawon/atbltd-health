@@ -21,7 +21,7 @@ import { FraudService } from './fraud.service';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
-//@Roles(UserRole.ADMIN, UserRole.OWNER)
+@Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,

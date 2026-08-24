@@ -21,7 +21,7 @@ import { JwtPayload } from '../auth/strategies/jwt.strategy';
 import { AgentService } from '../agent/agent.service';
 @Controller('commissions')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.OWNER)
+@Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
 export class CommissionController {
   constructor(
     private readonly commissionService: CommissionService,
@@ -29,7 +29,7 @@ export class CommissionController {
   ) {}
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.AGENT)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER, UserRole.AGENT)
   async findAll(
     @CurrentUser() user: JwtPayload,
     @Query('agentId') agentId?: string,

@@ -27,7 +27,7 @@ export class UsersController {
    * Admin/Owner only - Dashboard statistics
    */
   @Get('stats')
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
   async getStats() {
     return this.usersService.getStats();
   }
@@ -37,7 +37,7 @@ export class UsersController {
    * Admin/Owner/Agent - Search members (for call center)
    */
   @Get('search')
-  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.AGENT)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER, UserRole.AGENT)
   async search(@Query('q') query: string) {
     return this.usersService.search(query);
   }
@@ -47,7 +47,7 @@ export class UsersController {
    * Admin/Owner - Get all users with pagination
    */
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.OWNER, UserRole.AGENT)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER, UserRole.AGENT)
   async findAll(
     @CurrentUser() user: JwtPayload,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,

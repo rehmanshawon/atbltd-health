@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from "./lib/auth-context";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "ATB Ltd | Care, with confidence",
@@ -28,7 +28,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <AuthProvider>{children}</AuthProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

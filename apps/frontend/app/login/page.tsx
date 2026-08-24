@@ -26,20 +26,15 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      const dest = user.role === "member" ? "/dashboard" : "/admin";
-      router.replace(dest);
-    }
-  }, [isAuthenticated, user]);
 
   const handleMemberLogin = async (e: FormEvent) => {
+    console.log("MEMBER LOGIN CALLED");
     e.preventDefault();
     setError("");
     setIsLoading(true);
     try {
       await memberLogin(memberId);
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -48,6 +43,7 @@ export default function LoginPage() {
   };
 
   const handleStaffLogin = async (e: FormEvent) => {
+    console.log("STAFF LOGIN CALLED");
     e.preventDefault();
     setError("");
     setIsLoading(true);

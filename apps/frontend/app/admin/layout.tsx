@@ -17,7 +17,7 @@ import {
 import Link from "next/link";
 import NotificationBell from "../components/NotificationBell";
 
-const { user } = useAuth();
+//const { user } = useAuth();
 
 const navItems = [
   {
@@ -89,11 +89,6 @@ export default function AdminLayout({
   const visibleNavItems = navItems.filter(
     (item) => !item.roles || (user && item.roles.includes(user.role)),
   );
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [authLoading, isAuthenticated, router]);
 
   const handleLogout = () => {
     logout();

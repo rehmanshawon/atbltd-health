@@ -32,12 +32,6 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
 
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.replace("/login");
-    }
-  }, [authLoading, isAuthenticated, router]);
-
   const handleLogout = () => {
     logout();
     router.replace("/");

@@ -15,7 +15,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 interface User {
   memberId: string;
   fullName: string;
-  role: "admin" | "owner" | "agent" | "member";
+  role: "super_admin" | "admin" | "owner" | "agent" | "member";
   isActive: boolean;
   mobileNumber?: string;
 }

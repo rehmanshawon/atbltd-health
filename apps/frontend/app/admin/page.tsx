@@ -106,16 +106,15 @@ export default function AdminDashboard() {
   } | null>(null);
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated && !token) {
-      router.replace("/login");
-      return;
-    }
-    if (user && user.role !== "admin" && user.role !== "owner") {
+    if (user && user.role === "member") {
       router.replace("/dashboard");
       return;
     }
-    if (token && isAuthenticated) loadData();
-  }, [authLoading, isAuthenticated, user, token]);
+    if (token && isAuthenticated) {
+      loadData();
+      setIsLoading(false);
+    }
+  }, [user, token, isAuthenticated]);
 
   const loadData = async () => {
     try {
@@ -143,7 +142,7 @@ export default function AdminDashboard() {
     setTimeout(() => setActionMsg(null), 4000);
   };
 
-  if (authLoading || isLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <div className="text-center">

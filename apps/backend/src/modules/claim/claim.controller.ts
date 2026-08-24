@@ -71,7 +71,7 @@ export class ClaimController {
    */
   @Get('stats')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
   async getStats() {
     return this.claimService.getClaimStats();
   }
@@ -89,7 +89,7 @@ export class ClaimController {
    */
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async getAllClaims(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(15), ParseIntPipe) limit: number,
@@ -112,7 +112,7 @@ export class ClaimController {
    */
   @Put(':id/status')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
   async updateStatus(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,

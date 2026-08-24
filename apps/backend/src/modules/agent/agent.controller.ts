@@ -25,7 +25,7 @@ export class AgentController {
    * POST /api/agents — Admin/Owner creates a new agent/owner
    */
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
   async createAgent(
     @CurrentUser() user: JwtPayload,
     @Body()
@@ -46,7 +46,7 @@ export class AgentController {
    * GET /api/agents — Get all agents (Admin only)
    */
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.OWNER)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
   async getAllAgents(@CurrentUser() user: JwtPayload) {
     if (user.role === UserRole.ADMIN) {
       return this.agentService.getAllAgents();
@@ -61,7 +61,7 @@ export class AgentController {
    * GET /api/agents/my-agents — Owner gets their sub-agents
    */
   @Get('my-agents')
-  @Roles(UserRole.OWNER, UserRole.AGENT)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.OWNER, UserRole.AGENT)
   async getMyAgents(@CurrentUser() user: JwtPayload) {
     const agent = await this.agentService.getAgentByUserId(user.sub);
     if (!agent) return [];
@@ -72,7 +72,7 @@ export class AgentController {
    * GET /api/agents/me — Get current user's agent profile
    */
   @Get('me')
-  @Roles(UserRole.OWNER, UserRole.AGENT)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.OWNER, UserRole.AGENT)
   async getMyProfile(@CurrentUser() user: JwtPayload) {
     return this.agentService.getAgentByUserId(user.sub);
   }
@@ -81,7 +81,7 @@ export class AgentController {
    * PUT /api/agents/:id/deactivate — Deactivate an agent
    */
   @Put(':id/deactivate')
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async deactivateAgent(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,

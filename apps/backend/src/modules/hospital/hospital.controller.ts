@@ -98,7 +98,7 @@ export class HospitalController {
    */
   @Get()
   @UseGuards(JwtAuthGuard)
-  //@Roles(UserRole.ADMIN)
+  //@Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async getAllHospitals() {
     return this.hospitalService.getAllHospitals();
   }
@@ -108,7 +108,7 @@ export class HospitalController {
    */
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async createHospital(@CurrentUser() user: JwtPayload, @Body() body: any) {
     return this.hospitalService.createHospital(body, user.sub);
   }
@@ -118,7 +118,7 @@ export class HospitalController {
    */
   @Put(':id/deactivate')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async deactivate(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.hospitalService.deactivateHospital(id, user.sub);
   }
