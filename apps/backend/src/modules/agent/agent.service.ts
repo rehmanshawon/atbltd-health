@@ -211,4 +211,17 @@ export class AgentService {
     });
     return `ATB-${currentYear}-${prefix}-${count + 1}`;
   }
+
+  /**
+   * Get all agents only (no owners)
+   */
+  async getAgentsOnly(): Promise<Agent[]> {
+    const agents = await this.agentRepository.find({
+      where: { isActive: true },
+      relations: ['user', 'parentAgent', 'parentAgent.user'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return agents.filter((a) => a.user?.role === UserRole.AGENT);
+  }
 }

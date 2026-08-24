@@ -48,10 +48,9 @@ export class AgentController {
   @Get()
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
   async getAllAgents(@CurrentUser() user: JwtPayload) {
-    if (user.role === UserRole.ADMIN) {
-      return this.agentService.getAllAgents();
+    if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN) {
+      return this.agentService.getAgentsOnly(); // New method
     }
-    // Owner: only their sub-agents
     const agent = await this.agentService.getAgentByUserId(user.sub);
     if (!agent) return [];
     return this.agentService.getAgentsByParent(agent.id);
