@@ -5,9 +5,13 @@ import { User } from '../../entities/user.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { AgentService } from './agent.service';
 import { AgentController } from './agent.controller';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Agent, User, AuditLog])],
+  imports: [
+    TypeOrmModule.forFeature([Agent, User, AuditLog]),
+    NotificationModule,
+  ],
   controllers: [AgentController],
   providers: [AgentService],
   exports: [AgentService],

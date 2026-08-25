@@ -3,14 +3,17 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
-import { Agent } from '../../entities/agent.entity';
+import { Agent, AgentApprovalStatus } from '../../entities/agent.entity';
 import { User } from '../../entities/user.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
+import { NotificationService } from '../notification/notification.service';
+import { NotificationType } from '../../entities/notification.entity';
 
 @Injectable()
 export class AgentService {
@@ -21,6 +24,7 @@ export class AgentService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(AuditLog)
     private readonly auditLogRepository: Repository<AuditLog>,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -78,6 +82,29 @@ export class AgentService {
     // Hash password
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
+    // Find the creator
+    const creator = await this.userRepository.findOne({
+      where: { id: createdBy },
+    });
+
+    // Determine initial approval state based on creator's role
+    let initialIsActive = false;
+    let initialApprovalStatus = AgentApprovalStatus.PENDING;
+
+    if (creator?.role === UserRole.SUPER_ADMIN) {
+      // SA creates directly — no approval needed
+      initialIsActive = true;
+      initialApprovalStatus = AgentApprovalStatus.ACTIVE;
+    } else if (creator?.role === UserRole.ADMIN) {
+      // Admin creates — needs SA final approval
+      initialIsActive = false;
+      initialApprovalStatus = AgentApprovalStatus.APPROVED_BY_ADMIN;
+    } else if (creator?.role === UserRole.OWNER) {
+      // Owner creates agent — needs Admin check + SA final
+      initialIsActive = false;
+      initialApprovalStatus = AgentApprovalStatus.PENDING;
+    }
+
     // Create user
     const user = this.userRepository.create({
       memberId,
@@ -86,38 +113,53 @@ export class AgentService {
       email: data.email,
       password: hashedPassword,
       role: data.role,
-      isActive: true,
+      isActive: initialIsActive,
       isKycVerified: true,
     });
 
     const savedUser = await this.userRepository.save(user);
 
-    // Generate agent code (use the same format as member ID)
-    const currentYear = new Date().getFullYear().toString().slice(-2);
-    // const agentCount = await this.agentRepository.count();
-    // const agentCode = `ATB-${currentYear}-${
-    //   data.role === 'owner' ? 'OW' : 'AG'
-    // }-${agentCount + 1}`;
+    // Use memberId as agent code
     const agentCode = memberId;
-
-    // Find the admin who is creating
-    const creator = await this.userRepository.findOne({
-      where: { id: createdBy },
-    });
 
     // Create agent record with parent UUID
     const agent = this.agentRepository.create({
       userId: savedUser.id,
       agentCode,
       commissionRate: data.commissionRate,
-      parentAgentId: parentAgentId, // UUID or null
-      isActive: true,
-      createdBy: creator?.memberId || createdBy, // Store admin's member ID
-      createdByName: creator?.fullName || 'Unknown', // Store admin's full name
-      createdByRole: creator?.role || 'unknown', // Add this to know who created
+      parentAgentId: parentAgentId,
+      isActive: initialIsActive,
+      approvalStatus: initialApprovalStatus,
+      createdBy: creator?.memberId || createdBy,
+      createdByName: creator?.fullName || 'Unknown',
+      createdByRole: creator?.role || 'unknown',
     });
 
     const savedAgent = await this.agentRepository.save(agent);
+
+    if (creator?.role === UserRole.ADMIN) {
+      // Admin created something — notify SA
+      await this.notificationService.notifyRoles(
+        [UserRole.SUPER_ADMIN],
+        NotificationType.SYSTEM_ALERT,
+        `${data.role === 'owner' ? 'Owner' : 'Agent'} Awaiting Approval`,
+        `${creator.fullName} created ${data.role} ${savedUser.fullName} (${savedUser.memberId}). Your approval is required.`,
+        '/admin/approvals',
+        savedAgent.id,
+      );
+    }
+
+    if (creator?.role === UserRole.OWNER) {
+      // Owner created agent — notify Admin and SA
+      await this.notificationService.notifyRoles(
+        [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+        NotificationType.SYSTEM_ALERT,
+        'Agent Awaiting Approval',
+        `${creator.fullName} (${creator.memberId}) created agent ${savedUser.fullName} (${savedUser.memberId}). Pending approval.`,
+        '/admin/approvals',
+        savedAgent.id,
+      );
+    }
 
     // Audit log
     await this.auditLogRepository.save({
@@ -132,6 +174,8 @@ export class AgentService {
         agentCode: savedAgent.agentCode,
         commissionRate: data.commissionRate,
         parentAgentCode: data.parentAgentCode || null,
+        approvalStatus: initialApprovalStatus,
+        createdByRole: creator?.role || 'unknown',
       },
     });
 
@@ -143,7 +187,6 @@ export class AgentService {
    */
   async getAllAgents(): Promise<Agent[]> {
     return this.agentRepository.find({
-      where: { isActive: true },
       relations: ['user', 'parentAgent', 'parentAgent.user', 'subAgents'],
       order: { createdAt: 'DESC' },
     });
@@ -154,7 +197,7 @@ export class AgentService {
    */
   async getAgentsByParent(parentAgentId: string): Promise<Agent[]> {
     return this.agentRepository.find({
-      where: { parentAgentId, isActive: true },
+      where: { parentAgentId },
       relations: ['user'],
       order: { createdAt: 'DESC' },
     });
@@ -171,61 +214,10 @@ export class AgentService {
   }
 
   /**
-   * Deactivate an agent
-   */
-  async deactivateAgent(agentId: string, adminId: string): Promise<void> {
-    const agent = await this.agentRepository.findOne({
-      where: { id: agentId },
-      relations: ['user'],
-    });
-
-    if (!agent) throw new NotFoundException('Agent not found');
-
-    agent.isActive = false;
-    agent.user.isActive = false;
-
-    await this.agentRepository.save(agent);
-    await this.userRepository.save(agent.user);
-
-    await this.auditLogRepository.save({
-      action: 'AGENT_DEACTIVATED',
-      entity: 'Agent',
-      entityId: agentId,
-      performedById: adminId,
-      newValue: { agentCode: agent.agentCode, status: 'deactivated' },
-    });
-  }
-
-  private async generateAgentMemberId(role: string): Promise<string> {
-    const currentYear = new Date().getFullYear().toString().slice(-2);
-
-    let prefix = '';
-    switch (role) {
-      case 'admin':
-        prefix = 'AD'; // Regular Admin
-        break;
-      case 'owner':
-        prefix = 'OW';
-        break;
-      case 'agent':
-        prefix = 'AG';
-        break;
-      default:
-        prefix = 'AD'; // Regular Admin
-    }
-
-    const count = await this.userRepository.count({
-      where: { role: role as UserRole },
-    });
-    return `ATB-${currentYear}-${prefix}-${count + 1}`;
-  }
-
-  /**
    * Get all agents only (no owners)
    */
   async getAgentsOnly(): Promise<Agent[]> {
     const agents = await this.agentRepository.find({
-      where: { isActive: true },
       relations: ['user', 'parentAgent', 'parentAgent.user'],
       order: { createdAt: 'DESC' },
     });
@@ -250,5 +242,260 @@ export class AgentService {
     }
 
     return agentsOnly;
+  }
+
+  /**
+   * Approve pending agent (Maker or Checker)
+   */
+  async approveAgent(
+    agentId: string,
+    adminId: string,
+    adminRole: string,
+  ): Promise<Agent> {
+    const agent = await this.agentRepository.findOne({
+      where: { id: agentId },
+      relations: ['user'],
+    });
+
+    if (!agent) throw new NotFoundException('Agent not found');
+
+    if (adminRole === UserRole.SUPER_ADMIN) {
+      // SA final approval
+      agent.approvalStatus = AgentApprovalStatus.ACTIVE;
+      agent.isActive = true;
+      if (agent.user) {
+        agent.user.isActive = true;
+        await this.userRepository.save(agent.user);
+      }
+    } else if (adminRole === UserRole.ADMIN) {
+      // Admin checks
+      if (agent.approvalStatus === AgentApprovalStatus.PENDING) {
+        agent.approvalStatus = AgentApprovalStatus.APPROVED_BY_ADMIN;
+      } else {
+        throw new BadRequestException('Invalid approval state');
+      }
+    } else {
+      throw new BadRequestException('Only Admin or Super Admin can approve');
+    }
+
+    const saved = await this.agentRepository.save(agent);
+
+    // notify the next approver or the creator
+    if (
+      adminRole === UserRole.ADMIN &&
+      saved.approvalStatus === AgentApprovalStatus.APPROVED_BY_ADMIN
+    ) {
+      // Admin approved — notify SA
+      await this.notificationService.notifyRoles(
+        [UserRole.SUPER_ADMIN],
+        NotificationType.SYSTEM_ALERT,
+        'Agent Approved by Admin — Final Approval Needed',
+        `${saved.agentCode} approved by Admin. SA final approval required.`,
+        '/admin/approvals',
+        agentId,
+      );
+    }
+
+    if (adminRole === UserRole.SUPER_ADMIN) {
+      // SA approved — notify Admin and creator
+      await this.notificationService.notifyRoles(
+        [UserRole.ADMIN],
+        NotificationType.SYSTEM_ALERT,
+        'Agent Fully Approved',
+        `${saved.agentCode} has been fully approved by SA.`,
+        '/admin/agents',
+        agentId,
+      );
+    }
+
+    // Audit log
+    await this.auditLogRepository.save({
+      action: 'AGENT_APPROVED',
+      entity: 'Agent',
+      entityId: agentId,
+      performedById: adminId,
+      newValue: {
+        agentCode: agent.agentCode,
+        approvalStatus: saved.approvalStatus,
+        approvedByRole: adminRole,
+      },
+    });
+
+    return saved;
+  }
+
+  /**
+   * Request deactivation (Maker)
+   */
+  async requestDeactivation(
+    agentId: string,
+    requesterId: string,
+    requesterRole: string,
+  ): Promise<Agent> {
+    const agent = await this.agentRepository.findOne({
+      where: { id: agentId },
+      relations: ['user'],
+    });
+
+    if (!agent) throw new NotFoundException('Agent not found');
+
+    if (requesterRole === UserRole.SUPER_ADMIN) {
+      // SA can deactivate directly
+      agent.isActive = false;
+      agent.approvalStatus = AgentApprovalStatus.DEACTIVATED;
+      if (agent.user) {
+        agent.user.isActive = false;
+        await this.userRepository.save(agent.user);
+      }
+    } else if (requesterRole === UserRole.ADMIN) {
+      agent.approvalStatus = AgentApprovalStatus.DEACTIVATION_PENDING;
+    } else if (requesterRole === UserRole.OWNER) {
+      // Owner requests deactivation of their sub-agent
+      if (agent.parentAgentId !== requesterId) {
+        throw new ForbiddenException('You can only deactivate your own agents');
+      }
+      agent.approvalStatus = AgentApprovalStatus.DEACTIVATION_PENDING;
+    } else {
+      throw new ForbiddenException('You do not have permission to deactivate');
+    }
+
+    const saved = await this.agentRepository.save(agent);
+
+    if (requesterRole === UserRole.OWNER) {
+      await this.notificationService.notifyRoles(
+        [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+        NotificationType.SYSTEM_ALERT,
+        'Deactivation Requested',
+        `${agent.agentCode} deactivation requested by owner. Pending approval.`,
+        '/admin/approvals',
+        agentId,
+      );
+    }
+
+    if (requesterRole === UserRole.ADMIN) {
+      await this.notificationService.notifyRoles(
+        [UserRole.SUPER_ADMIN],
+        NotificationType.SYSTEM_ALERT,
+        'Deactivation Requested',
+        `${agent.agentCode} deactivation requested by Admin. SA approval required.`,
+        '/admin/approvals',
+        agentId,
+      );
+    }
+
+    // Audit log
+    await this.auditLogRepository.save({
+      action: 'AGENT_DEACTIVATION_REQUESTED',
+      entity: 'Agent',
+      entityId: agentId,
+      performedById: requesterId,
+      newValue: {
+        agentCode: agent.agentCode,
+        approvalStatus: saved.approvalStatus,
+        requestedByRole: requesterRole,
+      },
+    });
+
+    return saved;
+  }
+
+  /**
+   * Approve deactivation (Checker)
+   */
+  async approveDeactivation(
+    agentId: string,
+    adminId: string,
+    adminRole: string,
+  ): Promise<Agent> {
+    const agent = await this.agentRepository.findOne({
+      where: { id: agentId },
+      relations: ['user'],
+    });
+
+    if (!agent) throw new NotFoundException('Agent not found');
+
+    if (adminRole === UserRole.SUPER_ADMIN) {
+      agent.approvalStatus = AgentApprovalStatus.DEACTIVATED;
+      agent.isActive = false;
+      if (agent.user) {
+        agent.user.isActive = false;
+        await this.userRepository.save(agent.user);
+      }
+    } else if (adminRole === UserRole.ADMIN) {
+      agent.approvalStatus = AgentApprovalStatus.DEACTIVATION_APPROVED_BY_ADMIN;
+    } else {
+      throw new BadRequestException(
+        'Only Admin or Super Admin can approve deactivation',
+      );
+    }
+
+    const saved = await this.agentRepository.save(agent);
+
+    // Audit log
+    await this.auditLogRepository.save({
+      action: 'AGENT_DEACTIVATION_APPROVED',
+      entity: 'Agent',
+      entityId: agentId,
+      performedById: adminId,
+      newValue: {
+        agentCode: agent.agentCode,
+        approvalStatus: saved.approvalStatus,
+        approvedByRole: adminRole,
+      },
+    });
+
+    return saved;
+  }
+
+  /**
+   * Get pending approvals for SA/Admin
+   */
+  async getPendingApprovals(): Promise<{
+    pendingCreates: Agent[];
+    pendingDeactivations: Agent[];
+  }> {
+    const pendingCreates = await this.agentRepository.find({
+      where: [
+        { approvalStatus: AgentApprovalStatus.PENDING },
+        { approvalStatus: AgentApprovalStatus.APPROVED_BY_ADMIN },
+      ],
+      relations: ['user', 'parentAgent', 'parentAgent.user'],
+      order: { createdAt: 'DESC' },
+    });
+
+    const pendingDeactivations = await this.agentRepository.find({
+      where: [
+        { approvalStatus: AgentApprovalStatus.DEACTIVATION_PENDING },
+        { approvalStatus: AgentApprovalStatus.DEACTIVATION_APPROVED_BY_ADMIN },
+      ],
+      relations: ['user'],
+      order: { updatedAt: 'DESC' },
+    });
+
+    return { pendingCreates, pendingDeactivations };
+  }
+
+  private async generateAgentMemberId(role: string): Promise<string> {
+    const currentYear = new Date().getFullYear().toString().slice(-2);
+
+    let prefix = '';
+    switch (role) {
+      case 'admin':
+        prefix = 'AD';
+        break;
+      case 'owner':
+        prefix = 'OW';
+        break;
+      case 'agent':
+        prefix = 'AG';
+        break;
+      default:
+        prefix = 'AD';
+    }
+
+    const count = await this.userRepository.count({
+      where: { role: role as UserRole },
+    });
+    return `ATB-${currentYear}-${prefix}-${count + 1}`;
   }
 }

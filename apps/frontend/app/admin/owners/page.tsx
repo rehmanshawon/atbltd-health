@@ -76,6 +76,20 @@ export default function OwnersPage() {
       </div>
     );
   }
+  const handleDeactivate = async (agentId: string) => {
+    if (!confirm("Request deactivation of this owner?")) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/agents/${agentId}/deactivate`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed");
+      await loadOwners();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto">
@@ -183,7 +197,7 @@ export default function OwnersPage() {
                     <tr
                       className={`border-b border-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/20"}`}
                     >
-                      <td className="py-2.5 px-4">
+                      <td className="py-2.5 px-2">
                         <div className="flex items-center gap-2">
                           {subAgentCount > 0 && (
                             <button
@@ -208,25 +222,25 @@ export default function OwnersPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="py-2.5 px-4 text-gray-800 text-sm font-medium">
+                      <td className="py-2.5 px-2 text-gray-800 text-sm font-medium">
                         {owner.user?.fullName}
                       </td>
-                      <td className="py-2.5 px-4 text-gray-600 text-sm">
+                      <td className="py-2.5 px-2 text-gray-600 text-sm">
                         {owner.user?.mobileNumber}
                       </td>
-                      <td className="py-2.5 px-4 text-center text-gray-700 text-sm font-semibold">
+                      <td className="py-2.5 px-2 text-center text-gray-700 text-sm font-semibold">
                         {owner.commissionRate}%
                       </td>
-                      <td className="py-2.5 px-4 text-center text-gray-700 text-sm">
+                      <td className="py-2.5 px-2 text-center text-gray-700 text-sm">
                         {owner.totalMembersRegistered || 0}
                       </td>
-                      <td className="py-2.5 px-4 text-center text-gray-700 text-sm">
+                      <td className="py-2.5 px-2 text-center text-gray-700 text-sm">
                         {subAgentCount}
                       </td>
-                      <td className="py-2.5 px-4 text-center text-green-600 text-sm font-medium">
+                      <td className="py-2.5 px-2 text-center text-green-600 text-sm font-medium">
                         {formatCurrency(Number(owner.totalCommissionEarned))}
                       </td>
-                      <td className="py-2.5 px-4 text-gray-600 text-sm">
+                      <td className="py-2.5 px-2 text-gray-600 text-sm">
                         <div>
                           <p className="text-gray-700 text-sm">
                             {owner.createdByName || "—"}
@@ -236,7 +250,7 @@ export default function OwnersPage() {
                           </p>
                         </div>
                       </td>
-                      <td className="py-2.5 px-4 text-center">
+                      <td className="py-2.5 px-1 text-center">
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
                             owner.isActive
@@ -249,6 +263,20 @@ export default function OwnersPage() {
                           />
                           {owner.isActive ? "Active" : "Inactive"}
                         </span>
+                      </td>
+                      <td className="py-2.5 px-1 text-center">
+                        {owner.isActive ? (
+                          <button
+                            onClick={() => handleDeactivate(owner.id)}
+                            className="px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                          >
+                            Deactivate
+                          </button>
+                        ) : (
+                          <span className="text-gray-400 text-xs">
+                            Deactivated
+                          </span>
+                        )}
                       </td>
                     </tr>
 

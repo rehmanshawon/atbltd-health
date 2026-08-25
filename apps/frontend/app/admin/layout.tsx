@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   Bell,
   Building2,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import NotificationBell from "../components/NotificationBell";
@@ -78,6 +79,12 @@ const navItems = [
     label: "Hospitals",
     href: "/admin/hospitals",
     icon: Building2,
+    roles: ["super_admin", "admin"],
+  },
+  {
+    label: "Approvals",
+    href: "/admin/approvals",
+    icon: Clock,
     roles: ["super_admin", "admin"],
   },
 ];

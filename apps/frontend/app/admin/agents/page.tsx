@@ -96,6 +96,21 @@ export default function AgentsPage() {
     );
   }
 
+  const handleDeactivate = async (agentId: string) => {
+    if (!confirm("Request deactivation of this owner?")) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/agents/${agentId}/deactivate`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed");
+      await loadAgents();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto">
       <div className="flex items-center justify-between">
@@ -259,6 +274,20 @@ export default function AgentsPage() {
                           />
                           {agent.isActive ? "Active" : "Inactive"}
                         </span>
+                      </td>
+                      <td className="py-2.5 px-4 text-center">
+                        {agent.isActive ? (
+                          <button
+                            onClick={() => handleDeactivate(agent.id)}
+                            className="px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                          >
+                            Deactivate
+                          </button>
+                        ) : (
+                          <span className="text-gray-400 text-xs">
+                            Deactivated
+                          </span>
+                        )}
                       </td>
                     </tr>
 

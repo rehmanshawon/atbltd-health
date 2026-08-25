@@ -11,6 +11,17 @@ import {
 import { User } from './user.entity';
 import { Commission } from './commission.entity';
 
+export enum AgentApprovalStatus {
+  PENDING = 'pending',
+  APPROVED_BY_ADMIN = 'approved_by_admin',
+  APPROVED_BY_SA = 'approved_by_sa',
+  REJECTED = 'rejected',
+  ACTIVE = 'active',
+  DEACTIVATION_PENDING = 'deactivation_pending',
+  DEACTIVATION_APPROVED_BY_ADMIN = 'deactivation_approved_by_admin',
+  DEACTIVATED = 'deactivated',
+}
+
 @Entity('agents')
 export class Agent {
   @PrimaryGeneratedColumn('uuid')
@@ -73,6 +84,13 @@ export class Agent {
 
   @OneToMany(() => Commission, (commission) => commission.agent)
   commissions: Commission[];
+
+  @Column({
+    type: 'enum',
+    enum: AgentApprovalStatus,
+    default: AgentApprovalStatus.ACTIVE,
+  })
+  approvalStatus: AgentApprovalStatus;
 
   @Column({ default: true })
   isActive: boolean;

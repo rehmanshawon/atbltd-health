@@ -80,12 +80,12 @@ export class AgentController {
    * PUT /api/agents/:id/deactivate — Deactivate an agent
    */
   @Put(':id/deactivate')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
   async deactivateAgent(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.agentService.deactivateAgent(id, user.sub);
+    return this.agentService.requestDeactivation(id, user.sub, user.role);
   }
 
   /**
@@ -96,5 +96,47 @@ export class AgentController {
   async getOwners() {
     const agents = await this.agentService.getAllAgents();
     return agents.filter((a) => a.user?.role === UserRole.OWNER);
+  }
+
+  /**
+   * GET /api/agents/pending-approvals — SA/Admin
+   */
+  @Get('pending-approvals')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async getPendingApprovals() {
+    return this.agentService.getPendingApprovals();
+  }
+
+  /**
+   * PUT /api/agents/:id/approve — SA/Admin
+   */
+  @Put(':id/approve')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async approveAgent(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.agentService.approveAgent(id, user.sub, user.role);
+  }
+
+  /**
+   * PUT /api/agents/:id/request-deactivation — SA/Admin/Owner
+   */
+  @Put(':id/request-deactivation')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
+  async requestDeactivation(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.agentService.requestDeactivation(id, user.sub, user.role);
+  }
+
+  /**
+   * PUT /api/agents/:id/approve-deactivation — SA/Admin
+   */
+  @Put(':id/approve-deactivation')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  async approveDeactivation(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.agentService.approveDeactivation(id, user.sub, user.role);
   }
 }
