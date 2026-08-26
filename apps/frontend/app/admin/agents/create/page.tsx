@@ -15,6 +15,7 @@ export default function CreateAgentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const isSuperAdmin = user?.role === "super_admin";
 
   // If current user is an Owner, auto-set parentAgentCode to their own code
   const isOwnerCreating = user?.role === "owner";
@@ -154,23 +155,45 @@ export default function CreateAgentPage() {
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-600 text-xs font-semibold mb-1.5">
-              Commission Rate (%) *
-            </label>
-            <input
-              type="number"
-              required
-              value={form.commissionRate}
-              onChange={(e) =>
-                setForm({ ...form, commissionRate: e.target.value })
-              }
-              min="0"
-              max="100"
-              step="0.5"
-              className="w-full px-3 py-2.5 rounded-md border border-gray-300 text-gray-900 text-sm focus:border-brand-red focus:outline-none"
-            />
-          </div>
+          {isSuperAdmin ? (
+            <div>
+              <label className="block text-gray-600 text-xs font-semibold mb-1.5">
+                Commission Rate (%) *
+              </label>
+              <input
+                type="number"
+                required
+                value={form.commissionRate}
+                onChange={(e) =>
+                  setForm({ ...form, commissionRate: e.target.value })
+                }
+                min="0"
+                max="100"
+                step="0.5"
+                className="w-full px-3 py-2.5 rounded-md border border-gray-300 text-gray-900 text-sm focus:border-brand-red focus:outline-none"
+              />
+            </div>
+          ) : (
+            <div>
+              <label className="block text-gray-600 text-xs font-semibold mb-1.5">
+                Commission Rate (%)
+              </label>
+              <div className="relative">
+                <input
+                  value="10"
+                  readOnly
+                  className="w-full px-3 py-2.5 rounded-md border border-gray-200 bg-gray-50 text-gray-500 text-sm focus:outline-none cursor-not-allowed pr-10"
+                />
+                <Lock
+                  size={14}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+              </div>
+              <p className="text-gray-400 text-[10px] mt-1">
+                Only Super Admin can change this value
+              </p>
+            </div>
+          )}
           <div>
             <label className="block text-gray-600 text-xs font-semibold mb-1.5">
               Parent Owner (Agent Code) *

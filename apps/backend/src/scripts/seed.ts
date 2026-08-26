@@ -63,7 +63,7 @@ async function bootstrap() {
 
     const secondAdmin = queryRunner.manager.create(User, {
       memberId: 'ATB-26-AD-1',
-      fullName: 'Finance Manager',
+      fullName: 'Finance Director',
       mobileNumber: '01700000001',
       email: 'finance@atbltd.health',
       password: secondAdminPassword,

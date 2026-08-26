@@ -4,7 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "ATB Ltd | Care, with confidence",
+  title: "টাকার অভাবে থামবে না চিকিৎসা",
   description: "Accessible healthcare support for you and your family.",
 };
 
@@ -26,6 +26,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700;900&display=swap"
           rel="stylesheet"
         />
+        <link rel="icon" href="/images/logo.png" type="image/png" />
       </head>
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
