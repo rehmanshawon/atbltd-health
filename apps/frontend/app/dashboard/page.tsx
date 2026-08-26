@@ -27,6 +27,7 @@ interface DashboardData {
     fullName: string;
     mobileNumber: string;
     email: string | null;
+    nid: string | null; // Add this
     isActive: boolean;
     isKycVerified: boolean;
     createdAt: string;
@@ -220,9 +221,10 @@ export default function MemberDashboard() {
         {[
           {
             icon: Shield,
-            label: "KYC Status",
-            value: dashboard?.profile.isKycVerified ? "Verified" : "Pending",
-            color: dashboard?.profile.isKycVerified ? "#22c55e" : "#eab308",
+            label: "NID Number",
+            value: dashboard?.profile.nid || "Not provided",
+            sub: "National ID",
+            color: "#22c55e",
           },
           {
             icon: Calendar,

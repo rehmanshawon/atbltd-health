@@ -472,6 +472,28 @@ export class ClaimService {
       claimId,
     );
 
+    // Send SMS to member
+    const memberUser = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (memberUser?.mobileNumber) {
+      await this.smsService.sendSms(
+        memberUser.mobileNumber,
+        'ATB Ltd এর মেম্বার হিসেবে আপনার চিকিৎসা বিলের তথ্য জমা হয়েছে, যাচাই শেষে বিল পরিশোধ করা হবে।',
+      );
+    }
+
+    // Notify member in dashboard
+    await this.notificationService.notifyUser(
+      userId,
+      NotificationType.CLAIM_STATUS_UPDATED,
+      'Documents Received',
+      'Your treatment bill information has been submitted. Bill will be paid after verification.',
+      '/dashboard/claims',
+      claimId,
+    );
+
     await this.auditLogRepository.save({
       action: 'CLAIM_DOCUMENTS_UPLOADED',
       entity: 'Claim',
