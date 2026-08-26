@@ -6,6 +6,11 @@ import { Providers } from "./providers";
 export const metadata: Metadata = {
   title: "টাকার অভাবে থামবে না চিকিৎসা",
   description: "Accessible healthcare support for you and your family.",
+  icons: {
+    icon: "/images/logo.png",
+    shortcut: "/images/logo.png",
+    apple: "/images/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -26,7 +31,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700;900&display=swap"
           rel="stylesheet"
         />
-        <link rel="icon" href="/images/logo.png" type="image/png" />
+        {/* <link rel="icon" href="/images/logo.png" type="image/png" /> */}
       </head>
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
