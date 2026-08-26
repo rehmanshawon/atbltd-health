@@ -27,7 +27,6 @@ export class Agent {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // Every agent is a user first
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
@@ -36,7 +35,7 @@ export class Agent {
   userId: string;
 
   @Column({ unique: true })
-  agentCode: string; // e.g., AGT-2026-0001
+  agentCode: string;
 
   @Column({
     type: 'decimal',
@@ -44,7 +43,7 @@ export class Agent {
     scale: 2,
     default: 10.0,
   })
-  commissionRate: number; // Percentage
+  commissionRate: number;
 
   @Column({
     type: 'decimal',
@@ -68,7 +67,6 @@ export class Agent {
   @Column({ default: 0 })
   activeMembers: number;
 
-  // Hierarchy: Agent → Sub-agents
   @ManyToOne(() => Agent, (agent) => agent.subAgents, {
     onDelete: 'SET NULL',
     nullable: true,
@@ -85,6 +83,9 @@ export class Agent {
   @OneToMany(() => Commission, (commission) => commission.agent)
   commissions: Commission[];
 
+  @Column({ default: true })
+  isActive: boolean;
+
   @Column({
     type: 'enum',
     enum: AgentApprovalStatus,
@@ -92,21 +93,21 @@ export class Agent {
   })
   approvalStatus: AgentApprovalStatus;
 
-  @Column({ default: true })
-  isActive: boolean;
+  @Column({ nullable: true })
+  createdBy: string;
+
+  @Column({ nullable: true })
+  createdByName: string;
+
+  @Column({ nullable: true })
+  createdByRole: string;
+
+  @Column({ nullable: true })
+  plainPassword: string; // Temporary — cleared after SMS
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @Column({ nullable: true })
-  createdBy: string; // Admin's member ID who created this agent/owner
-
-  @Column({ nullable: true })
-  createdByName: string; // Admin's full name
-
-  @Column({ nullable: true })
-  createdByRole: string; // super_admin / admin / owner
 }

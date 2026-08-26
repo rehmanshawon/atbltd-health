@@ -14,6 +14,7 @@ import { AuditLog } from '../../entities/audit-log.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationType } from '../../entities/notification.entity';
+import { SmsService } from '../sms/sms.service';
 
 @Injectable()
 export class AgentService {
@@ -25,7 +26,17 @@ export class AgentService {
     @InjectRepository(AuditLog)
     private readonly auditLogRepository: Repository<AuditLog>,
     private readonly notificationService: NotificationService,
+    private readonly smsService: SmsService,
   ) {}
+
+  /**
+   * Generate password: first 3 letters of name (lowercase) + last 6 digits of mobile
+   */
+  private generatePassword(fullName: string, mobileNumber: string): string {
+    const namePart = fullName.replace(/\s+/g, '').substring(0, 3).toLowerCase();
+    const mobilePart = mobileNumber.replace(/\D/g, '').slice(-6);
+    return `${namePart}${mobilePart}`;
+  }
 
   /**
    * Create a new Owner or Agent
@@ -35,7 +46,7 @@ export class AgentService {
       fullName: string;
       mobileNumber: string;
       email?: string;
-      password: string;
+      // password: string;
       role: UserRole.OWNER | UserRole.AGENT;
       commissionRate: number;
       parentAgentCode?: string; // Agent code for the parent (e.g., ATB-26-OW-1)
@@ -79,8 +90,12 @@ export class AgentService {
     // Generate member ID for owner/agent
     const memberId = await this.generateAgentMemberId(data.role);
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(data.password, 12);
+    // AUTO-GENERATE PASSWORD: first 3 letters of name + last 6 digits of mobile
+    const autoPassword = this.generatePassword(
+      data.fullName,
+      data.mobileNumber,
+    );
+    const hashedPassword = await bcrypt.hash(autoPassword, 12);
 
     // Find the creator
     const creator = await this.userRepository.findOne({
@@ -122,7 +137,7 @@ export class AgentService {
     // Use memberId as agent code
     const agentCode = memberId;
 
-    // Create agent record with parent UUID
+    // Create agent record with plain password for SMS later
     const agent = this.agentRepository.create({
       userId: savedUser.id,
       agentCode,
@@ -133,6 +148,7 @@ export class AgentService {
       createdBy: creator?.memberId || createdBy,
       createdByName: creator?.fullName || 'Unknown',
       createdByRole: creator?.role || 'unknown',
+      plainPassword: autoPassword, // Store for SMS on approval
     });
 
     const savedAgent = await this.agentRepository.save(agent);
@@ -160,6 +176,43 @@ export class AgentService {
         savedAgent.id,
       );
     }
+
+    // If SA created directly, send SMS immediately (no approval needed)
+    if (
+      creator?.role === UserRole.SUPER_ADMIN &&
+      initialApprovalStatus === AgentApprovalStatus.ACTIVE
+    ) {
+      const userRole = savedUser.role;
+
+      if (userRole === UserRole.OWNER) {
+        await this.smsService.sendSms(
+          savedUser.mobileNumber,
+          `ধন্যবাদ। ATB Ltd এ OWNER ID হোল্ডার হিসেবে আপনাকে স্বাগতম। আপনার OWNER ID: ${savedAgent.agentCode}, আপনার পাসওয়ার্ড: ${autoPassword}`,
+        );
+      } else if (userRole === UserRole.AGENT) {
+        await this.smsService.sendSms(
+          savedUser.mobileNumber,
+          `ধন্যবাদ। ATB Ltd এ AGENT হিসেবে আপনাকে স্বাগতম। আপনার AGENT ID: ${savedAgent.agentCode}, আপনার পাসওয়ার্ড: ${autoPassword}`,
+        );
+      }
+
+      // Clear plain password (already sent)
+      savedAgent.plainPassword = null;
+      await this.agentRepository.save(savedAgent);
+    }
+
+    // Also notify the user
+    await this.notificationService.notifyUser(
+      savedUser.id,
+      NotificationType.SYSTEM_ALERT,
+      savedUser.role === UserRole.OWNER
+        ? 'Owner ID Activated'
+        : 'Agent ID Activated',
+      `Your ${savedUser.role === UserRole.OWNER ? 'OWNER' : 'AGENT'} ID ${
+        savedAgent.agentCode
+      } has been activated.`,
+      '/admin',
+    );
 
     // Audit log
     await this.auditLogRepository.save({
@@ -279,6 +332,32 @@ export class AgentService {
     }
 
     const saved = await this.agentRepository.save(agent);
+
+    // SEND SMS on SA final approval
+    if (
+      adminRole === UserRole.SUPER_ADMIN &&
+      saved.approvalStatus === AgentApprovalStatus.ACTIVE &&
+      saved.user?.mobileNumber
+    ) {
+      const userRole = saved.user.role;
+      const password = saved.plainPassword || 'Contact support';
+
+      if (userRole === UserRole.OWNER) {
+        await this.smsService.sendSms(
+          saved.user.mobileNumber,
+          `ধন্যবাদ। ATB Ltd এ OWNER ID হোল্ডার হিসেবে আপনাকে স্বাগতম। আপনার OWNER ID: ${saved.agentCode}, আপনার পাসওয়ার্ড: ${password}`,
+        );
+      } else if (userRole === UserRole.AGENT) {
+        await this.smsService.sendSms(
+          saved.user.mobileNumber,
+          `ধন্যবাদ। ATB Ltd এ AGENT হিসেবে আপনাকে স্বাগতম। আপনার AGENT ID: ${saved.agentCode}, আপনার পাসওয়ার্ড: ${password}`,
+        );
+      }
+
+      // Clear plain password after SMS (security)
+      saved.plainPassword = null;
+      await this.agentRepository.save(saved);
+    }
 
     // notify the next approver or the creator
     if (

@@ -33,7 +33,7 @@ export class AgentController {
       fullName: string;
       mobileNumber: string;
       email?: string;
-      password: string;
+      // password: string;
       role: UserRole.OWNER | UserRole.AGENT;
       commissionRate: number;
       parentAgentCode?: string;
