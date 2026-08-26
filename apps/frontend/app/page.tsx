@@ -14,6 +14,7 @@ import ChairmanMessage from "./components/ChairmanMessage";
 import BenefitEligibility from "./components/BenefitEligibility";
 import DiseaseCoverage from "./components/DiseaseCoverage";
 import ClaimWorkflow from "./components/ClaimWorkflow";
+import AboutChairman from "./components/AboutChairman";
 import { en } from "./i18n/en";
 import { bn } from "./i18n/bn";
 
@@ -60,6 +61,7 @@ export default function Home() {
         <ChairmanMessage strings={locale.chairman} />
         {/* <HowItWorks strings={locale.howItWorks} /> */}
         {/* <BenefitEligibility strings={locale.eligibility} /> */}
+        <AboutChairman strings={locale.aboutChairman} />
         <DiseaseCoverage strings={locale.diseaseCoverage} />
         <ClaimWorkflow strings={locale.claimWorkflow} />
         <Benefits strings={locale.benefits} />

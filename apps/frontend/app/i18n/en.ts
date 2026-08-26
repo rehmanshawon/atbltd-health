@@ -3,6 +3,7 @@ export const en = {
     about: "About Us",
     howItWorks: "How It Works",
     benefits: "ATB Ltd Services",
+    aboutChairman: "About Chairman", // en
     contact: "Contact",
     becomeMember: "Become an ATB Member",
     learnHowItWorks: "How It Works",
@@ -320,5 +321,33 @@ export const en = {
       "Once your Member ID is activated, you will receive a text message on your mobile number.",
     benefits:
       "Receive 12,000 BDT membership benefits against your paid 1,000 BDT.",
+  },
+  aboutChairman: {
+    eyebrow: "About the Chairman",
+    title: "A.K.M. Moshiur Rahman",
+    description:
+      "Complete profile of the Chairman of Astha Treatment Bills Ltd",
+    currentRoles: "Current Roles",
+    chairmanTitle: "Chairman",
+    directorTitle: "Director",
+    executiveDirectorTitle: "Executive Director",
+    advisorTitle: "Advisor",
+    careerTitle: "Career",
+    educationTitle: "Education",
+    roles: {
+      chairman: "Chairman, Astha Treatment Bills Ltd",
+      director1: "Director, Rabindra Srijonkola University",
+      director2: "Director, Business Research Council (BRC)",
+      director3: "Director, Business Networking Club Ltd",
+      executiveDirector: "Executive Director, Heva Foundation",
+      advisor1: "Advisor, Desha Holdings",
+      advisor2: "Advisor, ByteQuill IT Firm",
+      career1: "Mercantile Bank PLC — Key Positions",
+      career2: "NRBC Bank PLC — Key Positions",
+      career3: "Meghna Bank PLC — Key Positions",
+      education1: "SSC — Rangpur Chinikol High School",
+      education2: "HSC — Mohimaganj Mahavidyalaya",
+      education3: "BA (Honors), MA, MBA — Rajshahi University",
+    },
   },
 };

@@ -14,6 +14,7 @@ interface NavbarProps {
     howItWorks: string;
     benefits: string;
     contact: string;
+    aboutChairman: string;
     becomeMember: string;
     learnHowItWorks: string;
     scroll: string;
@@ -114,7 +115,12 @@ export default function Navbar({
           >
             {strings.benefits}
           </Link>
-
+          <Link
+            href="#about-chairman"
+            className="text-white/75 hover:text-white transition"
+          >
+            {strings.aboutChairman || "চেয়ারম্যান সম্পর্কে"}
+          </Link>
           <Link
             href="#contact"
             className="text-white/75 hover:text-white transition"
@@ -176,6 +182,7 @@ export default function Navbar({
             ["About", "#chairman-message"],
             ["How It Works", "#how-it-works"],
             ["Benefits", "#benefits"],
+            ["About Chairman", "#about-chairman"],
             ["Contact", "#contact"],
           ].map(([label, href]) => (
             <Link key={href} href={href} onClick={closeMenu}>
@@ -185,7 +192,9 @@ export default function Navbar({
                   ? strings.howItWorks
                   : label === "Benefits"
                     ? strings.benefits
-                    : strings.contact}
+                    : label === "About Chairman"
+                      ? strings.aboutChairman || "চেয়ারম্যান সম্পর্কে"
+                      : strings.contact}
             </Link>
           ))}
           <Link
