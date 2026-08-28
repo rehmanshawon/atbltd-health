@@ -36,13 +36,7 @@ export default function VerificationStep({
   onSubmit,
 }: VerificationStepProps) {
   return (
-    <form
-      onSubmit={onSubmit}
-      className="enrollment-form enrollment-screen"
-      initial={{ opacity: 0, x: 12 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -12 }}
-    >
+    <form onSubmit={onSubmit} className="enrollment-form enrollment-screen">
       <div className="verification-orb">
         <Smartphone size={27} />
       </div>

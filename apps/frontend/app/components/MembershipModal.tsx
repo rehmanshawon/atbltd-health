@@ -379,7 +379,7 @@ export default function MembershipModal({ isOpen, onClose, strings }: Membership
                     paymentMethod={paymentMethod}
                     senderAccount={senderAccount}
                     isLoading={isLoading}
-                    onPaymentMethodChange={setPaymentMethod}
+                    onPaymentMethodChange={(method) => setPaymentMethod(method as PaymentMethod)}
                     onSenderAccountChange={setSenderAccount}
                   />
 
