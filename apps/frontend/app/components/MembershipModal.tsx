@@ -1,28 +1,14 @@
-"use client";
+'use client';
 
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  BadgeCheck,
-  BanknoteArrowUp,
-  Check,
-  CheckCircle2,
-  ChevronLeft,
-  Copy,
-  CreditCard,
-  LockKeyhole,
-  ShieldCheck,
-  Smartphone,
-  X,
-  Loader2,
-  Clock,
-  Gift,
-  Text,
-} from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check, X, Loader2, CheckCircle2 } from 'lucide-react';
+import { FormEvent, useEffect, useState } from 'react';
+import PaymentSection from './membership/PaymentSection';
+import VerificationStep from './membership/VerificationStep';
+import CompleteStep from './membership/CompleteStep';
 
 // --- API base URL ---
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
 interface MembershipModalProps {
   isOpen: boolean;
@@ -69,7 +55,6 @@ interface MembershipModalProps {
     benefitsAvailable: string;
     done: string;
     previewCode: string;
-    // New strings for API integration
     transactionId: string;
     paymentMethod: string;
     processingPayment: string;
@@ -85,75 +70,56 @@ interface MembershipModalProps {
   };
 }
 
-type EnrollmentStep = "details" | "payment" | "verification" | "complete";
-type PaymentMethod = "bkash" | "nagad" | "rocket";
+type EnrollmentStep = 'details' | 'verification' | 'complete';
+type PaymentMethod = 'bkash' | 'nagad' | 'rocket';
 
-const gateways: PaymentMethod[] = ["bkash", "Nagad" as any, "Rocket" as any];
-
-export default function MembershipModal({
-  isOpen,
-  onClose,
-  strings,
-}: MembershipModalProps) {
-  const [step, setStep] = useState<EnrollmentStep>("details");
-  const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [nid, setNid] = useState("");
-  const [email, setEmail] = useState("");
-  const [permanentAddress, setPermanentAddress] = useState("");
-  const [currentAddress, setCurrentAddress] = useState("");
-  const [referralId, setReferralId] = useState("");
+export default function MembershipModal({ isOpen, onClose, strings }: MembershipModalProps) {
+  const [step, setStep] = useState<EnrollmentStep>('details');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [nid, setNid] = useState('');
+  const [email, setEmail] = useState('');
+  const [permanentAddress, setPermanentAddress] = useState('');
+  const [currentAddress, setCurrentAddress] = useState('');
+  const [referralId, setReferralId] = useState('');
   const [agreed, setAgreed] = useState(false);
-
-  // Payment
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("bkash");
-  //const [transactionId, setTransactionId] = useState("");
-  const [senderAccount, setSenderAccount] = useState("");
-
-  // OTP
-  const [otp, setOtp] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bkash');
+  const [senderAccount, setSenderAccount] = useState('');
+  const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState(false);
-
-  // API state
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [memberId, setMemberId] = useState("");
-  const [tempPassword, setTempPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === 'Escape') onClose();
     };
 
     if (isOpen) {
-      window.addEventListener("keydown", onKeyDown);
+      window.addEventListener('keydown', onKeyDown);
     }
 
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, [isOpen, onClose]);
 
   const close = () => {
-    setStep("details");
-    setOtp("");
+    setStep('details');
+    setOtp('');
     setOtpError(false);
-    setErrorMessage("");
+    setErrorMessage('');
     setIsLoading(false);
     onClose();
   };
 
-  /**
-   * Step 1 → Step 2: Submit details and payment info to the backend
-   * POST /api/auth/register
-   */
   const submitRegistration = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
-    setErrorMessage("");
+    setErrorMessage('');
 
     try {
       const response = await fetch(`${API_BASE}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName,
           mobileNumber: phone,
@@ -163,7 +129,6 @@ export default function MembershipModal({
           currentAddress: currentAddress || undefined,
           referralId: referralId || undefined,
           paymentMethod,
-          //transactionId,
           senderAccount: senderAccount || phone,
         }),
       });
@@ -171,107 +136,76 @@ export default function MembershipModal({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
+        throw new Error(data.message || 'Registration failed');
       }
 
-      // Store the member ID and temp password from the response
-      setMemberId(data.memberId || "");
-      setTempPassword(data.temporaryPassword || "");
-
-      // Go directly to complete — no OTP step
-      setStep("complete");
+      setStep('complete');
     } catch (error) {
-      const msg =
-        error instanceof Error ? error.message : "An unexpected error occurred";
+      const msg = error instanceof Error ? error.message : 'An unexpected error occurred';
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  /**
-   * Send OTP to the registered mobile number
-   * POST /api/auth/send-otp
-   */
   const sendOtp = async () => {
     try {
       const response = await fetch(`${API_BASE}/auth/send-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobileNumber: phone }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to send OTP");
+        throw new Error(data.message || 'Failed to send OTP');
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : "Failed to send OTP";
+      const msg = error instanceof Error ? error.message : 'Failed to send OTP';
       setErrorMessage(msg);
     }
   };
 
-  /**
-   * Resend OTP
-   */
   const handleResendOtp = async () => {
-    setOtp("");
+    setOtp('');
     setOtpError(false);
-    setErrorMessage("");
+    setErrorMessage('');
     setIsLoading(true);
     await sendOtp();
     setIsLoading(false);
   };
 
-  /**
-   * Step 3 → Complete: Verify OTP
-   * POST /api/auth/verify-otp
-   */
   const verifyOtp = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setOtpError(false);
-    setErrorMessage("");
+    setErrorMessage('');
 
     try {
       const response = await fetch(`${API_BASE}/auth/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mobileNumber: phone,
-          otp,
-        }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobileNumber: phone, otp }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
         setOtpError(true);
-        throw new Error(data.message || "Invalid OTP");
+        throw new Error(data.message || 'Invalid OTP');
       }
 
-      // OTP verified — show completion screen
-      setStep("complete");
+      setStep('complete');
     } catch (error) {
-      const msg =
-        error instanceof Error ? error.message : "Verification failed";
+      const msg = error instanceof Error ? error.message : 'Verification failed';
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const copyValue = (value: string) => navigator.clipboard?.writeText(value);
-
-  const currentStep =
-    step === "details"
-      ? 0
-      : step === "payment"
-        ? 0
-        : step === "verification"
-          ? 1
-          : 2;
+  const currentStep = step === 'details' ? 0 : step === 'verification' ? 1 : 2;
 
   return (
     <AnimatePresence>
@@ -294,49 +228,24 @@ export default function MembershipModal({
             transition={{ ease: [0.16, 1, 0.3, 1] }}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <button
-              className="modal-close"
-              onClick={close}
-              aria-label="Close membership form"
-            >
+            <button className="modal-close" onClick={close} aria-label="Close membership form">
               <X size={20} />
             </button>
 
-            {step !== "complete" && (
+            {step !== 'complete' && (
               <>
                 <p className="section-eyebrow">ATB Ltd membership</p>
                 <h2 id="membership-title">{strings.title}</h2>
-                <div
-                  className="enrollment-steps"
-                  aria-label={`Step ${currentStep + 1} of 3`}
-                >
-                  <div
-                    className={
-                      currentStep >= 0
-                        ? "enrollment-step active"
-                        : "enrollment-step"
-                    }
-                  >
+                <div className="enrollment-steps" aria-label={`Step ${currentStep + 1} of 3`}>
+                  <div className="enrollment-step active">
                     <i>{currentStep > 0 ? <Check size={13} /> : 1}</i>
                     <span>{strings.details}</span>
                   </div>
-                  <div
-                    className={
-                      currentStep >= 1
-                        ? "enrollment-step active"
-                        : "enrollment-step"
-                    }
-                  >
+                  <div className={currentStep >= 1 ? 'enrollment-step active' : 'enrollment-step'}>
                     <i>{currentStep > 1 ? <Check size={13} /> : 2}</i>
                     <span>{strings.verify}</span>
                   </div>
-                  <div
-                    className={
-                      currentStep >= 2
-                        ? "enrollment-step active"
-                        : "enrollment-step"
-                    }
-                  >
+                  <div className={currentStep >= 2 ? 'enrollment-step active' : 'enrollment-step'}>
                     <i>3</i>
                     <span>{strings.done}</span>
                   </div>
@@ -344,32 +253,31 @@ export default function MembershipModal({
               </>
             )}
 
-            {/* Error banner */}
-            {errorMessage && step !== "complete" && (
+            {errorMessage && step !== 'complete' && (
               <div
                 className="prototype-notice"
-                style={{ marginTop: "1rem", borderLeftColor: "#ff7777" }}
+                style={{ marginTop: '1rem', borderLeftColor: '#ff7777' }}
               >
                 <p style={{ margin: 0 }}>{errorMessage}</p>
                 <button
-                  onClick={() => setErrorMessage("")}
+                  onClick={() => setErrorMessage('')}
                   style={{
-                    background: "none",
-                    border: "none",
-                    color: "#ff9999",
-                    cursor: "pointer",
-                    fontSize: "0.75rem",
-                    marginTop: "0.25rem",
+                    background: 'none',
+                    border: 'none',
+                    color: '#ff9999',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    marginTop: '0.25rem',
                   }}
                 >
-                  {strings.tryAgain || "Dismiss"}
+                  {strings.tryAgain || 'Dismiss'}
                 </button>
               </div>
             )}
 
             <AnimatePresence mode="wait">
-              {/* ========== STEP 1: DETAILS + PAYMENT ========== */}
-              {step === "details" && (
+              {/* Step 1: Details + Payment */}
+              {step === 'details' && (
                 <motion.form
                   key="details"
                   onSubmit={submitRegistration}
@@ -387,12 +295,11 @@ export default function MembershipModal({
                         required
                         autoComplete="name"
                         value={fullName}
-                        onChange={(event) => setFullName(event.target.value)}
+                        onChange={(e) => setFullName(e.target.value)}
                         placeholder={strings.fullName}
                         disabled={isLoading}
                       />
                     </label>
-
                     <label>
                       {strings.mobileNumber}
                       <input
@@ -400,7 +307,7 @@ export default function MembershipModal({
                         inputMode="tel"
                         autoComplete="tel"
                         value={phone}
-                        onChange={(event) => setPhone(event.target.value)}
+                        onChange={(e) => setPhone(e.target.value)}
                         placeholder="01XXXXXXXXX"
                         disabled={isLoading}
                       />
@@ -467,91 +374,14 @@ export default function MembershipModal({
                     />
                   </label>
 
-                  {/* Payment section inline */}
-                  <div
-                    className="payment-summary"
-                    style={{ marginTop: "0.5rem" }}
-                  >
-                    <span>{strings.firstYearMembership}</span>
-                    <strong>1,000 BDT</strong>
-                    <small>{strings.renewal}</small>
-                  </div>
-
-                  <p className="modal-intro" style={{ marginTop: "0.5rem" }}>
-                    {strings.choosePayment}
-                  </p>
-
-                  <div className="gateway-list">
-                    <button
-                      className={`send-money-card ${paymentMethod === "bkash" ? "" : ""}`}
-                      type="button"
-                      onClick={() => setPaymentMethod("bkash")}
-                      style={{
-                        borderColor:
-                          paymentMethod === "bkash" ? "#ff8a8a" : undefined,
-                        opacity: 1,
-                      }}
-                      disabled={isLoading}
-                    >
-                      <span className="gateway-symbol">
-                        <BanknoteArrowUp size={20} />
-                      </span>
-                      <span>
-                        <strong>{strings.sendMoney}</strong>
-                        <small>Send 1,000 BDT to:</small>
-                        <span
-                          style={{
-                            fontSize: "1.1rem",
-                            fontWeight: "bold",
-                            color: "#ff8a8a",
-                            display: "block",
-                            marginTop: "4px",
-                          }}
-                        >
-                          01721719611
-                        </span>
-                        <small style={{ marginTop: "4px", display: "block" }}>
-                          ATB Official bKash (Personal)
-                        </small>
-                      </span>
-                      {/* {paymentMethod === "bkash" ? (
-                        <BadgeCheck size={20} color="#ff8a8a" />
-                      ) : (
-                        <div style={{ width: 20 }} />
-                      )} */}
-                      <BadgeCheck size={20} />
-                    </button>
-                  </div>
-
-                  {/* <label>
-                    {strings.transactionId || "Transaction ID"}
-                    <input
-                      required
-                      value={transactionId}
-                      onChange={(e) => setTransactionId(e.target.value)}
-                      placeholder="e.g., TXN123456"
-                      disabled={isLoading}
-                    />
-                  </label> */}
-
-                  <label>
-                    {strings.paymentMethod ||
-                      "Sender Account (your bKash number)"}
-                    <span>{strings.required}</span>
-                    <input
-                      required
-                      inputMode="tel"
-                      value={senderAccount}
-                      onChange={(e) => setSenderAccount(e.target.value)}
-                      placeholder="01XXXXXXXXX"
-                      disabled={isLoading}
-                    />
-                  </label>
-
-                  <div className="payment-assistance">
-                    <ShieldCheck size={17} />
-                    <span>{strings.safety}</span>
-                  </div>
+                  <PaymentSection
+                    strings={strings}
+                    paymentMethod={paymentMethod}
+                    senderAccount={senderAccount}
+                    isLoading={isLoading}
+                    onPaymentMethodChange={setPaymentMethod}
+                    onSenderAccountChange={setSenderAccount}
+                  />
 
                   <label className="agreement-field">
                     <input
@@ -572,7 +402,7 @@ export default function MembershipModal({
                     {isLoading ? (
                       <>
                         <Loader2 size={18} className="animate-spin" />
-                        {strings.processingPayment || "Processing..."}
+                        {strings.processingPayment || 'Processing...'}
                       </>
                     ) : (
                       strings.continuePayment
@@ -581,143 +411,26 @@ export default function MembershipModal({
                 </motion.form>
               )}
 
-              {/* ========== STEP 2: OTP VERIFICATION ========== */}
-              {step === "verification" && (
-                <motion.form
-                  key="verification"
+              {/* Step 2: Verification */}
+              {step === 'verification' && (
+                <VerificationStep
+                  strings={strings}
+                  phone={phone}
+                  otp={otp}
+                  otpError={otpError}
+                  isLoading={isLoading}
+                  onOtpChange={(value) => {
+                    setOtp(value);
+                    setOtpError(false);
+                  }}
+                  onBack={() => setStep('details')}
+                  onResendOtp={handleResendOtp}
                   onSubmit={verifyOtp}
-                  className="enrollment-form enrollment-screen"
-                  initial={{ opacity: 0, x: 12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -12 }}
-                >
-                  <div className="verification-orb">
-                    <Smartphone size={27} />
-                  </div>
-
-                  <h3>{strings.verifyMobile}</h3>
-
-                  <p className="modal-intro">
-                    {strings.otpIntro}{" "}
-                    <strong>{phone || strings.yourMobileNumber}</strong>.
-                  </p>
-
-                  <p className="prototype-notice">
-                    {strings.previewNotice ||
-                      "A 6-digit code has been sent to your mobile number. In development mode, use 123456."}
-                  </p>
-
-                  <label>
-                    {strings.otp}
-                    <input
-                      className={otpError ? "otp-input otp-error" : "otp-input"}
-                      required
-                      inputMode="numeric"
-                      maxLength={6}
-                      value={otp}
-                      onChange={(event) => {
-                        setOtp(event.target.value.replace(/\D/g, ""));
-                        setOtpError(false);
-                      }}
-                      placeholder="••••••"
-                      disabled={isLoading}
-                    />
-                  </label>
-
-                  {otpError && (
-                    <p className="otp-error-text">{strings.enterOtp}</p>
-                  )}
-
-                  <div className="form-actions">
-                    <button
-                      className="modal-back-button"
-                      onClick={() => setStep("details")}
-                      type="button"
-                      disabled={isLoading}
-                    >
-                      <ChevronLeft size={18} />
-                      {strings.back}
-                    </button>
-
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                      <button
-                        type="button"
-                        className="secondary-button"
-                        onClick={handleResendOtp}
-                        disabled={isLoading}
-                        style={{ padding: "0.9rem 1rem", fontSize: "0.8rem" }}
-                      >
-                        {isLoading ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          "Resend OTP"
-                        )}
-                      </button>
-                      <button
-                        className="primary-button"
-                        type="submit"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 size={18} className="animate-spin" />
-                            {strings.verifyingOtp || "Verifying..."}
-                          </>
-                        ) : (
-                          strings.verifyActivate
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </motion.form>
+                />
               )}
 
-              {/* ========== COMPLETE ========== */}
-              {step === "complete" && (
-                <motion.div
-                  key="complete"
-                  className="membership-complete"
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                >
-                  <CheckCircle2 size={52} />
-                  <p className="section-eyebrow">{strings.membershipPreview}</p>
-                  <h2>
-                    {strings.applicationReceived || "Application Received!"}
-                  </h2>
-                  <p>{strings.applicationReceivedDesc}</p>
-
-                  <div className="activation-note">
-                    <Gift size={18} />
-                    {strings.pendingVerificationNote ||
-                      "Payment verification in progress."}
-                  </div>
-
-                  <div
-                    className="activation-note"
-                    style={{ background: "rgba(37, 99, 235, 0.12)" }}
-                  >
-                    <Text size={18} />
-                    {strings.whatHappensNext ||
-                      "SMS with login credentials will be sent after verification."}
-                  </div>
-                  <div
-                    className="activation-note"
-                    style={{ background: "rgba(37, 99, 235, 0.12)" }}
-                  >
-                    <CreditCard size={18} />
-                    {strings.benefits ||
-                      "SMS with login credentials will be sent after verification."}
-                  </div>
-
-                  <button
-                    className="secondary-button modal-submit"
-                    onClick={close}
-                  >
-                    {strings.done}
-                  </button>
-                </motion.div>
-              )}
+              {/* Step 3: Complete */}
+              {step === 'complete' && <CompleteStep strings={strings} onClose={close} />}
             </AnimatePresence>
           </motion.div>
         </motion.div>
