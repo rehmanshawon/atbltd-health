@@ -39,7 +39,10 @@ async function bootstrap() {
     // ============================================================
     // 1. Create Super Admin
     // ============================================================
-    const superAdminPassword = await bcrypt.hash('Admin@ATB2026', 12);
+    const superAdminPassword = await bcrypt.hash(
+      process.env.SEED_ADMIN_PASSWORD || 'Admin@ATB2026',
+      12,
+    );
 
     const superAdmin = queryRunner.manager.create(User, {
       memberId: 'ATB-26-SA-1',
@@ -59,7 +62,10 @@ async function bootstrap() {
     // ============================================================
     // 2. Create Second Admin
     // ============================================================
-    const secondAdminPassword = await bcrypt.hash('Admin2@ATB2026', 12);
+    const secondAdminPassword = await bcrypt.hash(
+      process.env.SEED_ADMIN2_PASSWORD || 'Admin2@ATB2026',
+      12,
+    );
 
     const secondAdmin = queryRunner.manager.create(User, {
       memberId: 'ATB-26-AD-1',
@@ -79,7 +85,10 @@ async function bootstrap() {
     // ============================================================
     // 3. Create an Owner
     // ============================================================
-    const ownerPassword = await bcrypt.hash('Owner@ATB2026', 12);
+    const ownerPassword = await bcrypt.hash(
+      process.env.SEED_OWNER_PASSWORD || 'Owner@ATB2026',
+      12,
+    );
 
     const owner = queryRunner.manager.create(User, {
       memberId: 'ATB-26-OW-1',
@@ -114,8 +123,10 @@ async function bootstrap() {
     // ============================================================
     // 4. Create a Sample Agent
     // ============================================================
-    const agentPassword = await bcrypt.hash('Agent@ATB2026', 12);
-
+    const agentPassword = await bcrypt.hash(
+      process.env.SEED_AGENT_PASSWORD || 'Agent@ATB2026',
+      12,
+    );
     const agentUser = queryRunner.manager.create(User, {
       memberId: 'ATB-26-AG-1',
       fullName: 'Sample Agent',

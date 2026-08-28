@@ -31,12 +31,14 @@ export class AuthService {
   private otpStore: Map<string, { otp: string; expiresAt: Date }> = new Map();
 
   // Official ATB recipient accounts for payment routing validation
-  private readonly officialAccounts = {
-    bkash: '01XXXXXXXXX', // Replace with actual ATB bKash merchant number
-    nagad: '01XXXXXXXXX', // Replace with actual ATB Nagad merchant number
-    rocket: '01XXXXXXXXX', // Replace with actual ATB Rocket merchant number
-    bank: 'ATB-OFFICIAL-BANK-ACCOUNT',
-  };
+  private getOfficialAccounts() {
+    return {
+      bkash: process.env.BKASH_MERCHANT_NUMBER || '01XXXXXXXXX',
+      nagad: process.env.NAGAD_MERCHANT_NUMBER || '01XXXXXXXXX',
+      rocket: process.env.ROCKET_MERCHANT_NUMBER || '01XXXXXXXXX',
+      bank: process.env.BANK_ACCOUNT || 'ATB-OFFICIAL-BANK-ACCOUNT',
+    };
+  }
 
   constructor(
     @InjectRepository(User)
@@ -87,7 +89,8 @@ export class AuthService {
     // ---- VALIDATION: Payment routing ----
     // Per meeting agenda: "No payment shall go to any Agent's personal account"
     // In production, verify the transactionId with the payment gateway API
-    const recipientAccount = this.officialAccounts[registerDto.paymentMethod];
+    const officialAccounts = this.getOfficialAccounts();
+    const recipientAccount = officialAccounts[registerDto.paymentMethod];
     if (!recipientAccount) {
       throw new BadRequestException(
         `Invalid payment method: ${registerDto.paymentMethod}. Allowed: bkash, nagad, rocket, bank`,
