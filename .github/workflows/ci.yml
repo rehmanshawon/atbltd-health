@@ -33,6 +33,10 @@ jobs:
         working-directory: apps/backend
         run: npm run lint
 
+      - name: Security audit
+        working-directory: apps/backend
+        run: npm audit --audit-level=high
+
   frontend-test:
     runs-on: ubuntu-latest
     steps:
@@ -58,3 +62,7 @@ jobs:
       - name: Run frontend lint
         working-directory: apps/frontend
         run: npm run lint
+
+      - name: Security audit
+        working-directory: apps/frontend
+        run: npm audit --audit-level=high
