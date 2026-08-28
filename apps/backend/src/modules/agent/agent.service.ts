@@ -82,19 +82,14 @@ export class AgentService {
       where: { mobileNumber: data.mobileNumber },
     });
     if (existing) {
-      throw new ConflictException(
-        'A user with this mobile number already exists',
-      );
+      throw new ConflictException('A user with this mobile number already exists');
     }
 
     // Generate member ID for owner/agent
     const memberId = await this.generateAgentMemberId(data.role);
 
     // AUTO-GENERATE PASSWORD: first 3 letters of name + last 6 digits of mobile
-    const autoPassword = this.generatePassword(
-      data.fullName,
-      data.mobileNumber,
-    );
+    const autoPassword = this.generatePassword(data.fullName, data.mobileNumber);
     const hashedPassword = await bcrypt.hash(autoPassword, 12);
 
     // Find the creator
@@ -205,9 +200,7 @@ export class AgentService {
     await this.notificationService.notifyUser(
       savedUser.id,
       NotificationType.SYSTEM_ALERT,
-      savedUser.role === UserRole.OWNER
-        ? 'Owner ID Activated'
-        : 'Agent ID Activated',
+      savedUser.role === UserRole.OWNER ? 'Owner ID Activated' : 'Agent ID Activated',
       `Your ${savedUser.role === UserRole.OWNER ? 'OWNER' : 'AGENT'} ID ${
         savedAgent.agentCode
       } has been activated.`,
@@ -281,14 +274,7 @@ export class AgentService {
     for (const agent of agentsOnly) {
       const members = await this.userRepository.find({
         where: { referralId: agent.agentCode, role: UserRole.MEMBER },
-        select: [
-          'id',
-          'memberId',
-          'fullName',
-          'mobileNumber',
-          'isActive',
-          'createdAt',
-        ],
+        select: ['id', 'memberId', 'fullName', 'mobileNumber', 'isActive', 'createdAt'],
         order: { createdAt: 'DESC' },
       });
       (agent as any).members = members;
@@ -300,11 +286,7 @@ export class AgentService {
   /**
    * Approve pending agent (Maker or Checker)
    */
-  async approveAgent(
-    agentId: string,
-    adminId: string,
-    adminRole: string,
-  ): Promise<Agent> {
+  async approveAgent(agentId: string, adminId: string, adminRole: string): Promise<Agent> {
     const agent = await this.agentRepository.findOne({
       where: { id: agentId },
       relations: ['user'],
@@ -373,6 +355,19 @@ export class AgentService {
         '/admin/approvals',
         agentId,
       );
+      // SMS to SA
+      const saUsers = await this.userRepository.find({
+        where: { role: UserRole.SUPER_ADMIN },
+      });
+
+      for (const saUser of saUsers) {
+        if (saUser.mobileNumber) {
+          await this.smsService.sendSms(
+            saUser.mobileNumber,
+            `নতুন এজেন্ট/ওনার অনুমোদনের জন্য অপেক্ষমাণ: ${saved.agentCode}. দয়া করে অ্যাডমিন প্যানেল চেক করুন।`,
+          );
+        }
+      }
     }
 
     if (adminRole === UserRole.SUPER_ADMIN) {
@@ -481,11 +476,7 @@ export class AgentService {
   /**
    * Approve deactivation (Checker)
    */
-  async approveDeactivation(
-    agentId: string,
-    adminId: string,
-    adminRole: string,
-  ): Promise<Agent> {
+  async approveDeactivation(agentId: string, adminId: string, adminRole: string): Promise<Agent> {
     const agent = await this.agentRepository.findOne({
       where: { id: agentId },
       relations: ['user'],
@@ -503,9 +494,7 @@ export class AgentService {
     } else if (adminRole === UserRole.ADMIN) {
       agent.approvalStatus = AgentApprovalStatus.DEACTIVATION_APPROVED_BY_ADMIN;
     } else {
-      throw new BadRequestException(
-        'Only Admin or Super Admin can approve deactivation',
-      );
+      throw new BadRequestException('Only Admin or Super Admin can approve deactivation');
     }
 
     const saved = await this.agentRepository.save(agent);
@@ -529,24 +518,36 @@ export class AgentService {
   /**
    * Get pending approvals for SA/Admin
    */
-  async getPendingApprovals(): Promise<{
+  /**
+   * Get pending approvals based on the requester's role
+   * Admin sees: items awaiting their check (PENDING from owner)
+   * SA sees: items approved by Admin, awaiting SA final (APPROVED_BY_ADMIN)
+   */
+  async getPendingApprovals(userRole: string): Promise<{
     pendingCreates: Agent[];
     pendingDeactivations: Agent[];
   }> {
+    let createWhere: any[] = [];
+    let deactivationWhere: any[] = [];
+
+    if (userRole === UserRole.ADMIN) {
+      // Admin sees items created by Owner (PENDING state)
+      createWhere = [{ approvalStatus: AgentApprovalStatus.PENDING }];
+      deactivationWhere = [{ approvalStatus: AgentApprovalStatus.DEACTIVATION_PENDING }];
+    } else if (userRole === UserRole.SUPER_ADMIN) {
+      // SA sees items already checked by Admin (APPROVED_BY_ADMIN state)
+      createWhere = [{ approvalStatus: AgentApprovalStatus.APPROVED_BY_ADMIN }];
+      deactivationWhere = [{ approvalStatus: AgentApprovalStatus.DEACTIVATION_APPROVED_BY_ADMIN }];
+    }
+
     const pendingCreates = await this.agentRepository.find({
-      where: [
-        { approvalStatus: AgentApprovalStatus.PENDING },
-        { approvalStatus: AgentApprovalStatus.APPROVED_BY_ADMIN },
-      ],
+      where: createWhere,
       relations: ['user', 'parentAgent', 'parentAgent.user'],
       order: { createdAt: 'DESC' },
     });
 
     const pendingDeactivations = await this.agentRepository.find({
-      where: [
-        { approvalStatus: AgentApprovalStatus.DEACTIVATION_PENDING },
-        { approvalStatus: AgentApprovalStatus.DEACTIVATION_APPROVED_BY_ADMIN },
-      ],
+      where: deactivationWhere,
       relations: ['user'],
       order: { updatedAt: 'DESC' },
     });

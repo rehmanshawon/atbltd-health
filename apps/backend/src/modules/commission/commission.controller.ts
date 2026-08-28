@@ -40,18 +40,19 @@ export class CommissionController {
     const pageNum = Number(page) || 1;
     const limitNum = Number(limit) || 20;
 
-    if (user.role === UserRole.ADMIN) {
+    if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN) {
       return this.commissionService.findAll({
         agentId,
         status,
         page: pageNum,
         limit: limitNum,
+        reviewerRole: user.role,
       });
     }
 
+    // Owner/Agent: only their own commissions
     const agent = await this.agentService.getAgentByUserId(user.sub);
-    if (!agent)
-      return { commissions: [], total: 0, page: pageNum, totalPages: 1 };
+    if (!agent) return { commissions: [], total: 0, page: pageNum, totalPages: 1 };
     return this.commissionService.findAll({
       agentId: agent.id,
       status,
@@ -71,10 +72,7 @@ export class CommissionController {
   }
 
   @Post(':id/confirm-payment')
-  async confirmPayment(
-    @Param('id') id: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  async confirmPayment(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.commissionService.confirmCommissionPayment(id, user.sub);
   }
 

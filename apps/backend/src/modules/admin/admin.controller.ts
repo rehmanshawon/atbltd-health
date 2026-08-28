@@ -68,8 +68,8 @@ export class AdminController {
    */
   @Get('payments/pending')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
-  async getPendingPayments() {
-    return this.adminService.getPendingPayments();
+  async getPendingPayments(@CurrentUser() user: JwtPayload) {
+    return this.adminService.getPendingPayments(user.role);
   }
 
   /**
@@ -78,10 +78,7 @@ export class AdminController {
    */
   @Post('payments/:id/verify')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
-  async verifyPayment(
-    @Param('id') id: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  async verifyPayment(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.adminService.verifyPayment(id, user.sub, user.role);
   }
 

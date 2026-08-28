@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Param,
-  Body,
-  UseGuards,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Param, Body, UseGuards, Query } from '@nestjs/common';
 import { AgentService } from './agent.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -81,10 +72,7 @@ export class AgentController {
    */
   @Put(':id/deactivate')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
-  async deactivateAgent(
-    @Param('id') id: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  async deactivateAgent(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.agentService.requestDeactivation(id, user.sub, user.role);
   }
 
@@ -103,8 +91,8 @@ export class AgentController {
    */
   @Get('pending-approvals')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
-  async getPendingApprovals() {
-    return this.agentService.getPendingApprovals();
+  async getPendingApprovals(@CurrentUser() user: JwtPayload) {
+    return this.agentService.getPendingApprovals(user.role);
   }
 
   /**
@@ -121,10 +109,7 @@ export class AgentController {
    */
   @Put(':id/request-deactivation')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
-  async requestDeactivation(
-    @Param('id') id: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  async requestDeactivation(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.agentService.requestDeactivation(id, user.sub, user.role);
   }
 
@@ -133,10 +118,7 @@ export class AgentController {
    */
   @Put(':id/approve-deactivation')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
-  async approveDeactivation(
-    @Param('id') id: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  async approveDeactivation(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.agentService.approveDeactivation(id, user.sub, user.role);
   }
 }

@@ -5,14 +5,10 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull, Not } from 'typeorm';
 import { Claim } from '../../entities/claim.entity';
 import { Membership } from '../../entities/membership.entity';
-import {
-  Payment,
-  PaymentStatus,
-  PaymentType,
-} from '../../entities/payment.entity';
+import { Payment, PaymentStatus, PaymentType } from '../../entities/payment.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { ClaimStatus } from '../../common/enums/claim-status.enum';
 import { UserRole } from '../../common/enums/user-role.enum';
@@ -125,11 +121,7 @@ export class ClaimService {
   /**
    * Member uploads documents for an existing claim
    */
-  async uploadDocuments(
-    claimId: string,
-    userId: string,
-    fileUrls: string[],
-  ): Promise<Claim> {
+  async uploadDocuments(claimId: string, userId: string, fileUrls: string[]): Promise<Claim> {
     const claim = await this.claimRepository.findOne({
       where: { id: claimId, memberId: userId },
     });
@@ -143,9 +135,7 @@ export class ClaimService {
       claim.status === ClaimStatus.REJECTED ||
       claim.status === ClaimStatus.PAYMENT_PROCESSED
     ) {
-      throw new BadRequestException(
-        'Cannot upload documents to a finalized claim',
-      );
+      throw new BadRequestException('Cannot upload documents to a finalized claim');
     }
 
     claim.documents = [...(claim.documents || []), ...fileUrls];
@@ -175,11 +165,7 @@ export class ClaimService {
   /**
    * Get single claim (member's own or admin)
    */
-  async getClaimById(
-    claimId: string,
-    userId: string,
-    userRole: string,
-  ): Promise<Claim> {
+  async getClaimById(claimId: string, userId: string, userRole: string): Promise<Claim> {
     const where: any = { id: claimId };
 
     // Members can only see their own claims
@@ -202,22 +188,37 @@ export class ClaimService {
   /**
    * Admin: Get all claims with optional filters
    */
+  /**
+   * Get all claims with optional filters
+   * Admin sees: claims not yet reviewed
+   * SA sees: claims reviewed by Admin, awaiting final approval
+   */
   async getAllClaims(filters: {
     status?: ClaimStatus;
     memberId?: string;
     page?: number;
     limit?: number;
+    reviewerRole?: string;
   }): Promise<{
     claims: Claim[];
     total: number;
     page: number;
     totalPages: number;
   }> {
-    const { status, memberId, page = 1, limit = 20 } = filters;
+    const { status, memberId, page = 1, limit = 20, reviewerRole } = filters;
     const where: any = {};
 
     if (status) where.status = status;
     if (memberId) where.memberId = memberId;
+
+    if (reviewerRole === UserRole.ADMIN) {
+      // Admin sees unreviewed claims
+      where.reviewedBy = null;
+    } else if (reviewerRole === UserRole.SUPER_ADMIN) {
+      // SA sees claims reviewed by Admin but not finally approved
+      where.reviewedBy = Not(IsNull());
+      where.checkerApprovedBy = null;
+    }
 
     const [claims, total] = await this.claimRepository.findAndCount({
       where,
@@ -299,9 +300,7 @@ export class ClaimService {
       claim.status = ClaimStatus.HOSPITAL_VERIFICATION;
     } else if (newStatus === ClaimStatus.PAYMENT_PROCESSED) {
       if (claim.status !== ClaimStatus.APPROVED) {
-        throw new BadRequestException(
-          'Only approved claims can be marked as paid',
-        );
+        throw new BadRequestException('Only approved claims can be marked as paid');
       }
 
       // Create payment record for the disbursement
@@ -324,8 +323,7 @@ export class ClaimService {
 
       if (membership) {
         membership.remainingBenefit =
-          Number(membership.remainingBenefit) -
-          (claim.approvedAmount || claim.claimedAmount);
+          Number(membership.remainingBenefit) - (claim.approvedAmount || claim.claimedAmount);
         await this.membershipRepository.save(membership);
       }
 
@@ -342,10 +340,7 @@ export class ClaimService {
         [UserRole.SUPER_ADMIN],
         NotificationType.CLAIM_STATUS_UPDATED,
         'Application Awaiting Final Approval',
-        `Application ${claimId.substring(
-          0,
-          8,
-        )} reviewed by Admin. Needs SA approval.`,
+        `Application ${claimId.substring(0, 8)} reviewed by Admin. Needs SA approval.`,
         '/admin/claims',
         claimId,
       );
@@ -439,9 +434,7 @@ export class ClaimService {
       claim.status === ClaimStatus.REJECTED ||
       claim.status === ClaimStatus.PAYMENT_PROCESSED
     ) {
-      throw new BadRequestException(
-        'Cannot upload documents to a finalized claim',
-      );
+      throw new BadRequestException('Cannot upload documents to a finalized claim');
     }
 
     // Save each document
@@ -535,10 +528,7 @@ export class ClaimService {
   /**
    * Admin verifies a document
    */
-  async verifyDocument(
-    documentId: string,
-    adminId: string,
-  ): Promise<ClaimDocument> {
+  async verifyDocument(documentId: string, adminId: string): Promise<ClaimDocument> {
     const doc = await this.claimDocumentRepository.findOne({
       where: { id: documentId },
     });
@@ -551,10 +541,7 @@ export class ClaimService {
   /**
    * Validate allowed status transitions
    */
-  private validateStatusTransition(
-    current: ClaimStatus,
-    next: ClaimStatus,
-  ): void {
+  private validateStatusTransition(current: ClaimStatus, next: ClaimStatus): void {
     const allowedTransitions: Record<ClaimStatus, ClaimStatus[]> = {
       [ClaimStatus.SUBMITTED]: [ClaimStatus.UNDER_REVIEW, ClaimStatus.REJECTED],
       [ClaimStatus.UNDER_REVIEW]: [
@@ -580,9 +567,7 @@ export class ClaimService {
     const allowed = allowedTransitions[current];
     if (!allowed || !allowed.includes(next)) {
       throw new BadRequestException(
-        `Cannot transition from ${current} to ${next}. Allowed: ${
-          allowed?.join(', ') || 'none'
-        }`,
+        `Cannot transition from ${current} to ${next}. Allowed: ${allowed?.join(', ') || 'none'}`,
       );
     }
   }

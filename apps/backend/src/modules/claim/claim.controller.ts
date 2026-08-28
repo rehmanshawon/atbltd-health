@@ -60,9 +60,7 @@ export class ClaimController {
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
     // In production, upload to S3/Cloud Storage and get URLs
-    const fileUrls = files.map(
-      (f) => `/uploads/claims/${id}/${f.originalname}`,
-    );
+    const fileUrls = files.map((f) => `/uploads/claims/${id}/${f.originalname}`);
     return this.claimService.uploadDocuments(id, user.sub, fileUrls);
   }
 
@@ -91,12 +89,19 @@ export class ClaimController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async getAllClaims(
+    @CurrentUser() user: JwtPayload,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(15), ParseIntPipe) limit: number,
     @Query('status') status?: ClaimStatus,
     @Query('memberId') memberId?: string,
   ) {
-    return this.claimService.getAllClaims({ status, memberId, page, limit });
+    return this.claimService.getAllClaims({
+      status,
+      memberId,
+      page,
+      limit,
+      reviewerRole: user.role,
+    });
   }
 
   /**
@@ -124,13 +129,7 @@ export class ClaimController {
       notes?: string;
     },
   ) {
-    return this.claimService.updateClaimStatus(
-      id,
-      body.status,
-      user.sub,
-      user.role,
-      body,
-    );
+    return this.claimService.updateClaimStatus(id, body.status, user.sub, user.role, body);
   }
 
   /**
@@ -150,21 +149,14 @@ export class ClaimController {
       }>;
     },
   ) {
-    return this.claimService.uploadDocumentsWithTypes(
-      id,
-      user.sub,
-      body.documents,
-    );
+    return this.claimService.uploadDocumentsWithTypes(id, user.sub, body.documents);
   }
 
   /**
    * GET /api/claims/:id/documents — Get claim documents
    */
   @Get(':id/documents')
-  async getClaimDocuments(
-    @Param('id') id: string,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  async getClaimDocuments(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.claimService.getClaimDocuments(id, user.sub, user.role);
   }
 }

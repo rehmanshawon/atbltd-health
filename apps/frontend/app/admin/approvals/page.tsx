@@ -1,11 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useAuth } from "../../lib/auth-context";
-import { Clock, CheckCircle2, XCircle, Loader2, UserCheck } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../lib/auth-context';
+import { Clock, CheckCircle2, XCircle, Loader2, UserCheck } from 'lucide-react';
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
 interface PendingAgent {
   id: string;
@@ -23,12 +22,12 @@ interface PendingAgent {
 
 export default function ApprovalsPage() {
   const { token, user } = useAuth();
+  const isSuperAdmin = user?.role === 'super_admin';
+  const isAdmin = user?.role === 'admin';
   const [pendingCreates, setPendingCreates] = useState<PendingAgent[]>([]);
-  const [pendingDeactivations, setPendingDeactivations] = useState<
-    PendingAgent[]
-  >([]);
+  const [pendingDeactivations, setPendingDeactivations] = useState<PendingAgent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [actionMsg, setActionMsg] = useState("");
+  const [actionMsg, setActionMsg] = useState('');
 
   useEffect(() => {
     if (token) loadPending();
@@ -52,29 +51,29 @@ export default function ApprovalsPage() {
   const handleApprove = async (id: string) => {
     try {
       await fetch(`${API_BASE}/agents/${id}/approve`, {
-        method: "PUT",
+        method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });
-      setActionMsg("Approved successfully");
+      setActionMsg('Approved successfully');
       await loadPending();
     } catch {
-      setActionMsg("Approval failed");
+      setActionMsg('Approval failed');
     }
-    setTimeout(() => setActionMsg(""), 3000);
+    setTimeout(() => setActionMsg(''), 3000);
   };
 
   const handleApproveDeactivation = async (id: string) => {
     try {
       await fetch(`${API_BASE}/agents/${id}/approve-deactivation`, {
-        method: "PUT",
+        method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });
-      setActionMsg("Deactivation approved");
+      setActionMsg('Deactivation approved');
       await loadPending();
     } catch {
-      setActionMsg("Failed");
+      setActionMsg('Failed');
     }
-    setTimeout(() => setActionMsg(""), 3000);
+    setTimeout(() => setActionMsg(''), 3000);
   };
 
   if (isLoading) {
@@ -89,10 +88,12 @@ export default function ApprovalsPage() {
     <div className="space-y-6 max-w-[1400px] mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-brand-blue">
-          Pending Approvals
+          {isSuperAdmin ? 'Final Approvals' : 'Pending Checks'}
         </h1>
         <p className="text-gray-500 text-sm mt-0.5">
-          Review and approve agent/owner actions
+          {isSuperAdmin
+            ? 'Items approved by Admin awaiting your final approval'
+            : 'Items awaiting your check before forwarding to Super Admin'}
         </p>
       </div>
 
@@ -110,9 +111,7 @@ export default function ApprovalsPage() {
           </h2>
         </div>
         {pendingCreates.length === 0 ? (
-          <div className="py-8 text-center text-gray-400 text-sm">
-            Nothing pending
-          </div>
+          <div className="py-8 text-center text-gray-400 text-sm">Nothing pending</div>
         ) : (
           <table className="w-full">
             <thead>
@@ -143,18 +142,16 @@ export default function ApprovalsPage() {
                   <td className="py-2.5 px-4 text-brand-blue text-sm font-mono">
                     {agent.agentCode}
                   </td>
-                  <td className="py-2.5 px-4 text-gray-800 text-sm">
-                    {agent.user?.fullName}
-                  </td>
+                  <td className="py-2.5 px-4 text-gray-800 text-sm">{agent.user?.fullName}</td>
                   <td className="py-2.5 px-4 text-gray-600 text-sm capitalize">
                     {agent.user?.role}
                   </td>
                   <td className="py-2.5 px-4 text-gray-600 text-sm">
-                    {agent.parentAgent?.agentCode || "—"}
+                    {agent.parentAgent?.agentCode || '—'}
                   </td>
                   <td className="py-2.5 px-4">
                     <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700">
-                      {agent.approvalStatus.replace(/_/g, " ")}
+                      {agent.approvalStatus.replace(/_/g, ' ')}
                     </span>
                   </td>
                   <td className="py-2.5 px-4 text-right">
@@ -180,9 +177,7 @@ export default function ApprovalsPage() {
           </h2>
         </div>
         {pendingDeactivations.length === 0 ? (
-          <div className="py-8 text-center text-gray-400 text-sm">
-            Nothing pending
-          </div>
+          <div className="py-8 text-center text-gray-400 text-sm">Nothing pending</div>
         ) : (
           <table className="w-full">
             <thead>
@@ -207,12 +202,10 @@ export default function ApprovalsPage() {
                   <td className="py-2.5 px-4 text-brand-blue text-sm font-mono">
                     {agent.agentCode}
                   </td>
-                  <td className="py-2.5 px-4 text-gray-800 text-sm">
-                    {agent.user?.fullName}
-                  </td>
+                  <td className="py-2.5 px-4 text-gray-800 text-sm">{agent.user?.fullName}</td>
                   <td className="py-2.5 px-4">
                     <span className="px-2 py-0.5 rounded text-xs bg-red-50 text-red-700">
-                      {agent.approvalStatus.replace(/_/g, " ")}
+                      {agent.approvalStatus.replace(/_/g, ' ')}
                     </span>
                   </td>
                   <td className="py-2.5 px-4 text-right">

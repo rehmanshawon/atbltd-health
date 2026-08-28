@@ -240,10 +240,7 @@ export class AdminService {
     }
   }
 
-  private async activateMembership(
-    payment: Payment,
-    adminUserId: string,
-  ): Promise<void> {
+  private async activateMembership(payment: Payment, adminUserId: string): Promise<void> {
     // Activate membership
     const membership = await this.membershipRepository.findOne({
       where: { userId: payment.userId },
@@ -287,13 +284,10 @@ export class AdminService {
     // Send SMS
     if (payment.user?.mobileNumber) {
       try {
-        await this.smsService.sendMembershipActivationSms(
-          payment.user.mobileNumber,
-          {
-            fullName: payment.user.fullName,
-            memberId: payment.user.memberId,
-          },
-        );
+        await this.smsService.sendMembershipActivationSms(payment.user.mobileNumber, {
+          fullName: payment.user.fullName,
+          memberId: payment.user.memberId,
+        });
       } catch (error) {
         console.error('Failed to send SMS:', error);
       }
@@ -357,12 +351,30 @@ export class AdminService {
   /**
    * Get pending payments that need verification
    */
-  async getPendingPayments(): Promise<Payment[]> {
-    return this.paymentRepository.find({
-      where: { status: PaymentStatus.PENDING },
-      relations: ['user'],
-      order: { createdAt: 'ASC' },
-    });
+  /**
+   * Get pending payments based on reviewer role
+   * Admin sees: fresh pending payments (not yet reviewed)
+   * SA sees: payments reviewed by Admin, awaiting SA authorization
+   */
+  async getPendingPayments(userRole?: string): Promise<Payment[]> {
+    if (userRole === UserRole.SUPER_ADMIN) {
+      // SA sees payments reviewed by Admin (has notes)
+      return this.paymentRepository.find({
+        where: {
+          status: PaymentStatus.PENDING,
+          notes: 'Reviewed by Admin. Awaiting Super Admin authorization.',
+        },
+        relations: ['user'],
+        order: { createdAt: 'ASC' },
+      });
+    } else {
+      // Admin sees fresh pending payments (no notes yet)
+      return this.paymentRepository.find({
+        where: { status: PaymentStatus.PENDING, notes: null },
+        relations: ['user'],
+        order: { createdAt: 'ASC' },
+      });
+    }
   }
 
   /**

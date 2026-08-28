@@ -1,15 +1,7 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import {
-  Commission,
-  CommissionStatus,
-  CommissionType,
-} from '../../entities/commission.entity';
+import { Repository, IsNull, Not } from 'typeorm';
+import { Commission, CommissionStatus, CommissionType } from '../../entities/commission.entity';
 import { Agent } from '../../entities/agent.entity';
 import { User } from '../../entities/user.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
@@ -62,8 +54,7 @@ export class CommissionService {
     }
 
     // Calculate commission amount
-    const commissionAmount =
-      (registrationAmount * Number(agent.commissionRate)) / 100;
+    const commissionAmount = (registrationAmount * Number(agent.commissionRate)) / 100;
 
     const commission = this.commissionRepository.create({
       agentId: agent.id,
@@ -80,8 +71,7 @@ export class CommissionService {
     const saved = await this.commissionRepository.save(commission);
 
     // Update agent's total earned
-    agent.totalCommissionEarned =
-      Number(agent.totalCommissionEarned) + commissionAmount;
+    agent.totalCommissionEarned = Number(agent.totalCommissionEarned) + commissionAmount;
     await this.agentRepository.save(agent);
 
     // If agent has a parent (Owner), create override commission
@@ -91,8 +81,7 @@ export class CommissionService {
       });
 
       if (parentAgent) {
-        const overrideRate =
-          Number(parentAgent.commissionRate) - Number(agent.commissionRate);
+        const overrideRate = Number(parentAgent.commissionRate) - Number(agent.commissionRate);
         if (overrideRate > 0) {
           const overrideAmount = (registrationAmount * overrideRate) / 100;
 
@@ -146,9 +135,7 @@ export class CommissionService {
 
     if (!commission) throw new NotFoundException('Commission not found');
     if (commission.status !== CommissionStatus.PENDING) {
-      throw new BadRequestException(
-        `Commission is already ${commission.status}`,
-      );
+      throw new BadRequestException(`Commission is already ${commission.status}`);
     }
 
     if (adminRole === UserRole.SUPER_ADMIN) {
@@ -169,10 +156,7 @@ export class CommissionService {
   /**
    * Confirm commission payment (Checker role — dual control)
    */
-  async confirmCommissionPayment(
-    commissionId: string,
-    adminId: string,
-  ): Promise<Commission> {
+  async confirmCommissionPayment(commissionId: string, adminId: string): Promise<Commission> {
     const commission = await this.commissionRepository.findOne({
       where: { id: commissionId },
     });
@@ -248,12 +232,10 @@ export class CommissionService {
 
     if (agent) {
       agent.totalCommissionEarned =
-        Number(agent.totalCommissionEarned) -
-        Number(commission.commissionAmount);
+        Number(agent.totalCommissionEarned) - Number(commission.commissionAmount);
       if (wasPaid) {
         agent.totalCommissionPaid =
-          Number(agent.totalCommissionPaid) -
-          Number(commission.commissionAmount);
+          Number(agent.totalCommissionPaid) - Number(commission.commissionAmount);
       }
       await this.agentRepository.save(agent);
     }
@@ -272,22 +254,38 @@ export class CommissionService {
   /**
    * Get all commissions with filters
    */
+  /**
+   * Get all commissions with filters
+   * Admin sees: commissions not yet approved
+   * SA sees: commissions approved by Admin, awaiting payout confirmation
+   */
   async findAll(filters: {
     agentId?: string;
     status?: CommissionStatus;
     page?: number;
     limit?: number;
+    reviewerRole?: string;
   }): Promise<{
     commissions: Commission[];
     total: number;
     page: number;
     totalPages: number;
   }> {
-    const { agentId, status, page = 1, limit = 20 } = filters;
+    const { agentId, status, page = 1, limit = 20, reviewerRole } = filters;
     const where: any = {};
 
     if (agentId) where.agentId = agentId;
     if (status) where.status = status;
+
+    if (reviewerRole === UserRole.ADMIN) {
+      // Admin sees unapproved commissions
+      where.approvedBy = null;
+    } else if (reviewerRole === UserRole.SUPER_ADMIN) {
+      // SA sees commissions approved by Admin, not yet paid
+      where.approvedBy = Not(IsNull());
+      where.checkerApprovedBy = null;
+      where.status = CommissionStatus.APPROVED;
+    }
 
     const [commissions, total] = await this.commissionRepository.findAndCount({
       where,
@@ -326,8 +324,7 @@ export class CommissionService {
     return {
       totalEarned: Number(agent.totalCommissionEarned),
       totalPaid: Number(agent.totalCommissionPaid),
-      totalPending:
-        Number(agent.totalCommissionEarned) - Number(agent.totalCommissionPaid),
+      totalPending: Number(agent.totalCommissionEarned) - Number(agent.totalCommissionPaid),
       totalReversed: 0, // Can be computed from DB if needed
       recentCommissions,
     };
