@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Get,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -97,5 +89,19 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async memberLogin(@Body('memberId') memberId: string) {
     return this.authService.memberLogin(memberId);
+  }
+
+  @Public()
+  @Post('staff-login-otp')
+  @HttpCode(HttpStatus.OK)
+  async sendStaffLoginOtp(@Body('staffId') staffId: string) {
+    return this.authService.sendStaffLoginOtp(staffId);
+  }
+
+  @Public()
+  @Post('staff-login-verify')
+  @HttpCode(HttpStatus.OK)
+  async verifyStaffOtp(@Body('staffId') staffId: string, @Body('otp') otp: string) {
+    return this.authService.verifyStaffOtp(staffId, otp);
   }
 }

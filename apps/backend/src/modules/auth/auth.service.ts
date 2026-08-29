@@ -26,6 +26,7 @@ import { NotificationType } from '../../entities/notification.entity';
 export class AuthService {
   // In production, store OTPs in Redis with TTL. This in-memory map is for development.
   private otpStore: Map<string, { otp: string; expiresAt: Date }> = new Map();
+  private staffOtpStore: Map<string, { otp: string; expiresAt: Date }> = new Map();
 
   // Official ATB recipient accounts for payment routing validation
   private getOfficialAccounts() {
@@ -466,6 +467,88 @@ export class AuthService {
 
     user.lastLoginAt = new Date();
     await this.userRepository.save(user);
+
+    const payload: JwtPayload = {
+      sub: user.id,
+      memberId: user.memberId,
+      role: user.role,
+      mobileNumber: user.mobileNumber,
+    };
+
+    return {
+      accessToken: this.jwtService.sign(payload),
+      user: {
+        memberId: user.memberId,
+        fullName: user.fullName,
+        role: user.role,
+        isActive: user.isActive,
+      },
+    };
+  }
+
+  // Send OTP for staff login
+  async sendStaffLoginOtp(staffId: string): Promise<{ success: boolean; message: string }> {
+    const user = await this.userRepository.findOne({
+      where: { memberId: staffId.toUpperCase() },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid Staff ID');
+    }
+
+    if (user.role === UserRole.MEMBER) {
+      throw new UnauthorizedException('Members do not use MFA');
+    }
+
+    // Generate 6-digit OTP
+    const otp =
+      process.env.NODE_ENV === 'production'
+        ? Math.floor(100000 + Math.random() * 900000).toString()
+        : '123456';
+
+    this.staffOtpStore.set(user.id, {
+      otp,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    });
+
+    // Send SMS
+    this.logger.log(`[DEV] Staff OTP for ${staffId}: ${otp}`);
+
+    return { success: true, message: 'OTP sent to your mobile number' };
+  }
+
+  // Verify staff OTP and complete login
+  async verifyStaffOtp(
+    staffId: string,
+    otp: string,
+  ): Promise<{
+    accessToken: string;
+    user: { memberId: string; fullName: string; role: UserRole; isActive: boolean };
+  }> {
+    const user = await this.userRepository.findOne({
+      where: { memberId: staffId.toUpperCase() },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid Staff ID');
+    }
+
+    const storedOtp = this.staffOtpStore.get(user.id);
+
+    if (!storedOtp) {
+      throw new BadRequestException('OTP not sent or expired');
+    }
+
+    if (new Date() > storedOtp.expiresAt) {
+      this.staffOtpStore.delete(user.id);
+      throw new BadRequestException('OTP expired');
+    }
+
+    if (storedOtp.otp !== otp) {
+      throw new BadRequestException('Invalid OTP');
+    }
+
+    this.staffOtpStore.delete(user.id);
 
     const payload: JwtPayload = {
       sub: user.id,
