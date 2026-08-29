@@ -16,6 +16,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
 import 'multer';
 import { ClaimService } from './claim.service';
+import { ClaimDocumentService } from './claim-document.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -27,7 +28,10 @@ import { JwtPayload } from '../auth/strategies/jwt.strategy';
 @Controller('claims')
 @UseGuards(JwtAuthGuard)
 export class ClaimController {
-  constructor(private readonly claimService: ClaimService) {}
+  constructor(
+    private readonly claimService: ClaimService,
+    private readonly claimDocumentService: ClaimDocumentService,
+  ) {}
 
   /**
    * POST /api/claims — Member submits a claim
@@ -47,21 +51,6 @@ export class ClaimController {
     },
   ) {
     return this.claimService.submitClaim(user.sub, body);
-  }
-
-  /**
-   * POST /api/claims/:id/documents — Upload documents to a claim
-   */
-  @Post(':id/documents')
-  @UseInterceptors(FilesInterceptor('documents', 10))
-  async uploadDocuments(
-    @Param('id') id: string,
-    @CurrentUser() user: JwtPayload,
-    @UploadedFiles() files: Array<Express.Multer.File>,
-  ) {
-    // In production, upload to S3/Cloud Storage and get URLs
-    const fileUrls = files.map((f) => `/uploads/claims/${id}/${f.originalname}`);
-    return this.claimService.uploadDocuments(id, user.sub, fileUrls);
   }
 
   /**
@@ -149,7 +138,7 @@ export class ClaimController {
       }>;
     },
   ) {
-    return this.claimService.uploadDocumentsWithTypes(id, user.sub, body.documents);
+    return this.claimDocumentService.uploadDocumentsWithTypes(id, user.sub, body.documents);
   }
 
   /**
@@ -157,6 +146,6 @@ export class ClaimController {
    */
   @Get(':id/documents')
   async getClaimDocuments(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.claimService.getClaimDocuments(id, user.sub, user.role);
+    return this.claimDocumentService.getClaimDocuments(id, user.sub, user.role);
   }
 }

@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Put, Param, Body, UseGuards, Query } from '@nestjs/common';
 import { AgentService } from './agent.service';
+import { AgentApprovalService } from './agent-approval.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -10,7 +11,10 @@ import { JwtPayload } from '../auth/strategies/jwt.strategy';
 @Controller('agents')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AgentController {
-  constructor(private readonly agentService: AgentService) {}
+  constructor(
+    private readonly agentService: AgentService,
+    private readonly agentApprovalService: AgentApprovalService,
+  ) {}
 
   /**
    * POST /api/agents — Admin/Owner creates a new agent/owner
@@ -73,7 +77,7 @@ export class AgentController {
   @Put(':id/deactivate')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
   async deactivateAgent(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.agentService.requestDeactivation(id, user.sub, user.role);
+    return this.agentApprovalService.requestDeactivation(id, user.sub, user.role);
   }
 
   /**
@@ -92,7 +96,7 @@ export class AgentController {
   @Get('pending-approvals')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async getPendingApprovals(@CurrentUser() user: JwtPayload) {
-    return this.agentService.getPendingApprovals(user.role);
+    return this.agentApprovalService.getPendingApprovals(user.role);
   }
 
   /**
@@ -101,7 +105,7 @@ export class AgentController {
   @Put(':id/approve')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async approveAgent(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.agentService.approveAgent(id, user.sub, user.role);
+    return this.agentApprovalService.approveAgent(id, user.sub, user.role);
   }
 
   /**
@@ -110,7 +114,7 @@ export class AgentController {
   @Put(':id/request-deactivation')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.OWNER)
   async requestDeactivation(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.agentService.requestDeactivation(id, user.sub, user.role);
+    return this.agentApprovalService.requestDeactivation(id, user.sub, user.role);
   }
 
   /**
@@ -119,6 +123,6 @@ export class AgentController {
   @Put(':id/approve-deactivation')
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async approveDeactivation(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.agentService.approveDeactivation(id, user.sub, user.role);
+    return this.agentApprovalService.approveDeactivation(id, user.sub, user.role);
   }
 }

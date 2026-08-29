@@ -10,21 +10,15 @@ import { AuditLog } from '../../entities/audit-log.entity';
 import { User } from '../../entities/user.entity';
 import { NotificationModule } from '../notification/notification.module';
 import { SmsModule } from '../sms/sms.module';
+import { ClaimDocumentService } from './claim-document.service';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Claim,
-      ClaimDocument,
-      Membership,
-      Payment,
-      AuditLog,
-      User,
-    ]),
+    TypeOrmModule.forFeature([Claim, ClaimDocument, Membership, Payment, AuditLog, User]),
     NotificationModule,
     SmsModule,
   ],
   controllers: [ClaimController],
-  providers: [ClaimService],
-  exports: [ClaimService],
+  providers: [ClaimService, ClaimDocumentService],
+  exports: [ClaimService, ClaimDocumentService],
 })
 export class ClaimModule {}
