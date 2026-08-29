@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useRef } from "react";
-import { useAuth } from "../lib/auth-context";
-import { Bell, CheckCheck, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { useEffect, useState, useRef } from 'react';
+import { useAuth } from '../lib/auth-context';
+import { Bell, CheckCheck, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 interface Notification {
   id: string;
@@ -30,7 +30,7 @@ export default function NotificationBell() {
       loadNotifications();
       loadUnreadCount();
 
-      const isStaff = user?.role === "admin" || user?.role === "owner";
+      const isStaff = user?.role === 'admin' || user?.role === 'owner';
       const pollInterval = isStaff ? 10000 : 30000; // 10s for staff, 30s for members
 
       // Poll every 30 seconds
@@ -44,15 +44,12 @@ export default function NotificationBell() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const loadNotifications = async () => {
@@ -78,21 +75,26 @@ export default function NotificationBell() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
+        if (res.status === 401) {
+          // Token expired — don't log as error, just silently stop
+          console.warn('Token expired, stopping notification polling');
+          return;
+        }
         // Token might be expired — silently fail
-        console.error("Failed to load notifications:", res.status);
+        console.error('Failed to load notifications:', res.status);
         return;
       }
       const data = await res.json();
       setUnreadCount(data.unreadCount || 0);
     } catch (err) {
-      console.error(err);
+      console.warn('Notification polling failed:', err instanceof Error ? err.message : 'Unknown');
     }
   };
 
   const markAsRead = async (id: string) => {
     try {
       await fetch(`${API_BASE}/notifications/${id}/read`, {
-        method: "PUT",
+        method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });
       loadNotifications();
@@ -104,7 +106,7 @@ export default function NotificationBell() {
   const markAllAsRead = async () => {
     try {
       await fetch(`${API_BASE}/notifications/mark-all-read`, {
-        method: "PUT",
+        method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });
       loadNotifications();
@@ -119,11 +121,11 @@ export default function NotificationBell() {
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 1) return "Just now";
+    if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
-    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   };
 
   return (
@@ -141,9 +143,7 @@ export default function NotificationBell() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-[360px] max-h-[480px] overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-xl z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-            <h3 className="text-sm font-semibold text-[#0A2A5E]">
-              Notifications
-            </h3>
+            <h3 className="text-sm font-semibold text-[#0A2A5E]">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
@@ -156,15 +156,10 @@ export default function NotificationBell() {
 
           {isLoading ? (
             <div className="py-12 text-center">
-              <Loader2
-                size={20}
-                className="animate-spin text-gray-400 mx-auto"
-              />
+              <Loader2 size={20} className="animate-spin text-gray-400 mx-auto" />
             </div>
           ) : notifications.length === 0 ? (
-            <div className="py-12 text-center text-gray-400 text-sm">
-              No notifications
-            </div>
+            <div className="py-12 text-center text-gray-400 text-sm">No notifications</div>
           ) : (
             <div className="divide-y divide-gray-50">
               {notifications.map((notification) => (
@@ -172,12 +167,12 @@ export default function NotificationBell() {
                   key={notification.id}
                   onClick={() => markAsRead(notification.id)}
                   className={`px-4 py-3 cursor-pointer transition-colors hover:bg-gray-50 ${
-                    !notification.isRead ? "bg-blue-50/50" : ""
+                    !notification.isRead ? 'bg-blue-50/50' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p
-                      className={`text-sm font-medium ${notification.isRead ? "text-gray-600" : "text-[#0A2A5E]"}`}
+                      className={`text-sm font-medium ${notification.isRead ? 'text-gray-600' : 'text-[#0A2A5E]'}`}
                     >
                       {notification.title}
                     </p>
@@ -185,9 +180,7 @@ export default function NotificationBell() {
                       <span className="w-1.5 h-1.5 rounded-full bg-[#D32F2F] shrink-0 mt-1" />
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {notification.message}
-                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">{notification.message}</p>
                   <p className="text-[10px] text-gray-400 mt-1">
                     {formatTime(notification.createdAt)}
                   </p>

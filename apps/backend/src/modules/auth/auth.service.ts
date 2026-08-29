@@ -582,4 +582,41 @@ export class AuthService {
       },
     };
   }
+
+  async updateProfile(
+    userId: string,
+    data: { mobileNumber?: string; email?: string; fullName?: string },
+  ): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Check duplicate mobile (except own)
+    if (data.mobileNumber && data.mobileNumber !== user.mobileNumber) {
+      const existing = await this.userRepository.findOne({
+        where: { mobileNumber: data.mobileNumber },
+      });
+      if (existing) {
+        throw new ConflictException('This mobile number is already in use');
+      }
+    }
+
+    // Check duplicate email (except own)
+    if (data.email && data.email !== user.email) {
+      const existingEmail = await this.userRepository.findOne({
+        where: { email: data.email },
+      });
+      if (existingEmail) {
+        throw new ConflictException('This email is already in use');
+      }
+    }
+
+    if (data.mobileNumber) user.mobileNumber = data.mobileNumber;
+    if (data.email) user.email = data.email;
+    if (data.fullName) user.fullName = data.fullName;
+
+    return this.userRepository.save(user);
+  }
 }

@@ -104,4 +104,13 @@ export class AuthController {
   async verifyStaffOtp(@Body('staffId') staffId: string, @Body('otp') otp: string) {
     return this.authService.verifyStaffOtp(staffId, otp);
   }
+
+  @Put('profile')
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @CurrentUser() user: JwtPayload,
+    @Body() body: { mobileNumber?: string; email?: string; fullName?: string },
+  ) {
+    return this.authService.updateProfile(user.sub, body);
+  }
 }

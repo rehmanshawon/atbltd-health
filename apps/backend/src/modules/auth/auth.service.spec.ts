@@ -1,11 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
-import {
-  ConflictException,
-  UnauthorizedException,
-  BadRequestException,
-} from '@nestjs/common';
+import { ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from '../../entities/user.entity';
 import { Membership } from '../../entities/membership.entity';
@@ -14,6 +10,7 @@ import { AuditLog } from '../../entities/audit-log.entity';
 import { Agent } from '../../entities/agent.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { NotificationService } from '../notification/notification.service';
+import { SmsService } from '../sms/sms.service';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 describe('AuthService', () => {
@@ -57,6 +54,11 @@ describe('AuthService', () => {
     notifyUser: jest.fn(),
   };
 
+  const mockSmsService = {
+    sendSms: jest.fn(),
+    sendMembershipActivationSms: jest.fn(),
+  };
+
   const mockDataSource = {
     createQueryRunner: jest.fn().mockReturnValue({
       connect: jest.fn(),
@@ -67,9 +69,7 @@ describe('AuthService', () => {
       manager: {
         save: jest
           .fn()
-          .mockImplementation((entity) =>
-            Promise.resolve({ id: 'uuid-123', ...entity }),
-          ),
+          .mockImplementation((entity) => Promise.resolve({ id: 'uuid-123', ...entity })),
         createQueryBuilder: jest.fn().mockReturnValue({
           select: jest.fn().mockReturnThis(),
           from: jest.fn().mockReturnThis(),
@@ -101,6 +101,7 @@ describe('AuthService', () => {
         { provide: JwtService, useValue: mockJwtService },
         { provide: DataSource, useValue: mockDataSource },
         { provide: NotificationService, useValue: mockNotificationService },
+        { provide: SmsService, useValue: mockSmsService },
       ],
     }).compile();
 
@@ -113,9 +114,7 @@ describe('AuthService', () => {
 
     // Force reset all mock functions
     mockUserRepository.findOne.mockReset();
-    mockUserRepository.findOne.mockImplementation(() =>
-      Promise.resolve(undefined),
-    );
+    mockUserRepository.findOne.mockImplementation(() => Promise.resolve(undefined));
 
     mockUserRepository.save.mockReset();
     mockUserRepository.create.mockReset();
@@ -131,6 +130,7 @@ describe('AuthService', () => {
     mockAgentRepository.save.mockReset();
     mockNotificationService.notifyRoles.mockReset();
     mockNotificationService.notifyUser.mockReset();
+    mockSmsService.sendSms.mockReset();
   });
 
   describe('login', () => {
@@ -263,9 +263,7 @@ describe('AuthService', () => {
 
       mockUserRepository.findOne.mockResolvedValueOnce(inactiveMember);
 
-      await expect(service.memberLogin('ATB-26-ME-02')).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.memberLogin('ATB-26-ME-02')).rejects.toThrow(UnauthorizedException);
     });
   });
 

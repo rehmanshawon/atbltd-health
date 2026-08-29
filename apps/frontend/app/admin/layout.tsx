@@ -1,7 +1,7 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { useAuth } from "../lib/auth-context";
+'use client';
+import { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useAuth } from '../lib/auth-context';
 import {
   LayoutDashboard,
   Users,
@@ -14,86 +14,89 @@ import {
   Bell,
   Building2,
   Clock,
-} from "lucide-react";
-import Link from "next/link";
-import NotificationBell from "../components/NotificationBell";
+  User,
+} from 'lucide-react';
+import Link from 'next/link';
+import NotificationBell from '../components/NotificationBell';
 
 //const { user } = useAuth();
 
 const navItems = [
   {
-    label: "Dashboard",
-    href: "/admin",
+    label: 'Dashboard',
+    href: '/admin',
     icon: LayoutDashboard,
-    roles: ["super_admin", "admin", "owner", "agent"],
+    roles: ['super_admin', 'admin', 'owner', 'agent'],
   },
   {
-    label: "Owners",
-    href: "/admin/owners",
+    label: 'Owners',
+    href: '/admin/owners',
     icon: UserCheck,
-    roles: ["super_admin", "admin"],
+    roles: ['super_admin', 'admin'],
   },
   {
-    label: "Agents",
-    href: "/admin/agents",
+    label: 'Agents',
+    href: '/admin/agents',
     icon: UserCheck,
-    roles: ["super_admin", "admin", "owner"],
+    roles: ['super_admin', 'admin', 'owner'],
   },
   {
-    label: "Members",
-    href: "/admin/members",
+    label: 'Members',
+    href: '/admin/members',
     icon: Users,
-    roles: ["super_admin", "admin", "owner", "agent"],
+    roles: ['super_admin', 'admin', 'owner', 'agent'],
   },
   {
-    label: "Payments",
-    href: "/admin/payments",
+    label: 'Payments',
+    href: '/admin/payments',
     icon: Banknote,
-    roles: ["super_admin", "admin"],
+    roles: ['super_admin', 'admin'],
   },
   {
-    label: "ATB Benefits",
-    href: "/admin/claims",
+    label: 'ATB Benefits',
+    href: '/admin/claims',
     icon: FileText,
-    roles: ["super_admin", "admin"],
+    roles: ['super_admin', 'admin'],
   },
   {
-    label: "Audit Logs",
-    href: "/admin/audit",
+    label: 'Audit Logs',
+    href: '/admin/audit',
     icon: ShieldAlert,
-    roles: ["super_admin"],
+    roles: ['super_admin'],
   },
   {
-    label: "Commissions",
-    href: "/admin/commissions",
+    label: 'Commissions',
+    href: '/admin/commissions',
     icon: Banknote,
-    roles: ["super_admin", "admin", "owner", "agent"],
+    roles: ['super_admin', 'admin', 'owner', 'agent'],
   },
   {
-    label: "Fraud Detection",
-    href: "/admin/fraud",
+    label: 'Fraud Detection',
+    href: '/admin/fraud',
     icon: ShieldAlert,
-    roles: ["super_admin"],
+    roles: ['super_admin'],
   },
   {
-    label: "Hospitals",
-    href: "/admin/hospitals",
+    label: 'Hospitals',
+    href: '/admin/hospitals',
     icon: Building2,
-    roles: ["super_admin", "admin"],
+    roles: ['super_admin', 'admin'],
   },
   {
-    label: "Approvals",
-    href: "/admin/approvals",
+    label: 'Approvals',
+    href: '/admin/approvals',
     icon: Clock,
-    roles: ["super_admin", "admin"],
+    roles: ['super_admin', 'admin'],
+  },
+  {
+    label: 'Profile',
+    href: '/admin/profile',
+    icon: User,
+    roles: ['super_admin', 'admin', 'owner', 'agent'],
   },
 ];
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -105,7 +108,7 @@ export default function AdminLayout({
 
   const handleLogout = () => {
     logout();
-    router.replace("/");
+    router.replace('/');
   };
 
   return (
@@ -113,16 +116,10 @@ export default function AdminLayout({
       {/* Mobile overlay */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setMobileOpen(false)}
-          />
+          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
           <div className="absolute left-0 top-0 bottom-0 w-[260px] bg-[#0A2A5E] z-10 flex flex-col">
             <div className="h-16 flex items-center px-5 border-b border-white/10">
-              <Link
-                href="/admin"
-                className="text-white font-bold text-lg tracking-tight"
-              >
+              <Link href="/admin" className="text-white font-bold text-lg tracking-tight">
                 ATB<span className="text-red-300"> Admin</span>
               </Link>
             </div>
@@ -136,8 +133,8 @@ export default function AdminLayout({
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-white/15 text-white"
-                        : "text-white/60 hover:text-white hover:bg-white/8"
+                        ? 'bg-white/15 text-white'
+                        : 'text-white/60 hover:text-white hover:bg-white/8'
                     }`}
                   >
                     <item.icon size={18} /> {item.label}
@@ -163,10 +160,7 @@ export default function AdminLayout({
         <div className="hidden lg:block w-[240px] fixed inset-y-0 left-0 z-30 bg-[#0A2A5E] overflow-y-auto">
           <div className="flex flex-col min-h-ful">
             <div className="h-16 flex items-center px-5 border-b border-white/10">
-              <Link
-                href="/admin"
-                className="text-white font-bold text-lg tracking-tight"
-              >
+              <Link href="/admin" className="text-white font-bold text-lg tracking-tight">
                 ATB<span className="text-red-300"> Admin</span>
               </Link>
             </div>
@@ -179,8 +173,8 @@ export default function AdminLayout({
                     href={item.href}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-white/15 text-white"
-                        : "text-white/60 hover:text-white hover:bg-white/8"
+                        ? 'bg-white/15 text-white'
+                        : 'text-white/60 hover:text-white hover:bg-white/8'
                     }`}
                   >
                     <item.icon size={18} /> {item.label}
@@ -191,15 +185,11 @@ export default function AdminLayout({
             <div className="p-3 border-t border-white/10">
               <div className="flex items-center gap-3 px-3 py-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-[#D32F2F] flex items-center justify-center text-white text-xs font-bold shrink-0">
-                  {user?.fullName?.charAt(0) || "A"}
+                  {user?.fullName?.charAt(0) || 'A'}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-white text-sm font-medium truncate">
-                    {user?.fullName}
-                  </p>
-                  <p className="text-white/50 text-xs capitalize">
-                    {user?.role}
-                  </p>
+                  <p className="text-white text-sm font-medium truncate">{user?.fullName}</p>
+                  <p className="text-white/50 text-xs capitalize">{user?.role}</p>
                 </div>
               </div>
               <button
@@ -236,7 +226,7 @@ export default function AdminLayout({
               </button>
               <div className="hidden sm:flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[#D32F2F] flex items-center justify-center text-white text-xs font-bold">
-                  {user?.fullName?.charAt(0) || "A"}
+                  {user?.fullName?.charAt(0) || 'A'}
                 </div>
                 <span className="text-gray-700 text-sm font-medium hidden md:inline">
                   {user?.fullName}
