@@ -7,27 +7,32 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { MembershipModule } from './modules/membership/membership.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { ClaimModule } from './modules/claim/claim.module';
+import { CommissionModule } from './modules/commission/commission.module';
+import { SurgeryModule } from './modules/surgery/surgery.module';
+import { AgentModule } from './modules/agent/agent.module';
+import { HospitalModule } from './modules/hospital/hospital.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { SmsModule } from './modules/sms/sms.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
-import { ClaimModule } from './modules/claim/claim.module';
-import { SurgeryModule } from './modules/surgery/surgery.module';
-import { HospitalModule } from './modules/hospital/hospital.module';
-import { CommissionModule } from './modules/commission/commission.module';
-import { AgentModule } from './modules/agent/agent.module';
-import { NotificationModule } from './modules/notification/notification.module';
+import { CustomLoggerModule } from './modules/logger/logger.module';
+
 @Module({
   imports: [
     CoreModule,
+    CustomLoggerModule,
     AuthModule,
     UsersModule,
     MembershipModule,
     AdminModule,
     ClaimModule,
-    SurgeryModule,
-    HospitalModule,
     CommissionModule,
+    SurgeryModule,
     AgentModule,
+    HospitalModule,
     NotificationModule,
+    SmsModule,
   ],
   controllers: [AppController],
   providers: [

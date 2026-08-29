@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -35,6 +36,8 @@ export class AuthService {
       bank: process.env.BANK_ACCOUNT || 'ATB-OFFICIAL-BANK-ACCOUNT',
     };
   }
+
+  private readonly logger = new Logger(AuthService.name);
 
   constructor(
     @InjectRepository(User)
@@ -308,7 +311,7 @@ export class AuthService {
     // In production: Send OTP via SMS gateway
     // await this.smsService.send(mobileNumber, `Your ATB verification code: ${otp}`);
 
-    console.log(`[DEV] OTP for ${mobileNumber}: ${otp}`);
+    this.logger.log(`[DEV] OTP for ${mobileNumber}: ${otp}`);
 
     return {
       success: true,

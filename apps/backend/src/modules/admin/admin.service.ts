@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -20,6 +21,7 @@ import { NotificationService } from '../notification/notification.service';
 import { NotificationType } from '../../entities/notification.entity';
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -289,7 +291,7 @@ export class AdminService {
           memberId: payment.user.memberId,
         });
       } catch (error) {
-        console.error('Failed to send SMS:', error);
+        this.logger.error('Failed to send SMS:', error.message);
       }
     }
 
@@ -301,7 +303,7 @@ export class AdminService {
           Number(payment.amount),
         );
       } catch (error) {
-        console.error('Failed to create commission:', error);
+        this.logger.error('Failed to create commission:', error.message);
       }
     }
 

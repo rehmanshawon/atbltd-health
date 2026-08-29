@@ -1,11 +1,12 @@
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { DataSource } from 'typeorm';
 import { Surgery } from '../entities/surgery.entity';
 import { Hospital } from '../entities/hospital.entity';
-
+const logger = new Logger('SeedScript');
 async function bootstrap() {
-  console.log('🌱 Seeding reference data (surgeries & hospitals)...');
+  logger.log('🌱 Seeding reference data (surgeries & hospitals)...');
 
   const app = await NestFactory.createApplicationContext(AppModule);
   const dataSource = app.get(DataSource);
@@ -20,13 +21,9 @@ async function bootstrap() {
     const hospitalCount = await queryRunner.manager.count(Hospital);
 
     if (surgeryCount > 0 && hospitalCount > 0) {
-      console.log(
-        `⚠️  Already have ${surgeryCount} surgeries and ${hospitalCount} hospitals.`,
-      );
-      console.log('   Delete them first if you want to re-seed:');
-      console.log(
-        '   psql -U rehman -d atbltd -c "DELETE FROM surgeries; DELETE FROM hospitals;"',
-      );
+      logger.log(`⚠️  Already have ${surgeryCount} surgeries and ${hospitalCount} hospitals.`);
+      logger.log('   Delete them first if you want to re-seed:');
+      logger.log('   psql -U rehman -d atbltd -c "DELETE FROM surgeries; DELETE FROM hospitals;"');
       await app.close();
       return;
     }
@@ -213,7 +210,7 @@ async function bootstrap() {
         }),
       );
     }
-    console.log(`✅ ${surgeries.length} surgeries seeded`);
+    logger.log(`✅ ${surgeries.length} surgeries seeded`);
 
     // Seed hospitals
     const hospitals = [
@@ -320,14 +317,14 @@ async function bootstrap() {
         }),
       );
     }
-    console.log(`✅ ${hospitals.length} hospitals seeded`);
+    logger.log(`✅ ${hospitals.length} hospitals seeded`);
 
     await queryRunner.commitTransaction();
-    console.log('\n✅ Reference data seeding complete!');
+    logger.log('\n✅ Reference data seeding complete!');
   } catch (error) {
     await queryRunner.rollbackTransaction();
     const msg = error instanceof Error ? error.message : 'Unknown error';
-    console.error('❌ Seed failed:', msg);
+    logger.error('❌ Seed failed:', msg);
     throw error;
   } finally {
     await queryRunner.release();
@@ -339,6 +336,6 @@ bootstrap()
   .then(() => process.exit(0))
   .catch((error: unknown) => {
     const msg = error instanceof Error ? error.message : 'Unknown error';
-    console.error(msg);
+    logger.error(msg);
     process.exit(1);
   });

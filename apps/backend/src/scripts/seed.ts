@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { DataSource } from 'typeorm';
@@ -5,17 +6,15 @@ import * as bcrypt from 'bcryptjs';
 import { User } from '../entities/user.entity';
 import { UserRole } from '../common/enums/user-role.enum';
 import { Membership } from '../entities/membership.entity';
-import {
-  Payment,
-  PaymentStatus,
-  PaymentType,
-} from '../entities/payment.entity';
+import { Payment, PaymentStatus, PaymentType } from '../entities/payment.entity';
 import { Agent } from '../entities/agent.entity';
 import { Surgery } from '../entities/surgery.entity';
 import { Hospital } from '../entities/hospital.entity';
 
+const logger = new Logger('SeedScript');
+
 async function bootstrap() {
-  console.log('🌱 Starting database seed...');
+  logger.log('🌱 Starting database seed...');
 
   const app = await NestFactory.createApplicationContext(AppModule);
   const dataSource = app.get(DataSource);
@@ -26,7 +25,7 @@ async function bootstrap() {
   });
 
   if (existingAdmin) {
-    console.log('⚠️  Admin user already exists. Skipping seed.');
+    logger.log('⚠️  Admin user already exists. Skipping seed.');
     await app.close();
     return;
   }
@@ -57,7 +56,7 @@ async function bootstrap() {
     });
 
     const savedSuperAdmin = await queryRunner.manager.save(superAdmin);
-    console.log(`✅ Super Admin created: ${savedSuperAdmin.memberId}`);
+    logger.log(`✅ Super Admin created: ${savedSuperAdmin.memberId}`);
 
     // ============================================================
     // 2. Create Second Admin
@@ -80,15 +79,12 @@ async function bootstrap() {
     });
 
     const savedSecondAdmin = await queryRunner.manager.save(secondAdmin);
-    console.log(`✅ Second Admin created: ${savedSecondAdmin.memberId}`);
+    logger.log(`✅ Second Admin created: ${savedSecondAdmin.memberId}`);
 
     // ============================================================
     // 3. Create an Owner
     // ============================================================
-    const ownerPassword = await bcrypt.hash(
-      process.env.SEED_OWNER_PASSWORD || 'Owner@ATB2026',
-      12,
-    );
+    const ownerPassword = await bcrypt.hash(process.env.SEED_OWNER_PASSWORD || 'Owner@ATB2026', 12);
 
     const owner = queryRunner.manager.create(User, {
       memberId: 'ATB-26-OW-1',
@@ -99,12 +95,11 @@ async function bootstrap() {
       role: UserRole.OWNER,
       isActive: true,
       isKycVerified: true,
-      permanentAddress:
-        'Lane 08, House 02, Road 11, Sector 06, Uttara, Dhaka-1270',
+      permanentAddress: 'Lane 08, House 02, Road 11, Sector 06, Uttara, Dhaka-1270',
     });
 
     const savedOwner = await queryRunner.manager.save(owner);
-    console.log(`✅ Owner created: ${savedOwner.memberId}`);
+    logger.log(`✅ Owner created: ${savedOwner.memberId}`);
 
     // Create Agent record for the Owner (so they can manage agent network)
     const ownerAgent = queryRunner.manager.create(Agent, {
@@ -118,15 +113,12 @@ async function bootstrap() {
     });
 
     await queryRunner.manager.save(ownerAgent);
-    console.log(`✅ Owner agent record created: ${ownerAgent.agentCode}`);
+    logger.log(`✅ Owner agent record created: ${ownerAgent.agentCode}`);
 
     // ============================================================
     // 4. Create a Sample Agent
     // ============================================================
-    const agentPassword = await bcrypt.hash(
-      process.env.SEED_AGENT_PASSWORD || 'Agent@ATB2026',
-      12,
-    );
+    const agentPassword = await bcrypt.hash(process.env.SEED_AGENT_PASSWORD || 'Agent@ATB2026', 12);
     const agentUser = queryRunner.manager.create(User, {
       memberId: 'ATB-26-AG-1',
       fullName: 'Sample Agent',
@@ -154,7 +146,7 @@ async function bootstrap() {
     });
 
     await queryRunner.manager.save(agent);
-    console.log(`✅ Agent created: ${agent.agentCode}`);
+    logger.log(`✅ Agent created: ${agent.agentCode}`);
 
     // ============================================================
     // 5. Create a Sample Member (fully activated)
@@ -181,7 +173,7 @@ async function bootstrap() {
     });
 
     const savedMember = await queryRunner.manager.save(member);
-    console.log(`✅ Member created: ${savedMember.memberId}`);
+    logger.log(`✅ Member created: ${savedMember.memberId}`);
 
     // Create Membership for the sample member
     const membership = queryRunner.manager.create(Membership, {
@@ -200,7 +192,7 @@ async function bootstrap() {
     });
 
     await queryRunner.manager.save(membership);
-    console.log(`✅ Membership activated for ${savedMember.memberId}`);
+    logger.log(`✅ Membership activated for ${savedMember.memberId}`);
 
     // Create Payment record for the sample member
     const payment = queryRunner.manager.create(Payment, {
@@ -217,7 +209,7 @@ async function bootstrap() {
     });
 
     await queryRunner.manager.save(payment);
-    console.log(`✅ Payment recorded for ${savedMember.memberId}`);
+    logger.log(`✅ Payment recorded for ${savedMember.memberId}`);
 
     // Update agent's registration count
     agent.totalMembersRegistered += 1;
@@ -371,7 +363,7 @@ async function bootstrap() {
       });
       await queryRunner.manager.save(surgery);
     }
-    console.log(`✅ ${surgeries.length} surgeries seeded`);
+    logger.log(`✅ ${surgeries.length} surgeries seeded`);
 
     // ============================================================
     // 7. Seed Hospitals
@@ -479,31 +471,30 @@ async function bootstrap() {
       });
       await queryRunner.manager.save(hospital);
     }
-    console.log(`✅ ${hospitals.length} hospitals seeded`);
+    logger.log(`✅ ${hospitals.length} hospitals seeded`);
 
     await queryRunner.commitTransaction();
 
-    console.log('\n========================================');
-    console.log('🌱 SEED COMPLETE');
-    console.log('========================================');
-    console.log('\n📋 Login Credentials:\n');
-    console.log('┌──────────────┬──────────────────┬─────────────────┐');
-    console.log('│ Role         │ Staff ID         │ Password        │');
-    console.log('├──────────────┼──────────────────┼─────────────────┤');
-    console.log('│ Super Admin  │ ATB-26-SA-1      │ Admin@ATB2026   │');
-    console.log('│ Admin        │ ATB-26-AD-1       │ Admin2@ATB2026  │');
-    console.log('│ Owner        │ ATB-26-OW-1      │ Owner@ATB2026   │');
-    console.log('│ Agent        │ ATB-26-AG-1      │ Agent@ATB2026   │');
-    console.log('├──────────────┼──────────────────┼─────────────────┤');
-    console.log('│ Member       │ ATB-26-ME-01        │ No password     │');
-    console.log('└──────────────┴──────────────────┴─────────────────┘');
-    console.log('\n⚠️  CHANGE ALL PASSWORDS IN PRODUCTION!');
-    console.log('========================================\n');
+    logger.log('\n========================================');
+    logger.log('🌱 SEED COMPLETE');
+    logger.log('========================================');
+    logger.log('\n📋 Login Credentials:\n');
+    logger.log('┌──────────────┬──────────────────┬─────────────────┐');
+    logger.log('│ Role         │ Staff ID         │ Password        │');
+    logger.log('├──────────────┼──────────────────┼─────────────────┤');
+    logger.log('│ Super Admin  │ ATB-26-SA-1      │ Admin@ATB2026   │');
+    logger.log('│ Admin        │ ATB-26-AD-1       │ Admin2@ATB2026  │');
+    logger.log('│ Owner        │ ATB-26-OW-1      │ Owner@ATB2026   │');
+    logger.log('│ Agent        │ ATB-26-AG-1      │ Agent@ATB2026   │');
+    logger.log('├──────────────┼──────────────────┼─────────────────┤');
+    logger.log('│ Member       │ ATB-26-ME-01        │ No password     │');
+    logger.log('└──────────────┴──────────────────┴─────────────────┘');
+    logger.log('\n⚠️  CHANGE ALL PASSWORDS IN PRODUCTION!');
+    logger.log('========================================\n');
   } catch (error) {
     await queryRunner.rollbackTransaction();
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error';
-    console.error('❌ Seed failed:', errorMessage);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('❌ Seed failed:', errorMessage);
     throw error;
   } finally {
     await queryRunner.release();
@@ -514,8 +505,7 @@ async function bootstrap() {
 bootstrap()
   .then(() => process.exit(0))
   .catch((error: unknown) => {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error';
-    console.error(errorMessage);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error(errorMessage);
     process.exit(1);
   });
