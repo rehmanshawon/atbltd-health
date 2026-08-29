@@ -22,6 +22,7 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationType } from '../../entities/notification.entity';
+import { SmsService } from '../sms/sms.service';
 @Injectable()
 export class AuthService {
   // In production, store OTPs in Redis with TTL. This in-memory map is for development.
@@ -54,6 +55,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly dataSource: DataSource,
     private readonly notificationService: NotificationService,
+    private readonly smsService: SmsService,
   ) {}
 
   /**
@@ -511,8 +513,21 @@ export class AuthService {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    // Send SMS
-    this.logger.log(`[DEV] Staff OTP for ${staffId}: ${otp}`);
+    // SEND SMS — need SmsService injected
+    if (user.mobileNumber) {
+      try {
+        await this.smsService.sendSms(
+          user.mobileNumber,
+          `ATB Ltd: Your login OTP is ${otp}. Valid for 5 minutes.`,
+        );
+        this.logger.log(`Staff OTP sent to ${user.mobileNumber}`);
+      } catch (error) {
+        this.logger.error('Failed to send staff OTP SMS:', error.message);
+        // Don't fail login if SMS fails — still allow dev OTP
+        // Send SMS
+        this.logger.log(`[DEV] Staff OTP for ${staffId}: ${otp}`);
+      }
+    }
 
     return { success: true, message: 'OTP sent to your mobile number' };
   }
