@@ -11,11 +11,7 @@ import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../../entities/user.entity';
 import { Membership } from '../../entities/membership.entity';
-import {
-  Payment,
-  PaymentStatus,
-  PaymentType,
-} from '../../entities/payment.entity';
+import { Payment, PaymentStatus, PaymentType } from '../../entities/payment.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { Agent } from '../../entities/agent.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
@@ -81,9 +77,7 @@ export class AuthService {
       where: { mobileNumber: registerDto.mobileNumber },
     });
     if (existingMobile) {
-      throw new ConflictException(
-        'A member with this mobile number already exists',
-      );
+      throw new ConflictException('A member with this mobile number already exists');
     }
 
     // ---- VALIDATION: Payment routing ----
@@ -116,9 +110,7 @@ export class AuthService {
         fullName: registerDto.fullName,
         fatherName: registerDto.fatherName,
         motherName: registerDto.motherName,
-        dateOfBirth: registerDto.dateOfBirth
-          ? new Date(registerDto.dateOfBirth)
-          : null,
+        dateOfBirth: registerDto.dateOfBirth ? new Date(registerDto.dateOfBirth) : null,
         nid: registerDto.nid,
         mobileNumber: registerDto.mobileNumber,
         email: registerDto.email,
@@ -209,11 +201,8 @@ export class AuthService {
         temporaryPassword, // In production, send this via SMS, never return in API response
       };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      throw new InternalServerErrorException(
-        `Registration failed: ${errorMessage}`,
-      );
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new InternalServerErrorException(`Registration failed: ${errorMessage}`);
     } finally {
       await queryRunner.release();
     }
@@ -234,9 +223,7 @@ export class AuthService {
     const { identifier, password } = loginDto;
 
     // Normalize: uppercase for staff IDs
-    const normalizedIdentifier = identifier.includes('ATB')
-      ? identifier.toUpperCase()
-      : identifier;
+    const normalizedIdentifier = identifier.includes('ATB') ? identifier.toUpperCase() : identifier;
 
     // Try to find user by staff ID first, then by mobile number
     let user = await this.userRepository.findOne({
@@ -256,15 +243,11 @@ export class AuthService {
 
     // Only staff (super_admin, admin, owner, agent) can use this login
     if (user.role === UserRole.MEMBER) {
-      throw new UnauthorizedException(
-        'Members must login with Member ID only. Use Member Login.',
-      );
+      throw new UnauthorizedException('Members must login with Member ID only. Use Member Login.');
     }
 
     if (!user.isActive) {
-      throw new UnauthorizedException(
-        'Your account is not active. Please contact support.',
-      );
+      throw new UnauthorizedException('Your account is not active. Please contact support.');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -300,18 +283,14 @@ export class AuthService {
    * In production: Integrate with an SMS gateway (Twilio, Infobip, etc.)
    * Development: Uses mock OTP "123456" as configured in your frontend
    */
-  async sendOtp(
-    mobileNumber: string,
-  ): Promise<{ success: boolean; message: string }> {
+  async sendOtp(mobileNumber: string): Promise<{ success: boolean; message: string }> {
     // Check if user exists
     const user = await this.userRepository.findOne({
       where: { mobileNumber },
     });
 
     if (!user) {
-      throw new BadRequestException(
-        'No registration found for this mobile number',
-      );
+      throw new BadRequestException('No registration found for this mobile number');
     }
 
     // Generate 6-digit OTP
@@ -355,9 +334,7 @@ export class AuthService {
 
     if (new Date() > storedOtp.expiresAt) {
       this.otpStore.delete(verifyOtpDto.mobileNumber);
-      throw new BadRequestException(
-        'OTP has expired. Please request a new one.',
-      );
+      throw new BadRequestException('OTP has expired. Please request a new one.');
     }
 
     if (storedOtp.otp !== verifyOtpDto.otp) {
@@ -437,74 +414,6 @@ export class AuthService {
   }
 
   /**
-   * Admin-only: Verify a payment and activate membership
-   * This implements the Maker role in Maker-Checker system
-   */
-  async verifyPayment(
-    paymentId: string,
-    adminUserId: string,
-  ): Promise<{ success: boolean; message: string }> {
-    const payment = await this.paymentRepository.findOne({
-      where: { id: paymentId },
-      relations: ['user'],
-    });
-
-    if (!payment) {
-      throw new BadRequestException('Payment not found');
-    }
-
-    if (payment.status !== PaymentStatus.PENDING) {
-      throw new BadRequestException(`Payment is already ${payment.status}`);
-    }
-
-    // Update payment status
-    payment.status = PaymentStatus.VERIFIED;
-    payment.verifiedBy = adminUserId;
-    payment.verifiedAt = new Date();
-    await this.paymentRepository.save(payment);
-
-    // Activate membership
-    const membership = await this.membershipRepository.findOne({
-      where: { userId: payment.userId },
-    });
-
-    if (membership) {
-      const today = new Date();
-      membership.isPaymentVerified = true;
-      membership.isActive = true;
-      membership.membershipStartDate = today;
-
-      // Set end date to 12 months from now
-      const endDate = new Date(today);
-      endDate.setFullYear(endDate.getFullYear() + 1);
-      membership.membershipEndDate = endDate;
-
-      await this.membershipRepository.save(membership);
-    }
-
-    // Activate user
-    if (payment.user) {
-      payment.user.isActive = true;
-      payment.user.isKycVerified = true; // Payment verified = KYC passed for now
-      await this.userRepository.save(payment.user);
-    }
-
-    // Audit log
-    await this.auditLogRepository.save({
-      action: 'PAYMENT_VERIFIED',
-      entity: 'Payment',
-      entityId: paymentId,
-      performedById: adminUserId,
-      newValue: { status: 'verified', amount: payment.amount },
-    });
-
-    return {
-      success: true,
-      message: 'Payment verified and membership activated successfully.',
-    };
-  }
-
-  /**
    * Get current user profile
    */
   async getProfile(userId: string): Promise<User> {
@@ -549,9 +458,7 @@ export class AuthService {
     }
 
     if (!user.isActive) {
-      throw new UnauthorizedException(
-        'Your membership is not yet active. Please contact support.',
-      );
+      throw new UnauthorizedException('Your membership is not yet active. Please contact support.');
     }
 
     user.lastLoginAt = new Date();

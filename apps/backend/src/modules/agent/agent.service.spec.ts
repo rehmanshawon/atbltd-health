@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { AgentService } from './agent.service';
+import { AgentApprovalService } from './agent-approval.service';
 import { Agent, AgentApprovalStatus } from '../../entities/agent.entity';
 import { User } from '../../entities/user.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
@@ -17,6 +18,7 @@ import { SmsService } from '../sms/sms.service';
 
 describe('AgentService', () => {
   let service: AgentService;
+  let approvalService: AgentApprovalService;
 
   const mockAgentRepository = {
     findOne: jest.fn(),
@@ -51,6 +53,7 @@ describe('AgentService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AgentService,
+        AgentApprovalService,
         { provide: getRepositoryToken(Agent), useValue: mockAgentRepository },
         { provide: getRepositoryToken(User), useValue: mockUserRepository },
         { provide: getRepositoryToken(AuditLog), useValue: mockAuditLogRepository },
@@ -60,6 +63,7 @@ describe('AgentService', () => {
     }).compile();
 
     service = module.get<AgentService>(AgentService);
+    approvalService = module.get<AgentApprovalService>(AgentApprovalService);
 
     jest.clearAllMocks();
     mockAgentRepository.findOne.mockReset();
@@ -276,7 +280,7 @@ describe('AgentService', () => {
       });
       mockUserRepository.find.mockResolvedValueOnce([]);
 
-      const result = await service.approveAgent('agent-uuid', 'admin-uuid', UserRole.ADMIN);
+      const result = await approvalService.approveAgent('agent-uuid', 'admin-uuid', UserRole.ADMIN);
 
       expect(result.approvalStatus).toBe(AgentApprovalStatus.APPROVED_BY_ADMIN);
     });
@@ -304,7 +308,11 @@ describe('AgentService', () => {
       mockUserRepository.save.mockResolvedValue({ ...agent.user, isActive: true });
       mockUserRepository.find.mockResolvedValueOnce([]);
 
-      const result = await service.approveAgent('agent-uuid', 'sa-uuid', UserRole.SUPER_ADMIN);
+      const result = await approvalService.approveAgent(
+        'agent-uuid',
+        'sa-uuid',
+        UserRole.SUPER_ADMIN,
+      );
 
       expect(result.approvalStatus).toBe(AgentApprovalStatus.ACTIVE);
       expect(result.isActive).toBe(true);
@@ -321,7 +329,7 @@ describe('AgentService', () => {
       mockAgentRepository.findOne.mockResolvedValueOnce(agent);
 
       await expect(
-        service.approveAgent('agent-uuid', 'admin-uuid', UserRole.ADMIN),
+        approvalService.approveAgent('agent-uuid', 'admin-uuid', UserRole.ADMIN),
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -331,7 +339,7 @@ describe('AgentService', () => {
       mockAgentRepository.find.mockResolvedValueOnce([]);
       mockAgentRepository.find.mockResolvedValueOnce([]);
 
-      const result = await service.getPendingApprovals(UserRole.ADMIN);
+      const result = await approvalService.getPendingApprovals(UserRole.ADMIN);
 
       expect(result.pendingCreates).toEqual([]);
       expect(result.pendingDeactivations).toEqual([]);
@@ -341,7 +349,7 @@ describe('AgentService', () => {
       mockAgentRepository.find.mockResolvedValueOnce([]);
       mockAgentRepository.find.mockResolvedValueOnce([]);
 
-      const result = await service.getPendingApprovals(UserRole.SUPER_ADMIN);
+      const result = await approvalService.getPendingApprovals(UserRole.SUPER_ADMIN);
 
       expect(result.pendingCreates).toEqual([]);
       expect(result.pendingDeactivations).toEqual([]);
