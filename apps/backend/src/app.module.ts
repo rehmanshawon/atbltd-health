@@ -17,6 +17,7 @@ import { SmsModule } from './modules/sms/sms.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { CustomLoggerModule } from './modules/logger/logger.module';
+import { ReportModule } from './modules/report/report.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CustomLoggerModule } from './modules/logger/logger.module';
     HospitalModule,
     NotificationModule,
     SmsModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [

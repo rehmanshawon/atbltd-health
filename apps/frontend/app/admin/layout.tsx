@@ -94,6 +94,7 @@ const navItems = [
     icon: User,
     roles: ['super_admin', 'admin', 'owner', 'agent'],
   },
+  { label: 'Reports', href: '/admin/reports', icon: FileText, roles: ['super_admin', 'admin'] },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
