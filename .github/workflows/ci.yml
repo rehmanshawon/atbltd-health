@@ -61,7 +61,7 @@ jobs:
 
       - name: Run frontend typecheck
         working-directory: apps/frontend
-        run: npx tsc --noEmit
+        run: ./node_modules/.bin/tsc --noEmit
 
       - name: Run frontend lint
         working-directory: apps/frontend
