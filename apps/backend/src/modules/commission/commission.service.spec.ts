@@ -93,4 +93,23 @@ describe('CommissionService', () => {
 
     expect(commissionRepository.save).not.toHaveBeenCalled();
   });
+
+  it('allows a super administrator to decline a pending commission', async () => {
+    const commission = { id: 'commission-1', status: CommissionStatus.PENDING, notes: null };
+    commissionRepository.findOne.mockResolvedValue(commission);
+    commissionRepository.save.mockResolvedValue(commission);
+
+    const result = await service.declineCommission(
+      'commission-1',
+      'sa-1',
+      'super_admin',
+      'Payment details could not be verified',
+    );
+
+    expect(result.status).toBe(CommissionStatus.DECLINED);
+    expect(result.notes).toBe('Payment details could not be verified');
+    expect(auditLogRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'COMMISSION_DECLINED', performedById: 'sa-1' }),
+    );
+  });
 });

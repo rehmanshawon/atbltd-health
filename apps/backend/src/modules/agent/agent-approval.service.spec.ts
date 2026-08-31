@@ -200,6 +200,61 @@ describe('AgentApprovalService', () => {
     });
   });
 
+  describe('declineAgent', () => {
+    it('should reject a final approval and record the reason', async () => {
+      const agent = {
+        id: 'agent-1',
+        agentCode: 'ATB-26-AG-3',
+        approvalStatus: AgentApprovalStatus.APPROVED_BY_ADMIN,
+        isActive: false,
+        user: { isActive: false },
+      };
+      mockAgentRepository.findOne.mockResolvedValue(agent);
+      mockAgentRepository.save.mockResolvedValue({
+        ...agent,
+        approvalStatus: AgentApprovalStatus.REJECTED,
+      });
+      mockUserRepository.save.mockResolvedValue(agent.user);
+
+      const result = await service.declineAgent(
+        'agent-1',
+        'sa-1',
+        UserRole.SUPER_ADMIN,
+        'Incomplete documents',
+      );
+
+      expect(result.approvalStatus).toBe(AgentApprovalStatus.REJECTED);
+      expect(mockAuditLogRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'AGENT_DECLINED', performedById: 'sa-1' }),
+      );
+    });
+  });
+
+  describe('declineDeactivation', () => {
+    it('should keep an agent active when final deactivation is declined', async () => {
+      const agent = {
+        id: 'agent-1',
+        agentCode: 'ATB-26-AG-3',
+        approvalStatus: AgentApprovalStatus.DEACTIVATION_APPROVED_BY_ADMIN,
+        isActive: true,
+        user: { isActive: true },
+      };
+      mockAgentRepository.findOne.mockResolvedValue(agent);
+      mockAgentRepository.save.mockResolvedValue({
+        ...agent,
+        approvalStatus: AgentApprovalStatus.ACTIVE,
+      });
+      mockUserRepository.save.mockResolvedValue(agent.user);
+
+      const result = await service.declineDeactivation('agent-1', 'sa-1', UserRole.SUPER_ADMIN);
+
+      expect(result.approvalStatus).toBe(AgentApprovalStatus.ACTIVE);
+      expect(mockAuditLogRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'AGENT_DEACTIVATION_DECLINED' }),
+      );
+    });
+  });
+
   describe('getPendingApprovals', () => {
     it('should return PENDING for Admin', async () => {
       mockAgentRepository.find.mockResolvedValueOnce([]);

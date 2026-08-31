@@ -117,6 +117,45 @@ export class AgentApprovalService {
     return saved;
   }
 
+  async declineAgent(
+    agentId: string,
+    adminId: string,
+    adminRole: string,
+    reason?: string,
+  ): Promise<Agent> {
+    if (adminRole !== UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Only Super Admin can decline final approvals');
+    }
+
+    const agent = await this.agentRepository.findOne({
+      where: { id: agentId },
+      relations: ['user'],
+    });
+
+    if (!agent) throw new NotFoundException('Agent not found');
+    if (agent.approvalStatus !== AgentApprovalStatus.APPROVED_BY_ADMIN) {
+      throw new BadRequestException('Agent is not awaiting final approval');
+    }
+
+    agent.approvalStatus = AgentApprovalStatus.REJECTED;
+    agent.isActive = false;
+    if (agent.user) {
+      agent.user.isActive = false;
+      await this.userRepository.save(agent.user);
+    }
+
+    const saved = await this.agentRepository.save(agent);
+    await this.auditLogRepository.save({
+      action: 'AGENT_DECLINED',
+      entity: 'Agent',
+      entityId: agentId,
+      performedById: adminId,
+      newValue: { agentCode: agent.agentCode, reason: reason || null },
+    });
+
+    return saved;
+  }
+
   async requestDeactivation(
     agentId: string,
     requesterId: string,
@@ -172,6 +211,45 @@ export class AgentApprovalService {
     }
 
     return this.agentRepository.save(agent);
+  }
+
+  async declineDeactivation(
+    agentId: string,
+    adminId: string,
+    adminRole: string,
+    reason?: string,
+  ): Promise<Agent> {
+    if (adminRole !== UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Only Super Admin can decline final approvals');
+    }
+
+    const agent = await this.agentRepository.findOne({
+      where: { id: agentId },
+      relations: ['user'],
+    });
+
+    if (!agent) throw new NotFoundException('Agent not found');
+    if (agent.approvalStatus !== AgentApprovalStatus.DEACTIVATION_APPROVED_BY_ADMIN) {
+      throw new BadRequestException('Deactivation is not awaiting final approval');
+    }
+
+    agent.approvalStatus = AgentApprovalStatus.ACTIVE;
+    agent.isActive = true;
+    if (agent.user) {
+      agent.user.isActive = true;
+      await this.userRepository.save(agent.user);
+    }
+
+    const saved = await this.agentRepository.save(agent);
+    await this.auditLogRepository.save({
+      action: 'AGENT_DEACTIVATION_DECLINED',
+      entity: 'Agent',
+      entityId: agentId,
+      performedById: adminId,
+      newValue: { agentCode: agent.agentCode, reason: reason || null },
+    });
+
+    return saved;
   }
 
   async getPendingApprovals(userRole: string): Promise<{

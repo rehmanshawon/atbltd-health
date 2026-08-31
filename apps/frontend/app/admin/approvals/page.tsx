@@ -77,6 +77,31 @@ export default function ApprovalsPage() {
     setTimeout(() => setActionMsg(''), 3000);
   };
 
+  const handleDecline = async (id: string, deactivation = false) => {
+    const reason = window.prompt('Reason for declining (optional):');
+    if (reason === null) return;
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/agents/${id}/${deactivation ? 'decline-deactivation' : 'decline'}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ reason }),
+        },
+      );
+      if (!res.ok) throw new Error('Decline failed');
+      setActionMsg(deactivation ? 'Deactivation declined' : 'Creation declined');
+      await loadPending();
+    } catch {
+      setActionMsg('Decline failed');
+    }
+    setTimeout(() => setActionMsg(''), 3000);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -156,12 +181,22 @@ export default function ApprovalsPage() {
                     </span>
                   </td>
                   <td className="py-2.5 px-4 text-right">
-                    <button
-                      onClick={() => handleApprove(agent.id)}
-                      className="px-3 py-1.5 rounded bg-brand-blue text-white text-xs font-medium hover:bg-brand-blue/90"
-                    >
-                      Approve
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => handleApprove(agent.id)}
+                        className="px-3 py-1.5 rounded bg-brand-blue text-white text-xs font-medium hover:bg-brand-blue/90"
+                      >
+                        Approve
+                      </button>
+                      {isSuperAdmin && (
+                        <button
+                          onClick={() => handleDecline(agent.id)}
+                          className="px-3 py-1.5 rounded bg-red-600 text-white text-xs font-medium hover:bg-red-700"
+                        >
+                          Decline
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -210,12 +245,22 @@ export default function ApprovalsPage() {
                     </span>
                   </td>
                   <td className="py-2.5 px-4 text-right">
-                    <button
-                      onClick={() => handleApproveDeactivation(agent.id)}
-                      className="px-3 py-1.5 rounded bg-red-600 text-white text-xs font-medium hover:bg-red-700"
-                    >
-                      Approve Deactivation
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => handleApproveDeactivation(agent.id)}
+                        className="px-3 py-1.5 rounded bg-red-600 text-white text-xs font-medium hover:bg-red-700"
+                      >
+                        Approve Deactivation
+                      </button>
+                      {isSuperAdmin && (
+                        <button
+                          onClick={() => handleDecline(agent.id, true)}
+                          className="px-3 py-1.5 rounded border border-red-200 text-red-700 text-xs font-medium hover:bg-red-50"
+                        >
+                          Decline
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

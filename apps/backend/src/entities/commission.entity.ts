@@ -12,6 +12,7 @@ import { Agent } from './agent.entity';
 export enum CommissionStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
+  DECLINED = 'declined',
   PAID = 'paid',
   REVERSED = 'reversed',
 }

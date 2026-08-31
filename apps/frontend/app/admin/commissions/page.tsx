@@ -1,24 +1,18 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useAuth } from "../../lib/auth-context";
-import {
-  Banknote,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  TrendingUp,
-} from "lucide-react";
-import AdminTable from "../components/AdminTable";
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../lib/auth-context';
+import { Banknote, Loader2, CheckCircle2, XCircle, Clock, TrendingUp } from 'lucide-react';
+import AdminTable from '../components/AdminTable';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-amber-50 text-amber-700 border-amber-200",
-  approved: "bg-blue-50 text-blue-700 border-blue-200",
-  paid: "bg-green-50 text-green-700 border-green-200",
-  reversed: "bg-red-50 text-red-700 border-red-200",
+  pending: 'bg-amber-50 text-amber-700 border-amber-200',
+  approved: 'bg-blue-50 text-blue-700 border-blue-200',
+  declined: 'bg-red-50 text-red-700 border-red-200',
+  paid: 'bg-green-50 text-green-700 border-green-200',
+  reversed: 'bg-red-50 text-red-700 border-red-200',
 };
 
 interface Commission {
@@ -36,15 +30,16 @@ interface Commission {
 }
 
 export default function CommissionsPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const isSuperAdmin = user?.role === 'super_admin';
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [actionMsg, setActionMsg] = useState<{
-    type: "success" | "error";
+    type: 'success' | 'error';
     text: string;
   } | null>(null);
 
@@ -63,9 +58,9 @@ export default function CommissionsPage() {
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
-      if (statusFilter) params.set("status", statusFilter);
-      params.set("page", String(page));
-      params.set("limit", "15");
+      if (statusFilter) params.set('status', statusFilter);
+      params.set('page', String(page));
+      params.set('limit', '15');
 
       const res = await fetch(`${API_BASE}/commissions?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -81,11 +76,8 @@ export default function CommissionsPage() {
         0,
       );
       const paid = (data.commissions || [])
-        .filter((c: Commission) => c.status === "paid")
-        .reduce(
-          (sum: number, c: Commission) => sum + Number(c.commissionAmount),
-          0,
-        );
+        .filter((c: Commission) => c.status === 'paid')
+        .reduce((sum: number, c: Commission) => sum + Number(c.commissionAmount), 0);
       setSummary({
         totalEarned: earned,
         totalPaid: paid,
@@ -101,14 +93,14 @@ export default function CommissionsPage() {
   const handleApprove = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}/commissions/${id}/approve`, {
-        method: "POST",
+        method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Failed");
-      setActionMsg({ type: "success", text: "Commission approved" });
+      if (!res.ok) throw new Error('Failed');
+      setActionMsg({ type: 'success', text: 'Commission approved' });
       loadCommissions();
     } catch {
-      setActionMsg({ type: "error", text: "Approval failed" });
+      setActionMsg({ type: 'error', text: 'Approval failed' });
     }
     setTimeout(() => setActionMsg(null), 3000);
   };
@@ -116,31 +108,52 @@ export default function CommissionsPage() {
   const handleConfirmPayment = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}/commissions/${id}/confirm-payment`, {
-        method: "POST",
+        method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.message);
       }
-      setActionMsg({ type: "success", text: "Payment confirmed" });
+      setActionMsg({ type: 'success', text: 'Payment confirmed' });
       loadCommissions();
     } catch (err: any) {
       setActionMsg({
-        type: "error",
-        text: err.message || "Confirmation failed",
+        type: 'error',
+        text: err.message || 'Confirmation failed',
       });
     }
     setTimeout(() => setActionMsg(null), 3000);
   };
 
-  const formatCurrency = (amount: number) =>
-    `${amount?.toLocaleString() || 0} BDT`;
+  const handleDecline = async (id: string) => {
+    const reason = window.prompt('Reason for declining (optional):');
+    if (reason === null) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/commissions/${id}/decline`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reason }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setActionMsg({ type: 'success', text: 'Commission declined' });
+      loadCommissions();
+    } catch {
+      setActionMsg({ type: 'error', text: 'Decline failed' });
+    }
+    setTimeout(() => setActionMsg(null), 3000);
+  };
+
+  const formatCurrency = (amount: number) => `${amount?.toLocaleString() || 0} BDT`;
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
+    new Date(d).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
     });
 
   return (
@@ -148,25 +161,19 @@ export default function CommissionsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-brand-blue">Commissions</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
-            Agent commission management & payouts
-          </p>
+          <p className="text-gray-500 text-sm mt-0.5">Agent commission management & payouts</p>
         </div>
       </div>
 
       {actionMsg && (
         <div
           className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium border ${
-            actionMsg.type === "success"
-              ? "bg-green-50 text-green-700 border-green-200"
-              : "bg-red-50 text-red-700 border-red-200"
+            actionMsg.type === 'success'
+              ? 'bg-green-50 text-green-700 border-green-200'
+              : 'bg-red-50 text-red-700 border-red-200'
           }`}
         >
-          {actionMsg.type === "success" ? (
-            <CheckCircle2 size={15} />
-          ) : (
-            <XCircle size={15} />
-          )}
+          {actionMsg.type === 'success' ? <CheckCircle2 size={15} /> : <XCircle size={15} />}
           {actionMsg.text}
         </div>
       )}
@@ -175,38 +182,33 @@ export default function CommissionsPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {[
           {
-            label: "Total Earned",
+            label: 'Total Earned',
             value: formatCurrency(summary.totalEarned),
             icon: TrendingUp,
-            color: "text-blue-600",
-            bg: "bg-blue-50",
+            color: 'text-blue-600',
+            bg: 'bg-blue-50',
           },
           {
-            label: "Total Paid",
+            label: 'Total Paid',
             value: formatCurrency(summary.totalPaid),
             icon: CheckCircle2,
-            color: "text-green-600",
-            bg: "bg-green-50",
+            color: 'text-green-600',
+            bg: 'bg-green-50',
           },
           {
-            label: "Pending Payout",
+            label: 'Pending Payout',
             value: formatCurrency(summary.totalPending),
             icon: Clock,
-            color: "text-amber-600",
-            bg: "bg-amber-50",
+            color: 'text-amber-600',
+            bg: 'bg-amber-50',
           },
         ].map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white border border-gray-200 rounded-md p-4"
-          >
+          <div key={stat.label} className="bg-white border border-gray-200 rounded-md p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className={`p-1.5 rounded-md ${stat.bg}`}>
                 <stat.icon size={16} className={stat.color} />
               </div>
-              <span className="text-gray-500 text-xs font-semibold">
-                {stat.label}
-              </span>
+              <span className="text-gray-500 text-xs font-semibold">{stat.label}</span>
             </div>
             <p className="text-brand-blue text-lg font-bold">{stat.value}</p>
           </div>
@@ -218,9 +220,7 @@ export default function CommissionsPage() {
         <div className="flex flex-col gap-3 px-5 py-3 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Banknote size={16} className="text-gray-400" />
-            <span className="text-gray-700 text-sm font-medium">
-              All Commissions
-            </span>
+            <span className="text-gray-700 text-sm font-medium">All Commissions</span>
             <span className="text-gray-400 text-xs">({total})</span>
           </div>
           <select
@@ -234,6 +234,7 @@ export default function CommissionsPage() {
             <option value="">All Status</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
+            <option value="declined">Declined</option>
             <option value="paid">Paid</option>
             <option value="reversed">Reversed</option>
           </select>
@@ -241,10 +242,7 @@ export default function CommissionsPage() {
 
         {isLoading ? (
           <div className="py-16 text-center">
-            <Loader2
-              size={28}
-              className="animate-spin text-brand-red mx-auto"
-            />
+            <Loader2 size={28} className="animate-spin text-brand-red mx-auto" />
           </div>
         ) : commissions.length === 0 ? (
           <div className="py-16 text-center">
@@ -285,16 +283,14 @@ export default function CommissionsPage() {
               {commissions.map((c, i) => (
                 <tr
                   key={c.id}
-                  className={`border-b border-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/20"}`}
+                  className={`border-b border-gray-50 ${
+                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'
+                  }`}
                 >
-                  <td className="py-3 px-4 text-brand-blue text-sm font-medium">
-                    {c.agentCode}
-                  </td>
-                  <td className="py-3 px-4 text-gray-600 text-sm">
-                    {c.memberCode || "—"}
-                  </td>
+                  <td className="py-3 px-4 text-brand-blue text-sm font-medium">{c.agentCode}</td>
+                  <td className="py-3 px-4 text-gray-600 text-sm">{c.memberCode || '—'}</td>
                   <td className="py-3 px-4 text-gray-500 text-xs capitalize">
-                    {c.commissionType.replace(/_/g, " ")}
+                    {c.commissionType.replace(/_/g, ' ')}
                   </td>
                   <td className="py-3 px-4 text-right text-gray-600 text-sm">
                     {c.commissionRate}%
@@ -304,25 +300,35 @@ export default function CommissionsPage() {
                   </td>
                   <td className="py-3 px-4">
                     <span
-                      className={`inline-flex px-2 py-0.5 rounded text-xs font-medium border ${STATUS_COLORS[c.status] || STATUS_COLORS.pending}`}
+                      className={`inline-flex px-2 py-0.5 rounded text-xs font-medium border ${
+                        STATUS_COLORS[c.status] || STATUS_COLORS.pending
+                      }`}
                     >
                       {c.status}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-gray-500 text-xs">
-                    {formatDate(c.createdAt)}
-                  </td>
+                  <td className="py-3 px-4 text-gray-500 text-xs">{formatDate(c.createdAt)}</td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      {c.status === "pending" && (
-                        <button
-                          onClick={() => handleApprove(c.id)}
-                          className="px-2 py-1 rounded bg-brand-blue text-white text-[11px] font-medium hover:bg-brand-blue/90"
-                        >
-                          Approve
-                        </button>
+                      {c.status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => handleApprove(c.id)}
+                            className="px-2 py-1 rounded bg-brand-blue text-white text-[11px] font-medium hover:bg-brand-blue/90"
+                          >
+                            Approve
+                          </button>
+                          {isSuperAdmin && (
+                            <button
+                              onClick={() => handleDecline(c.id)}
+                              className="px-2 py-1 rounded bg-red-600 text-white text-[11px] font-medium hover:bg-red-700"
+                            >
+                              Decline
+                            </button>
+                          )}
+                        </>
                       )}
-                      {c.status === "approved" && (
+                      {c.status === 'approved' && (
                         <button
                           onClick={() => handleConfirmPayment(c.id)}
                           className="px-2 py-1 rounded bg-green-600 text-white text-[11px] font-medium hover:bg-green-700"

@@ -71,6 +71,16 @@ export class CommissionController {
     return this.commissionService.approveCommission(id, user.sub, user.role);
   }
 
+  @Post(':id/decline')
+  @Roles(UserRole.SUPER_ADMIN)
+  async decline(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+    @Body('reason') reason?: string,
+  ) {
+    return this.commissionService.declineCommission(id, user.sub, user.role, reason);
+  }
+
   @Post(':id/confirm-payment')
   async confirmPayment(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.commissionService.confirmCommissionPayment(id, user.sub);

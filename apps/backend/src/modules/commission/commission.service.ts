@@ -153,6 +153,40 @@ export class CommissionService {
     return this.commissionRepository.save(commission);
   }
 
+  async declineCommission(
+    commissionId: string,
+    adminId: string,
+    adminRole: string,
+    reason?: string,
+  ): Promise<Commission> {
+    if (adminRole !== UserRole.SUPER_ADMIN) {
+      throw new BadRequestException('Only Super Admin can decline commissions');
+    }
+
+    const commission = await this.commissionRepository.findOne({
+      where: { id: commissionId },
+    });
+
+    if (!commission) throw new NotFoundException('Commission not found');
+    if (commission.status !== CommissionStatus.PENDING) {
+      throw new BadRequestException('Only pending commissions can be declined');
+    }
+
+    commission.status = CommissionStatus.DECLINED;
+    commission.notes = reason || 'Declined by Super Admin';
+    const saved = await this.commissionRepository.save(commission);
+
+    await this.auditLogRepository.save({
+      action: 'COMMISSION_DECLINED',
+      entity: 'Commission',
+      entityId: commissionId,
+      performedById: adminId,
+      newValue: { status: CommissionStatus.DECLINED, reason: reason || null },
+    });
+
+    return saved;
+  }
+
   /**
    * Confirm commission payment (Checker role — dual control)
    */

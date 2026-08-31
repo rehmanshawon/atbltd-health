@@ -108,6 +108,16 @@ export class AgentController {
     return this.agentApprovalService.approveAgent(id, user.sub, user.role);
   }
 
+  @Put(':id/decline')
+  @Roles(UserRole.SUPER_ADMIN)
+  async declineAgent(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+    @Body('reason') reason?: string,
+  ) {
+    return this.agentApprovalService.declineAgent(id, user.sub, user.role, reason);
+  }
+
   /**
    * PUT /api/agents/:id/request-deactivation — SA/Admin/Owner
    */
@@ -124,5 +134,15 @@ export class AgentController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   async approveDeactivation(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.agentApprovalService.approveDeactivation(id, user.sub, user.role);
+  }
+
+  @Put(':id/decline-deactivation')
+  @Roles(UserRole.SUPER_ADMIN)
+  async declineDeactivation(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+    @Body('reason') reason?: string,
+  ) {
+    return this.agentApprovalService.declineDeactivation(id, user.sub, user.role, reason);
   }
 }
