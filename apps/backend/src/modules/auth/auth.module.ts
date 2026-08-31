@@ -12,6 +12,8 @@ import { AuditLog } from '../../entities/audit-log.entity';
 import { Agent } from '../../entities/agent.entity';
 import { NotificationModule } from '../notification/notification.module';
 import { SmsModule } from '../sms/sms.module';
+import { OtpService } from './otp.service';
+import { PaymentRoutingService } from './payment-routing.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Membership, Payment, AuditLog, Agent]),
@@ -26,7 +28,7 @@ import { SmsModule } from '../sms/sms.module';
     SmsModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, OtpService, PaymentRoutingService],
   exports: [AuthService, JwtModule, PassportModule],
 })
 export class AuthModule {}

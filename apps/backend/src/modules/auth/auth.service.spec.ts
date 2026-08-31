@@ -11,6 +11,8 @@ import { Agent } from '../../entities/agent.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { NotificationService } from '../notification/notification.service';
 import { SmsService } from '../sms/sms.service';
+import { OtpService } from './otp.service';
+import { PaymentRoutingService } from './payment-routing.service';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 describe('AuthService', () => {
@@ -59,6 +61,17 @@ describe('AuthService', () => {
     sendMembershipActivationSms: jest.fn(),
   };
 
+  const mockOtpService = {
+    issueMemberOtp: jest.fn(),
+    issueStaffOtp: jest.fn(),
+    verifyMemberOtp: jest.fn(),
+    verifyStaffOtp: jest.fn(),
+  };
+
+  const mockPaymentRoutingService = {
+    getRecipientAccount: jest.fn(),
+  };
+
   const mockDataSource = {
     createQueryRunner: jest.fn().mockReturnValue({
       connect: jest.fn(),
@@ -102,6 +115,8 @@ describe('AuthService', () => {
         { provide: DataSource, useValue: mockDataSource },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: SmsService, useValue: mockSmsService },
+        { provide: OtpService, useValue: mockOtpService },
+        { provide: PaymentRoutingService, useValue: mockPaymentRoutingService },
       ],
     }).compile();
 
@@ -131,6 +146,17 @@ describe('AuthService', () => {
     mockNotificationService.notifyRoles.mockReset();
     mockNotificationService.notifyUser.mockReset();
     mockSmsService.sendSms.mockReset();
+    mockOtpService.issueMemberOtp.mockReset();
+    mockOtpService.issueStaffOtp.mockReset();
+    mockOtpService.verifyMemberOtp.mockReset();
+    mockOtpService.verifyStaffOtp.mockReset();
+    mockPaymentRoutingService.getRecipientAccount.mockReset();
+    mockPaymentRoutingService.getRecipientAccount.mockImplementation((method) => {
+      if (method === 'paypal') {
+        throw new BadRequestException('Invalid payment method');
+      }
+      return '01XXXXXXXXX';
+    });
   });
 
   describe('login', () => {

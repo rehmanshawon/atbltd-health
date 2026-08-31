@@ -23,22 +23,10 @@ import { JwtPayload } from './strategies/jwt.strategy';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationType } from '../../entities/notification.entity';
 import { SmsService } from '../sms/sms.service';
+import { OtpService } from './otp.service';
+import { PaymentRoutingService } from './payment-routing.service';
 @Injectable()
 export class AuthService {
-  // In production, store OTPs in Redis with TTL. This in-memory map is for development.
-  private otpStore: Map<string, { otp: string; expiresAt: Date }> = new Map();
-  private staffOtpStore: Map<string, { otp: string; expiresAt: Date }> = new Map();
-
-  // Official ATB recipient accounts for payment routing validation
-  private getOfficialAccounts() {
-    return {
-      bkash: process.env.BKASH_MERCHANT_NUMBER || '01XXXXXXXXX',
-      nagad: process.env.NAGAD_MERCHANT_NUMBER || '01XXXXXXXXX',
-      rocket: process.env.ROCKET_MERCHANT_NUMBER || '01XXXXXXXXX',
-      bank: process.env.BANK_ACCOUNT || 'ATB-OFFICIAL-BANK-ACCOUNT',
-    };
-  }
-
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
@@ -56,6 +44,8 @@ export class AuthService {
     private readonly dataSource: DataSource,
     private readonly notificationService: NotificationService,
     private readonly smsService: SmsService,
+    private readonly otpService: OtpService,
+    private readonly paymentRoutingService: PaymentRoutingService,
   ) {}
 
   /**
@@ -89,13 +79,9 @@ export class AuthService {
     // ---- VALIDATION: Payment routing ----
     // Per meeting agenda: "No payment shall go to any Agent's personal account"
     // In production, verify the transactionId with the payment gateway API
-    const officialAccounts = this.getOfficialAccounts();
-    const recipientAccount = officialAccounts[registerDto.paymentMethod];
-    if (!recipientAccount) {
-      throw new BadRequestException(
-        `Invalid payment method: ${registerDto.paymentMethod}. Allowed: bkash, nagad, rocket, bank`,
-      );
-    }
+    const recipientAccount = this.paymentRoutingService.getRecipientAccount(
+      registerDto.paymentMethod,
+    );
 
     // ---- TRANSACTION: Create user, membership, and payment in one atomic operation ----
     const queryRunner = this.dataSource.createQueryRunner();
@@ -299,17 +285,7 @@ export class AuthService {
       throw new BadRequestException('No registration found for this mobile number');
     }
 
-    // Generate 6-digit OTP
-    const otp =
-      process.env.NODE_ENV === 'production'
-        ? Math.floor(100000 + Math.random() * 900000).toString()
-        : '123456'; // Development mock OTP matching your frontend
-
-    // Store OTP with 5-minute expiry
-    this.otpStore.set(mobileNumber, {
-      otp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-    });
+    const otp = this.otpService.issueMemberOtp(mobileNumber);
 
     // In production: Send OTP via SMS gateway
     // await this.smsService.send(mobileNumber, `Your ATB verification code: ${otp}`);
@@ -330,25 +306,7 @@ export class AuthService {
     message: string;
     accessToken?: string;
   }> {
-    const storedOtp = this.otpStore.get(verifyOtpDto.mobileNumber);
-
-    if (!storedOtp) {
-      throw new BadRequestException(
-        'No OTP was sent or OTP has expired. Please request a new one.',
-      );
-    }
-
-    if (new Date() > storedOtp.expiresAt) {
-      this.otpStore.delete(verifyOtpDto.mobileNumber);
-      throw new BadRequestException('OTP has expired. Please request a new one.');
-    }
-
-    if (storedOtp.otp !== verifyOtpDto.otp) {
-      throw new BadRequestException('Invalid OTP. Please try again.');
-    }
-
-    // OTP verified - clean up
-    this.otpStore.delete(verifyOtpDto.mobileNumber);
+    this.otpService.verifyMemberOtp(verifyOtpDto.mobileNumber, verifyOtpDto.otp);
 
     // Find the user and activate if payment is verified
     const user = await this.userRepository.findOne({
@@ -502,16 +460,7 @@ export class AuthService {
       throw new UnauthorizedException('Members do not use MFA');
     }
 
-    // Generate 6-digit OTP
-    const otp =
-      process.env.NODE_ENV === 'production'
-        ? Math.floor(100000 + Math.random() * 900000).toString()
-        : '123456';
-
-    this.staffOtpStore.set(user.id, {
-      otp,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-    });
+    const otp = this.otpService.issueStaffOtp(user.id);
 
     // SEND SMS — need SmsService injected
     if (user.mobileNumber) {
@@ -548,22 +497,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid Staff ID');
     }
 
-    const storedOtp = this.staffOtpStore.get(user.id);
-
-    if (!storedOtp) {
-      throw new BadRequestException('OTP not sent or expired');
-    }
-
-    if (new Date() > storedOtp.expiresAt) {
-      this.staffOtpStore.delete(user.id);
-      throw new BadRequestException('OTP expired');
-    }
-
-    if (storedOtp.otp !== otp) {
-      throw new BadRequestException('Invalid OTP');
-    }
-
-    this.staffOtpStore.delete(user.id);
+    this.otpService.verifyStaffOtp(user.id, otp);
 
     const payload: JwtPayload = {
       sub: user.id,
