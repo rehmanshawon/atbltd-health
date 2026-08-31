@@ -147,7 +147,7 @@ npm run seed:ref
 
 ## Running Tests
 
-### Backend (55 tests across 7 suites)
+### Backend (74 tests across 14 suites)
 
 ```bash
 cd apps/backend
@@ -156,7 +156,12 @@ npm run test:watch    # Watch mode
 npm run test:cov      # Coverage report (thresholds enforced)
 ```
 
-### Frontend (5 tests)
+Backend unit tests mock repositories and run without a live PostgreSQL server. For
+database-backed integration work, start the disposable test database with
+`docker compose -f docker-compose.test.yml up -d` and stop it with
+`docker compose -f docker-compose.test.yml down -v`.
+
+### Frontend (10 tests across 4 suites)
 
 ```bash
 cd apps/frontend
@@ -206,6 +211,14 @@ npx tsc --noEmit
 | Variable              | Description     | Required |
 | --------------------- | --------------- | -------- |
 | `NEXT_PUBLIC_API_URL` | Backend API URL | Yes      |
+
+### Production secrets
+
+Never use the values from `.env.example` in a deployed environment. Store
+`DB_PASSWORD`, `JWT_SECRET`, payment merchant accounts, SMS credentials, and seed
+passwords in the deployment platform's secret store (AWS Secrets Manager is the
+recommended store for the current EC2 deployment). Inject them as environment
+variables at container start and rotate them independently of application releases.
 
 ## Deployment
 

@@ -24,6 +24,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { ClaimStatus } from '../../common/enums/claim-status.enum';
 import { JwtPayload } from '../auth/strategies/jwt.strategy';
+import { SubmitClaimDto, UpdateClaimStatusDto } from './claim.dto';
 
 @Controller('claims')
 @UseGuards(JwtAuthGuard)
@@ -37,19 +38,7 @@ export class ClaimController {
    * POST /api/claims — Member submits a claim
    */
   @Post()
-  async submitClaim(
-    @CurrentUser() user: JwtPayload,
-    @Body()
-    body: {
-      surgeryType: string;
-      hospitalName: string;
-      admissionDate: string;
-      operationDate?: string;
-      doctorName?: string;
-      claimedAmount: number;
-      notes?: string;
-    },
-  ) {
+  async submitClaim(@CurrentUser() user: JwtPayload, @Body() body: SubmitClaimDto) {
     return this.claimService.submitClaim(user.sub, body);
   }
 
@@ -110,13 +99,7 @@ export class ClaimController {
   async updateStatus(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,
-    @Body()
-    body: {
-      status: ClaimStatus;
-      rejectionReason?: string;
-      approvedAmount?: number;
-      notes?: string;
-    },
+    @Body() body: UpdateClaimStatusDto,
   ) {
     return this.claimService.updateClaimStatus(id, body.status, user.sub, user.role, body);
   }

@@ -9,7 +9,7 @@
     "lint": "npm --prefix apps/backend run lint && npm --prefix apps/frontend run lint",
     "test": "npm --prefix apps/backend test && npm --prefix apps/frontend test",
     "test:cov": "npm --prefix apps/backend run test:cov && npm --prefix apps/frontend run test:cov",
-    "typecheck": "npm --prefix apps/backend exec -- tsc --noEmit && npm --prefix apps/frontend exec -- tsc --noEmit"
+    "typecheck": "npm --prefix apps/backend run typecheck && npm --prefix apps/frontend run typecheck"
   },
   "engines": {
     "node": ">=22",

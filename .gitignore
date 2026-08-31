@@ -6,6 +6,11 @@ node_modules
 dist
 build
 
+# Generated test coverage reports
+coverage/
+apps/backend/coverage/
+apps/frontend/coverage/
+
 # Environment
 .env
 .env.local

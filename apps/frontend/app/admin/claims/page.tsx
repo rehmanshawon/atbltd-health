@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../lib/auth-context';
+import { logger } from '../../lib/logger';
 import {
   FileText,
   Eye,
@@ -129,7 +130,10 @@ export default function AdminClaimsPage() {
       setTotal(data.total || 0);
       setTotalPages(data.totalPages || 1);
     } catch (err) {
-      console.error('Failed to load claims:', err);
+      logger.error('Failed to load admin claims', {
+        endpoint: '/claims',
+        error: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setIsLoading(false);
     }
@@ -199,6 +203,10 @@ export default function AdminClaimsPage() {
         loadClaims();
       }, 1500);
     } catch (err: any) {
+      logger.error('Failed to update claim status', {
+        endpoint: `/claims/${selectedClaim.id}/status`,
+        error: err instanceof Error ? err.message : String(err),
+      });
       setActionMsg({ type: 'error', text: err.message || 'An error occurred' });
     } finally {
       setActionLoading(false);
@@ -300,7 +308,9 @@ export default function AdminClaimsPage() {
                   return (
                     <tr
                       key={claim.id}
-                      className={`border-b border-gray-50 hover:bg-gray-50/50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'}`}
+                      className={`border-b border-gray-50 hover:bg-gray-50/50 transition-colors ${
+                        i % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'
+                      }`}
                     >
                       <td className="py-3 px-5">
                         <p className="text-brand-blue text-sm font-medium">

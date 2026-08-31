@@ -80,5 +80,5 @@ npm run lint    # Lint
 
 | App      | Test Files | Total Tests | Coverage         |
 | -------- | ---------- | ----------- | ---------------- |
-| Backend  | 7          | 55          | 34.5% statements |
-| Frontend | 1          | 5           | 63.8% statements |
+| Backend  | 14         | 74          | 40.7% statements |
+| Frontend | 4          | 10          | 64.5% statements |
