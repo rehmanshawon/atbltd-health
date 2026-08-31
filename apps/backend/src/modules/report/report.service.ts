@@ -29,7 +29,6 @@ export class ReportService {
     const chunks: Buffer[] = [];
 
     doc.on('data', (chunk: Buffer) => chunks.push(chunk));
-    doc.on('end', () => {});
 
     // Header
     doc.fontSize(20).fillColor('#0A2A5E').text('ATB Ltd — Member Report', { align: 'center' });
