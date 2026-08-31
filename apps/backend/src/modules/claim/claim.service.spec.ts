@@ -237,13 +237,9 @@ describe('ClaimService', () => {
       mockClaimRepository.findOne.mockResolvedValueOnce(claim);
 
       await expect(
-        service.updateClaimStatus(
-          'claim-1',
-          ClaimStatus.APPROVED,
-          'admin-1',
-          UserRole.ADMIN,
-          { approvedAmount: 5000 },
-        ),
+        service.updateClaimStatus('claim-1', ClaimStatus.APPROVED, 'admin-1', UserRole.ADMIN, {
+          approvedAmount: 5000,
+        }),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -282,12 +278,7 @@ describe('ClaimService', () => {
       mockClaimRepository.findOne.mockResolvedValueOnce(null);
 
       await expect(
-        service.updateClaimStatus(
-          'nonexistent',
-          ClaimStatus.APPROVED,
-          'admin-1',
-          UserRole.ADMIN,
-        ),
+        service.updateClaimStatus('nonexistent', ClaimStatus.APPROVED, 'admin-1', UserRole.ADMIN),
       ).rejects.toThrow(NotFoundException);
     });
   });

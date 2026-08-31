@@ -93,9 +93,7 @@ export class HospitalService {
     });
 
     if (!claim) {
-      throw new NotFoundException(
-        'Claim not found or not in hospital verification stage',
-      );
+      throw new NotFoundException('Claim not found or not in hospital verification stage');
     }
 
     const hospital = await this.hospitalRepository.findOne({
@@ -116,9 +114,7 @@ export class HospitalService {
     } else {
       // Hospital rejects — claim goes back with note
       claim.status = ClaimStatus.REJECTED;
-      claim.rejectionReason = `Hospital verification failed: ${
-        notes || 'No reason provided'
-      }`;
+      claim.rejectionReason = `Hospital verification failed: ${notes || 'No reason provided'}`;
     }
 
     const updatedClaim = await this.claimRepository.save(claim);

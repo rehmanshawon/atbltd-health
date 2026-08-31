@@ -47,10 +47,7 @@ export class SmsService {
           this.logger.log(`SMS sent to ${to}`);
           return true;
         }
-      } else if (
-        data?.status &&
-        successStatuses.includes(data.status.toUpperCase())
-      ) {
+      } else if (data?.status && successStatuses.includes(data.status.toUpperCase())) {
         this.logger.log(`SMS sent to ${to}`);
         return true;
       } else if (data?.statusmsg?.toLowerCase().includes('success')) {
@@ -80,15 +77,10 @@ export class SmsService {
     return this.sendSms(to, message);
   }
 
-  async sendClaimStatusSms(
-    to: string,
-    claimId: string,
-    status: string,
-  ): Promise<boolean> {
-    const message = `ATB Ltd: Your claim (${claimId.substring(
-      0,
-      8,
-    )}) status: ${status.replace(/_/g, ' ').toUpperCase()}.`;
+  async sendClaimStatusSms(to: string, claimId: string, status: string): Promise<boolean> {
+    const message = `ATB Ltd: Your claim (${claimId.substring(0, 8)}) status: ${status
+      .replace(/_/g, ' ')
+      .toUpperCase()}.`;
     return this.sendSms(to, message);
   }
 

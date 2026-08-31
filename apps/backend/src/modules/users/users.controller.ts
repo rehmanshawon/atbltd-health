@@ -67,10 +67,7 @@ export class UsersController {
    * Admin/Owner can view any user; Members can only view themselves
    */
   @Get(':id')
-  async findById(
-    @Param('id') id: string,
-    @CurrentUser() currentUser: JwtPayload,
-  ) {
+  async findById(@Param('id') id: string, @CurrentUser() currentUser: JwtPayload) {
     // Members can only view their own profile
     if (currentUser.role === UserRole.MEMBER && currentUser.sub !== id) {
       return this.usersService.findById(currentUser.sub);
@@ -88,11 +85,6 @@ export class UsersController {
     @Body() updateData: any,
     @CurrentUser() currentUser: JwtPayload,
   ) {
-    return this.usersService.update(
-      id,
-      updateData,
-      currentUser.sub,
-      currentUser.role as UserRole,
-    );
+    return this.usersService.update(id, updateData, currentUser.sub, currentUser.role as UserRole);
   }
 }

@@ -14,14 +14,7 @@ import { SmsModule } from '../sms/sms.module';
 import { NotificationModule } from '../notification/notification.module';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      User,
-      Membership,
-      Payment,
-      Claim,
-      Agent,
-      AuditLog,
-    ]),
+    TypeOrmModule.forFeature([User, Membership, Payment, Claim, Agent, AuditLog]),
     CommissionModule,
     SmsModule,
     NotificationModule,

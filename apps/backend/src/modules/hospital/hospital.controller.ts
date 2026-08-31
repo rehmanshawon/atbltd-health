@@ -59,10 +59,7 @@ export class HospitalController {
 
     try {
       const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
-      return this.hospitalService.getClaimDocuments(
-        claimId,
-        decoded.hospitalId,
-      );
+      return this.hospitalService.getClaimDocuments(claimId, decoded.hospitalId);
     } catch {
       throw new UnauthorizedException('Invalid token');
     }

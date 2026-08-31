@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -34,10 +29,7 @@ export class AuditLogInterceptor implements NestInterceptor {
     const url = request.url;
 
     // Skip non-auditable methods and excluded routes
-    if (
-      !this.auditableMethods.includes(method) ||
-      this.excludedRoutes.includes(url)
-    ) {
+    if (!this.auditableMethods.includes(method) || this.excludedRoutes.includes(url)) {
       return next.handle();
     }
 
@@ -48,24 +40,11 @@ export class AuditLogInterceptor implements NestInterceptor {
       tap({
         next: (responseBody) => {
           // Log successful mutations
-          this.createAuditLog(
-            request,
-            user,
-            responseBody,
-            'SUCCESS',
-            startTime,
-          );
+          this.createAuditLog(request, user, responseBody, 'SUCCESS', startTime);
         },
         error: (error) => {
           // Log failed attempts (potential security issues)
-          this.createAuditLog(
-            request,
-            user,
-            null,
-            'FAILED',
-            startTime,
-            error.message,
-          );
+          this.createAuditLog(request, user, null, 'FAILED', startTime, error.message);
         },
       }),
     );
@@ -85,10 +64,7 @@ export class AuditLogInterceptor implements NestInterceptor {
       await this.auditLogRepository.save({
         action,
         entity: this.extractEntityFromUrl(request.url),
-        entityId:
-          responseBody?.id ||
-          responseBody?.memberId ||
-          this.extractIdFromUrl(request.url),
+        entityId: responseBody?.id || responseBody?.memberId || this.extractIdFromUrl(request.url),
         performedById: user?.sub || 'system',
         oldValue: null, // Could capture from request if needed
         newValue: {
@@ -134,8 +110,7 @@ export class AuditLogInterceptor implements NestInterceptor {
 
   private extractIdFromUrl(url: string): string | null {
     // Extract UUID from URL if present
-    const uuidPattern =
-      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+    const uuidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
     const match = url.match(uuidPattern);
     return match ? match[0] : null;
   }
@@ -158,9 +133,8 @@ export class AuditLogInterceptor implements NestInterceptor {
     const forwarded = request.headers['x-forwarded-for'];
     if (forwarded) {
       return (
-        (typeof forwarded === 'string' ? forwarded : forwarded[0])
-          ?.split(',')[0]
-          .trim() || 'unknown'
+        (typeof forwarded === 'string' ? forwarded : forwarded[0])?.split(',')[0].trim() ||
+        'unknown'
       );
     }
     return request.ip || request.socket?.remoteAddress || 'unknown';

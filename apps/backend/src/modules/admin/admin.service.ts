@@ -151,8 +151,8 @@ export class AdminService {
    */
   async getPayments(
     status?: PaymentStatus,
-    page: number = 1,
-    limit: number = 20,
+    page = 1,
+    limit = 20,
   ): Promise<{
     payments: Payment[];
     total: number;
@@ -325,8 +325,8 @@ export class AdminService {
    * Get recent audit logs
    */
   async getAuditLogs(
-    page: number = 1,
-    limit: number = 50,
+    page = 1,
+    limit = 50,
   ): Promise<{
     logs: AuditLog[];
     total: number;

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
@@ -57,8 +53,8 @@ export class UsersService {
    * Get all users with pagination (Admin only)
    */
   async findAll(
-    page: number = 1,
-    limit: number = 20,
+    page = 1,
+    limit = 20,
     role?: UserRole,
   ): Promise<{
     users: User[];
@@ -200,12 +196,7 @@ export class UsersService {
     });
 
     // Count by role
-    const roles = [
-      UserRole.ADMIN,
-      UserRole.OWNER,
-      UserRole.AGENT,
-      UserRole.MEMBER,
-    ];
+    const roles = [UserRole.ADMIN, UserRole.OWNER, UserRole.AGENT, UserRole.MEMBER];
     const membersByRole: Record<string, number> = {};
 
     for (const role of roles) {

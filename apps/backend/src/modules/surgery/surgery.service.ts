@@ -10,7 +10,7 @@ export class SurgeryService {
     private readonly surgeryRepository: Repository<Surgery>,
   ) {}
 
-  async findAll(coveredOnly: boolean = false): Promise<Surgery[]> {
+  async findAll(coveredOnly = false): Promise<Surgery[]> {
     const where: any = { isActive: true };
     if (coveredOnly) where.isCovered = true;
 
