@@ -53,7 +53,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: apps/frontend
-        run: npm ci --include=optional
+        run: npm ci --workspaces=false --include=optional
 
       - name: Run frontend tests
         working-directory: apps/frontend
