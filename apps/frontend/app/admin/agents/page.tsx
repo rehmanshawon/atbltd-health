@@ -8,10 +8,9 @@ import {
   ChevronRight,
   ChevronDown,
   Plus,
-  Users,
-  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
+import AdminTable from "../components/AdminTable";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
@@ -113,7 +112,7 @@ export default function AgentsPage() {
 
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-brand-blue">Agents</h1>
           <p className="text-gray-500 text-sm mt-0.5">
@@ -129,7 +128,7 @@ export default function AgentsPage() {
       </div>
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="bg-white border border-gray-200 rounded-md p-4">
           <p className="text-gray-400 text-xs font-semibold uppercase">
             Total Agents
@@ -177,7 +176,7 @@ export default function AgentsPage() {
             No agents found
           </div>
         ) : (
-          <table className="w-full">
+          <AdminTable minWidth={1120}>
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
@@ -334,7 +333,7 @@ export default function AgentsPage() {
                 );
               })}
             </tbody>
-          </table>
+          </AdminTable>
         )}
       </div>
     </div>

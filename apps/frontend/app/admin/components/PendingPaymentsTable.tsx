@@ -1,6 +1,7 @@
 'use client';
 
 import { Clock, CheckCircle2, Search } from 'lucide-react';
+import AdminTable from './AdminTable';
 
 interface PendingPayment {
   id: string;
@@ -20,7 +21,7 @@ interface PendingPaymentsTableProps {
 export default function PendingPaymentsTable({ payments, onAuthorize }: PendingPaymentsTableProps) {
   return (
     <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <div className="flex flex-col gap-3 px-6 py-4 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <Clock size={16} className="text-amber-600" />
           <h3 className="text-[#0A2A5E] font-semibold text-sm">Pending Authorizations</h3>
@@ -30,12 +31,12 @@ export default function PendingPaymentsTable({ payments, onAuthorize }: PendingP
             </span>
           )}
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search..."
-            className="w-48 pl-9 pr-3 py-1.5 rounded-md border border-gray-200 text-gray-700 text-xs placeholder-gray-400 focus:outline-none focus:border-[#D32F2F] focus:ring-1 focus:ring-[#D32F2F]/20 transition-colors"
+            className="w-full sm:w-48 pl-9 pr-3 py-1.5 rounded-md border border-gray-200 text-gray-700 text-xs placeholder-gray-400 focus:outline-none focus:border-[#D32F2F] focus:ring-1 focus:ring-[#D32F2F]/20 transition-colors"
           />
         </div>
       </div>
@@ -49,7 +50,7 @@ export default function PendingPaymentsTable({ payments, onAuthorize }: PendingP
           <p className="text-gray-400 text-xs mt-1">No pending payments to authorize</p>
         </div>
       ) : (
-        <table className="w-full">
+        <AdminTable minWidth={920}>
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50/50">
               <th className="text-left py-3 px-6 text-gray-500 text-xs font-semibold uppercase tracking-wider">
@@ -113,7 +114,7 @@ export default function PendingPaymentsTable({ payments, onAuthorize }: PendingP
               </tr>
             ))}
           </tbody>
-        </table>
+        </AdminTable>
       )}
     </div>
   );

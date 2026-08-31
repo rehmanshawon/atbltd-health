@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../lib/auth-context";
 import { adminApi } from "../../lib/api";
 import { Banknote, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import AdminTable from "../components/AdminTable";
 
 interface Payment {
   id: string;
@@ -66,7 +67,7 @@ export default function PaymentsPage() {
       </div>
 
       <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+        <div className="flex flex-col gap-3 px-5 py-3 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Banknote size={16} className="text-gray-400" />
             <span className="text-gray-700 text-sm font-medium">
@@ -102,7 +103,7 @@ export default function PaymentsPage() {
             No payments found
           </div>
         ) : (
-          <table className="w-full">
+          <AdminTable minWidth={960}>
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
@@ -173,7 +174,7 @@ export default function PaymentsPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </AdminTable>
         )}
 
         {totalPages > 1 && (

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import {
   FileText,
-  Search,
   Eye,
   CheckCircle2,
   AlertCircle,
@@ -14,6 +13,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import ClaimReviewModal from './ClaimReviewModal';
+import AdminTable from '../components/AdminTable';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
@@ -215,7 +215,7 @@ export default function AdminClaimsPage() {
 
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-brand-blue">Applications of Benefits</h1>
           <p className="text-gray-500 text-sm mt-0.5">Review and manage application submissions</p>
@@ -268,7 +268,7 @@ export default function AdminClaimsPage() {
           </div>
         ) : (
           <>
-            <table className="w-full">
+            <AdminTable minWidth={980}>
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <th className="text-left py-3 px-5 text-gray-500 text-xs font-semibold uppercase">
@@ -335,7 +335,7 @@ export default function AdminClaimsPage() {
                   );
                 })}
               </tbody>
-            </table>
+            </AdminTable>
 
             <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
               <p className="text-gray-500 text-xs">

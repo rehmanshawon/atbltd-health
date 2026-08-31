@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../lib/auth-context';
-import { Clock, CheckCircle2, XCircle, Loader2, UserCheck } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import AdminTable from '../components/AdminTable';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
@@ -113,7 +114,7 @@ export default function ApprovalsPage() {
         {pendingCreates.length === 0 ? (
           <div className="py-8 text-center text-gray-400 text-sm">Nothing pending</div>
         ) : (
-          <table className="w-full">
+          <AdminTable minWidth={860}>
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
@@ -165,7 +166,7 @@ export default function ApprovalsPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </AdminTable>
         )}
       </div>
 
@@ -179,7 +180,7 @@ export default function ApprovalsPage() {
         {pendingDeactivations.length === 0 ? (
           <div className="py-8 text-center text-gray-400 text-sm">Nothing pending</div>
         ) : (
-          <table className="w-full">
+          <AdminTable minWidth={640}>
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
@@ -219,7 +220,7 @@ export default function ApprovalsPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </AdminTable>
         )}
       </div>
     </div>

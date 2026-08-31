@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../lib/auth-context";
 import { usersApi } from "../../lib/api";
+import AdminTable from "../components/AdminTable";
 import {
   Users,
   Search,
@@ -18,6 +19,8 @@ interface Member {
   mobileNumber: string;
   role: string;
   isActive: boolean;
+  currentAddress?: string | null;
+  permanentAddress?: string | null;
   createdAt: string;
 }
 
@@ -78,7 +81,7 @@ export default function MembersPage() {
       </div>
 
       <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+        <div className="flex flex-col gap-3 px-5 py-3 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Users size={16} className="text-gray-400" />
             <span className="text-gray-700 text-sm font-medium">
@@ -86,7 +89,7 @@ export default function MembersPage() {
             </span>
             <span className="text-gray-400 text-xs">({total})</span>
           </div>
-          <form onSubmit={handleSearch} className="relative">
+          <form onSubmit={handleSearch} className="relative w-full sm:w-auto">
             <Search
               size={14}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -96,7 +99,7 @@ export default function MembersPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, mobile, or ID..."
-              className="w-64 pl-9 pr-3 py-1.5 rounded border border-gray-200 text-gray-700 text-xs placeholder-gray-400 focus:outline-none focus:border-brand-red"
+              className="w-full sm:w-64 pl-9 pr-3 py-1.5 rounded border border-gray-200 text-gray-700 text-xs placeholder-gray-400 focus:outline-none focus:border-brand-red"
             />
           </form>
         </div>
@@ -113,7 +116,7 @@ export default function MembersPage() {
             No members found
           </div>
         ) : (
-          <table className="w-full">
+          <AdminTable minWidth={1040}>
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
@@ -124,6 +127,9 @@ export default function MembersPage() {
                 </th>
                 <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
                   Mobile
+                </th>
+                <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
+                  Address
                 </th>
                 <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
                   Status
@@ -148,6 +154,16 @@ export default function MembersPage() {
                   <td className="py-2.5 px-4 text-gray-600 text-sm">
                     {m.mobileNumber}
                   </td>
+                  <td className="py-2.5 px-4 text-gray-600 text-xs leading-5">
+                    <p className="max-w-[280px] whitespace-normal">
+                      {m.currentAddress || m.permanentAddress || "—"}
+                    </p>
+                    {m.currentAddress && m.permanentAddress && (
+                      <p className="max-w-[280px] whitespace-normal text-gray-400">
+                        Permanent: {m.permanentAddress}
+                      </p>
+                    )}
+                  </td>
                   <td className="py-2.5 px-4">
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
@@ -168,7 +184,7 @@ export default function MembersPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </AdminTable>
         )}
 
         {totalPages > 1 && (

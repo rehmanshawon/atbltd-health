@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../lib/auth-context";
 import { Building2, Plus, Loader2 } from "lucide-react";
+import AdminTable from "../components/AdminTable";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
 
@@ -89,7 +90,7 @@ export default function HospitalsPage() {
 
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-brand-blue">Hospitals</h1>
           <p className="text-gray-500 text-sm mt-0.5">
@@ -111,7 +112,7 @@ export default function HospitalsPage() {
       {showCreate && (
         <form
           onSubmit={handleCreate}
-          className="bg-white border border-gray-200 rounded-md p-5 grid grid-cols-2 gap-4"
+          className="bg-white border border-gray-200 rounded-md p-5 grid grid-cols-1 sm:grid-cols-2 gap-4"
         >
           <input
             required
@@ -185,7 +186,7 @@ export default function HospitalsPage() {
             />
           </div>
         ) : (
-          <table className="w-full">
+          <AdminTable minWidth={720}>
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
                 <th className="text-left py-2.5 px-4 text-gray-500 text-xs font-semibold uppercase">
@@ -227,7 +228,7 @@ export default function HospitalsPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </AdminTable>
         )}
       </div>
     </div>
