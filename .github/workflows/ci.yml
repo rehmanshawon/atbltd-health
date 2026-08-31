@@ -10,12 +10,14 @@ jobs:
   backend-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/backend/package-lock.json
 
       - name: Install backend dependencies
         working-directory: apps/backend
@@ -23,7 +25,7 @@ jobs:
 
       - name: Run backend tests
         working-directory: apps/backend
-        run: npm test
+        run: npm run test:cov
 
       - name: Run backend typecheck
         working-directory: apps/backend
@@ -40,12 +42,14 @@ jobs:
   frontend-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/frontend/package-lock.json
 
       - name: Install frontend dependencies
         working-directory: apps/frontend
@@ -53,7 +57,7 @@ jobs:
 
       - name: Run frontend tests
         working-directory: apps/frontend
-        run: npm test
+        run: npm run test:cov
 
       - name: Run frontend typecheck
         working-directory: apps/frontend
