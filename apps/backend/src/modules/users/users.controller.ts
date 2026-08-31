@@ -54,7 +54,7 @@ export class UsersController {
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
     @Query('role') role?: UserRole,
   ) {
-    if (user.role === UserRole.ADMIN) {
+    if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN) {
       return this.usersService.findAll(page, limit, role);
     }
 
