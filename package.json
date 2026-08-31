@@ -4,16 +4,12 @@
   "private": true,
   "description": "Healthcare fintech platform for Bangladesh with NestJS backend and Next.js frontend.",
   "license": "UNLICENSED",
-  "workspaces": [
-    "apps/backend",
-    "apps/frontend"
-  ],
   "scripts": {
-    "build": "npm run build --workspace apps/backend && npm run build --workspace apps/frontend",
-    "lint": "npm run lint --workspace apps/backend && npm run lint --workspace apps/frontend",
-    "test": "npm test --workspace apps/backend && npm test --workspace apps/frontend",
-    "test:cov": "npm run test:cov --workspace apps/backend && npm run test:cov --workspace apps/frontend",
-    "typecheck": "npm exec --workspace apps/backend -- tsc --noEmit && npm exec --workspace apps/frontend -- tsc --noEmit"
+    "build": "npm --prefix apps/backend run build && npm --prefix apps/frontend run build",
+    "lint": "npm --prefix apps/backend run lint && npm --prefix apps/frontend run lint",
+    "test": "npm --prefix apps/backend test && npm --prefix apps/frontend test",
+    "test:cov": "npm --prefix apps/backend run test:cov && npm --prefix apps/frontend run test:cov",
+    "typecheck": "npm --prefix apps/backend exec -- tsc --noEmit && npm --prefix apps/frontend exec -- tsc --noEmit"
   },
   "engines": {
     "node": ">=22",
