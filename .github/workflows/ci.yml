@@ -39,6 +39,40 @@ jobs:
         working-directory: apps/backend
         run: npm audit --audit-level=critical
 
+  backend-e2e-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: apps/backend
+        run: npm ci
+
+      - name: Start disposable test database
+        run: docker compose -f docker-compose.test.yml up -d --wait
+
+      - name: Run backend e2e tests
+        working-directory: apps/backend
+        env:
+          DB_HOST: localhost
+          DB_PORT: "5433"
+          DB_USERNAME: atbtest
+          DB_PASSWORD: atbtest
+          DB_DATABASE: atbltd_test
+          JWT_SECRET: ci-e2e-test-secret
+        run: npm run test:e2e
+
+      - name: Tear down test database
+        if: always()
+        run: docker compose -f docker-compose.test.yml down -v
+
   frontend-test:
     runs-on: ubuntu-latest
     steps:
