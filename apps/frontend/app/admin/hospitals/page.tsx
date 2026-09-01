@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useAuth } from "../../lib/auth-context";
-import { Building2, Plus, Loader2 } from "lucide-react";
-import AdminTable from "../components/AdminTable";
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../lib/auth-context';
+import { Building2, Plus, Loader2 } from 'lucide-react';
+import AdminTable from '../components/AdminTable';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
 interface Hospital {
   id: string;
@@ -23,17 +23,17 @@ export default function HospitalsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({
-    name: "",
-    address: "",
-    contactNumber: "",
-    email: "",
-    contactPerson: "",
-    loginId: "",
-    password: "",
+    name: '',
+    address: '',
+    contactNumber: '',
+    email: '',
+    contactPerson: '',
+    loginId: '',
+    password: '',
     isPartner: true,
   });
   const [creating, setCreating] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [msg, setMsg] = useState('');
 
   useEffect(() => {
     if (token) loadHospitals();
@@ -56,33 +56,33 @@ export default function HospitalsPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
-    setMsg("");
+    setMsg('');
     try {
       const res = await fetch(`${API_BASE}/hospitals`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed");
-      setMsg("Hospital created successfully");
+      if (!res.ok) throw new Error(data.message || 'Failed');
+      setMsg('Hospital created successfully');
       setShowCreate(false);
       setForm({
-        name: "",
-        address: "",
-        contactNumber: "",
-        email: "",
-        contactPerson: "",
-        loginId: "",
-        password: "",
+        name: '',
+        address: '',
+        contactNumber: '',
+        email: '',
+        contactPerson: '',
+        loginId: '',
+        password: '',
         isPartner: true,
       });
       loadHospitals();
-    } catch (err: any) {
-      setMsg(err.message);
+    } catch (err: unknown) {
+      setMsg(err instanceof Error ? err.message : String(err));
     } finally {
       setCreating(false);
     }
@@ -105,9 +105,7 @@ export default function HospitalsPage() {
         </button>
       </div>
 
-      {msg && (
-        <div className="p-3 rounded bg-gray-50 border text-sm">{msg}</div>
-      )}
+      {msg && <div className="p-3 rounded bg-gray-50 border text-sm">{msg}</div>}
 
       {showCreate && (
         <form
@@ -132,9 +130,7 @@ export default function HospitalsPage() {
             required
             placeholder="Contact Number"
             value={form.contactNumber}
-            onChange={(e) =>
-              setForm({ ...form, contactNumber: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, contactNumber: e.target.value })}
             className="px-3 py-2 rounded border border-gray-200 text-sm"
           />
           <input
@@ -147,9 +143,7 @@ export default function HospitalsPage() {
           <input
             placeholder="Contact Person"
             value={form.contactPerson}
-            onChange={(e) =>
-              setForm({ ...form, contactPerson: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, contactPerson: e.target.value })}
             className="px-3 py-2 rounded border border-gray-200 text-sm"
           />
           <input
@@ -172,7 +166,7 @@ export default function HospitalsPage() {
             disabled={creating}
             className="px-4 py-2 rounded bg-brand-blue text-white text-sm disabled:opacity-50"
           >
-            {creating ? "Creating..." : "Create Hospital"}
+            {creating ? 'Creating...' : 'Create Hospital'}
           </button>
         </form>
       )}
@@ -180,10 +174,7 @@ export default function HospitalsPage() {
       <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
         {isLoading ? (
           <div className="py-16 text-center">
-            <Loader2
-              size={28}
-              className="animate-spin text-brand-red mx-auto"
-            />
+            <Loader2 size={28} className="animate-spin text-brand-red mx-auto" />
           </div>
         ) : (
           <AdminTable minWidth={720}>
@@ -207,22 +198,20 @@ export default function HospitalsPage() {
               {hospitals.map((h, i) => (
                 <tr
                   key={h.id}
-                  className={`border-b border-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/20"}`}
+                  className={`border-b border-gray-50 ${
+                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'
+                  }`}
                 >
-                  <td className="py-2.5 px-4 text-brand-blue text-sm font-medium">
-                    {h.name}
-                  </td>
-                  <td className="py-2.5 px-4 text-gray-500 text-xs font-mono">
-                    {h.loginId}
-                  </td>
-                  <td className="py-2.5 px-4 text-gray-600 text-sm">
-                    {h.contactNumber}
-                  </td>
+                  <td className="py-2.5 px-4 text-brand-blue text-sm font-medium">{h.name}</td>
+                  <td className="py-2.5 px-4 text-gray-500 text-xs font-mono">{h.loginId}</td>
+                  <td className="py-2.5 px-4 text-gray-600 text-sm">{h.contactNumber}</td>
                   <td className="py-2.5 px-4">
                     <span
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${h.isActive ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}
+                      className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        h.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
+                      }`}
                     >
-                      {h.isActive ? "Active" : "Inactive"}
+                      {h.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                 </tr>

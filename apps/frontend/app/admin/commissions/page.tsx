@@ -117,10 +117,10 @@ export default function CommissionsPage() {
       }
       setActionMsg({ type: 'success', text: 'Payment confirmed' });
       loadCommissions();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setActionMsg({
         type: 'error',
-        text: err.message || 'Confirmation failed',
+        text: (err instanceof Error ? err.message : String(err)) || 'Confirmation failed',
       });
     }
     setTimeout(() => setActionMsg(null), 3000);

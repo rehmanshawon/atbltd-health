@@ -187,8 +187,8 @@ export default function ClaimDetailPage() {
       setUploadEntries([{ id: crypto.randomUUID(), documentType: '', file: null, notes: '' }]);
       await loadData();
       setTimeout(() => setUploadSuccess(false), 3000);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsUploading(false);
     }

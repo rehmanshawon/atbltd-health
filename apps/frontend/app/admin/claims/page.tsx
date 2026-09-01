@@ -202,12 +202,13 @@ export default function AdminClaimsPage() {
         setActionMsg(null);
         loadClaims();
       }, 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
       logger.error('Failed to update claim status', {
         endpoint: `/claims/${selectedClaim.id}/status`,
-        error: err instanceof Error ? err.message : String(err),
+        error: message,
       });
-      setActionMsg({ type: 'error', text: err.message || 'An error occurred' });
+      setActionMsg({ type: 'error', text: message || 'An error occurred' });
     } finally {
       setActionLoading(false);
     }

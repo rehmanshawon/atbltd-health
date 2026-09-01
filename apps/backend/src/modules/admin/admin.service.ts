@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindOptionsWhere } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import { Membership } from '../../entities/membership.entity';
 import { Payment, PaymentStatus } from '../../entities/payment.entity';
@@ -161,7 +161,7 @@ export class AdminService {
   }> {
     const pageNum = Number(page) || 1;
     const limitNum = Number(limit) || 20;
-    const where: any = {};
+    const where: FindOptionsWhere<Payment> = {};
     if (status) where.status = status;
 
     const [payments, total] = await this.paymentRepository.findAndCount({

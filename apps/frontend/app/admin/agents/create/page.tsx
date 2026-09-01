@@ -1,37 +1,36 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "../../../lib/auth-context";
-import { ArrowLeft, UserPlus, Loader2, CheckCircle2, Lock } from "lucide-react";
-import Link from "next/link";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../../lib/auth-context';
+import { ArrowLeft, UserPlus, Loader2, CheckCircle2, Lock } from 'lucide-react';
+import Link from 'next/link';
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
 export default function CreateAgentPage() {
   const router = useRouter();
   const { token, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const isSuperAdmin = user?.role === "super_admin";
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const isSuperAdmin = user?.role === 'super_admin';
 
   // If current user is an Owner, auto-set parentAgentCode to their own code
-  const isOwnerCreating = user?.role === "owner";
+  const isOwnerCreating = user?.role === 'owner';
 
   const [form, setForm] = useState({
-    fullName: "",
-    mobileNumber: "",
-    email: "",
-    commissionRate: "10",
-    parentAgentCode: isOwnerCreating ? user?.memberId || "" : "",
+    fullName: '',
+    mobileNumber: '',
+    email: '',
+    commissionRate: '10',
+    parentAgentCode: isOwnerCreating ? user?.memberId || '' : '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    setError('');
+    setSuccess('');
 
     if (!form.parentAgentCode) {
       setError("Please enter the Parent Owner's Agent Code");
@@ -45,37 +44,33 @@ export default function CreateAgentPage() {
         fullName: form.fullName,
         mobileNumber: form.mobileNumber,
         email: form.email || undefined,
-        role: "agent",
+        role: 'agent',
         commissionRate: parseFloat(form.commissionRate),
-        parentAgentCode: isOwnerCreating
-          ? user?.memberId
-          : form.parentAgentCode,
+        parentAgentCode: isOwnerCreating ? user?.memberId : form.parentAgentCode,
       };
 
       const res = await fetch(`${API_BASE}/agents`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to create agent");
+      if (!res.ok) throw new Error(data.message || 'Failed to create agent');
 
-      setSuccess(
-        `Agent created successfully! Agent Code: ${data.agent?.agentCode}`,
-      );
+      setSuccess(`Agent created successfully! Agent Code: ${data.agent?.agentCode}`);
       setForm({
-        fullName: "",
-        mobileNumber: "",
-        email: "",
-        commissionRate: "10",
-        parentAgentCode: isOwnerCreating ? user?.memberId || "" : "",
+        fullName: '',
+        mobileNumber: '',
+        email: '',
+        commissionRate: '10',
+        parentAgentCode: isOwnerCreating ? user?.memberId || '' : '',
       });
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -92,9 +87,7 @@ export default function CreateAgentPage() {
 
       <div>
         <h1 className="text-2xl font-bold text-brand-blue">Create Agent</h1>
-        <p className="text-gray-500 text-sm mt-0.5">
-          Add a new agent to the network
-        </p>
+        <p className="text-gray-500 text-sm mt-0.5">Add a new agent to the network</p>
       </div>
 
       {error && (
@@ -114,9 +107,7 @@ export default function CreateAgentPage() {
       >
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-gray-600 text-xs font-semibold mb-1.5">
-              Full Name *
-            </label>
+            <label className="block text-gray-600 text-xs font-semibold mb-1.5">Full Name *</label>
             <input
               required
               value={form.fullName}
@@ -131,9 +122,7 @@ export default function CreateAgentPage() {
             <input
               required
               value={form.mobileNumber}
-              onChange={(e) =>
-                setForm({ ...form, mobileNumber: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, mobileNumber: e.target.value })}
               placeholder="01XXXXXXXXX"
               className="w-full px-3 py-2.5 rounded-md border border-gray-300 text-gray-900 text-sm focus:border-brand-red focus:outline-none"
             />
@@ -142,9 +131,7 @@ export default function CreateAgentPage() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-gray-600 text-xs font-semibold mb-1.5">
-              Email
-            </label>
+            <label className="block text-gray-600 text-xs font-semibold mb-1.5">Email</label>
             <input
               type="email"
               value={form.email}
@@ -164,9 +151,7 @@ export default function CreateAgentPage() {
                 type="number"
                 required
                 value={form.commissionRate}
-                onChange={(e) =>
-                  setForm({ ...form, commissionRate: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, commissionRate: e.target.value })}
                 min="0"
                 max="100"
                 step="0.5"
@@ -214,9 +199,7 @@ export default function CreateAgentPage() {
               <input
                 required
                 value={form.parentAgentCode}
-                onChange={(e) =>
-                  setForm({ ...form, parentAgentCode: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, parentAgentCode: e.target.value })}
                 placeholder="e.g., ATB-26-OW-1"
                 className="w-full px-3 py-2.5 rounded-md border border-gray-300 text-gray-900 text-sm focus:border-brand-red focus:outline-none"
               />
@@ -236,12 +219,8 @@ export default function CreateAgentPage() {
             disabled={isSubmitting}
             className="flex items-center gap-2 px-5 py-2.5 rounded-md bg-brand-red text-white text-sm font-medium hover:bg-brand-red/90 disabled:opacity-50"
           >
-            {isSubmitting ? (
-              <Loader2 size={15} className="animate-spin" />
-            ) : (
-              <UserPlus size={15} />
-            )}
-            {isSubmitting ? "Creating..." : "Create Agent"}
+            {isSubmitting ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
+            {isSubmitting ? 'Creating...' : 'Create Agent'}
           </button>
         </div>
       </form>

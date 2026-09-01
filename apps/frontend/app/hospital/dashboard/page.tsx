@@ -138,8 +138,8 @@ export default function HospitalDashboard() {
       setVerificationNotes('');
       setShowDocsFor(null);
       await loadClaims(token);
-    } catch (err: any) {
-      setActionMsg({ type: 'error', text: err.message });
+    } catch (err: unknown) {
+      setActionMsg({ type: 'error', text: err instanceof Error ? err.message : String(err) });
     } finally {
       setVerifyingId(null);
     }

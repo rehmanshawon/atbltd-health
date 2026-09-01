@@ -1,33 +1,32 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "../../../lib/auth-context";
-import { ArrowLeft, UserPlus, Loader2, CheckCircle2, Lock } from "lucide-react";
-import Link from "next/link";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../../lib/auth-context';
+import { ArrowLeft, UserPlus, Loader2, CheckCircle2, Lock } from 'lucide-react';
+import Link from 'next/link';
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
 export default function CreateOwnerPage() {
   const router = useRouter();
   const { token, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const isSuperAdmin = user?.role === "super_admin";
+  const isSuperAdmin = user?.role === 'super_admin';
   const [form, setForm] = useState({
-    fullName: "",
-    mobileNumber: "",
-    email: "",
-    commissionRate: "5",
+    fullName: '',
+    mobileNumber: '',
+    email: '',
+    commissionRate: '5',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
+    setError('');
+    setSuccess('');
     setIsSubmitting(true);
 
     try {
@@ -35,33 +34,31 @@ export default function CreateOwnerPage() {
         fullName: form.fullName,
         mobileNumber: form.mobileNumber,
         email: form.email || undefined,
-        role: "owner",
+        role: 'owner',
         commissionRate: parseFloat(form.commissionRate),
       };
 
       const res = await fetch(`${API_BASE}/agents`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to create owner");
+      if (!res.ok) throw new Error(data.message || 'Failed to create owner');
 
-      setSuccess(
-        `Owner created successfully! Owner Code: ${data.agent?.agentCode}`,
-      );
+      setSuccess(`Owner created successfully! Owner Code: ${data.agent?.agentCode}`);
       setForm({
-        fullName: "",
-        mobileNumber: "",
-        email: "",
-        commissionRate: "5",
+        fullName: '',
+        mobileNumber: '',
+        email: '',
+        commissionRate: '5',
       });
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -78,9 +75,7 @@ export default function CreateOwnerPage() {
 
       <div>
         <h1 className="text-2xl font-bold text-brand-blue">Create Owner</h1>
-        <p className="text-gray-500 text-sm mt-0.5">
-          Add a new owner to the network
-        </p>
+        <p className="text-gray-500 text-sm mt-0.5">Add a new owner to the network</p>
       </div>
 
       {error && (
@@ -100,9 +95,7 @@ export default function CreateOwnerPage() {
       >
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-gray-600 text-xs font-semibold mb-1.5">
-              Full Name *
-            </label>
+            <label className="block text-gray-600 text-xs font-semibold mb-1.5">Full Name *</label>
             <input
               required
               value={form.fullName}
@@ -117,9 +110,7 @@ export default function CreateOwnerPage() {
             <input
               required
               value={form.mobileNumber}
-              onChange={(e) =>
-                setForm({ ...form, mobileNumber: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, mobileNumber: e.target.value })}
               placeholder="01XXXXXXXXX"
               className="w-full px-3 py-2.5 rounded-md border border-gray-300 text-gray-900 text-sm focus:border-brand-red focus:outline-none"
             />
@@ -128,9 +119,7 @@ export default function CreateOwnerPage() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-gray-600 text-xs font-semibold mb-1.5">
-              Email
-            </label>
+            <label className="block text-gray-600 text-xs font-semibold mb-1.5">Email</label>
             <input
               type="email"
               value={form.email}
@@ -149,9 +138,7 @@ export default function CreateOwnerPage() {
               type="number"
               required
               value={form.commissionRate}
-              onChange={(e) =>
-                setForm({ ...form, commissionRate: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, commissionRate: e.target.value })}
               min="0"
               max="100"
               step="0.5"
@@ -169,14 +156,9 @@ export default function CreateOwnerPage() {
                 readOnly
                 className="w-full px-3 py-2.5 rounded-md border border-gray-200 bg-gray-50 text-gray-500 text-sm focus:outline-none cursor-not-allowed pr-10"
               />
-              <Lock
-                size={14}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
+              <Lock size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
             </div>
-            <p className="text-gray-400 text-[10px] mt-1">
-              Only Super Admin can change this value
-            </p>
+            <p className="text-gray-400 text-[10px] mt-1">Only Super Admin can change this value</p>
           </div>
         )}
 
@@ -192,12 +174,8 @@ export default function CreateOwnerPage() {
             disabled={isSubmitting}
             className="flex items-center gap-2 px-5 py-2.5 rounded-md bg-brand-red text-white text-sm font-medium hover:bg-brand-red/90 disabled:opacity-50"
           >
-            {isSubmitting ? (
-              <Loader2 size={15} className="animate-spin" />
-            ) : (
-              <UserPlus size={15} />
-            )}
-            {isSubmitting ? "Creating..." : "Create Owner"}
+            {isSubmitting ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
+            {isSubmitting ? 'Creating...' : 'Create Owner'}
           </button>
         </div>
       </form>

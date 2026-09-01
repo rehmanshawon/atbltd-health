@@ -41,8 +41,8 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error(data.message || 'Update failed');
 
       setSuccess('Profile updated successfully');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsSaving(false);
     }
