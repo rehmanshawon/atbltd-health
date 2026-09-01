@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindOptionsWhere } from 'typeorm';
 import { Surgery } from '../../entities/surgery.entity';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class SurgeryService {
   ) {}
 
   async findAll(coveredOnly = false): Promise<Surgery[]> {
-    const where: any = { isActive: true };
+    const where: FindOptionsWhere<Surgery> = { isActive: true };
     if (coveredOnly) where.isCovered = true;
 
     return this.surgeryRepository.find({
