@@ -89,9 +89,7 @@ export class ReportService {
       doc.moveDown();
     });
 
-    doc.end();
-
-    return Buffer.concat(chunks);
+    return this.finalizePdf(doc, chunks);
   }
 
   async generatePaymentReport(): Promise<Buffer> {
@@ -142,8 +140,7 @@ export class ReportService {
       doc.moveDown();
     });
 
-    doc.end();
-    return Buffer.concat(chunks);
+    return this.finalizePdf(doc, chunks);
   }
 
   async generateClaimReport(): Promise<Buffer> {
@@ -196,8 +193,7 @@ export class ReportService {
       doc.moveDown();
     });
 
-    doc.end();
-    return Buffer.concat(chunks);
+    return this.finalizePdf(doc, chunks);
   }
 
   async generateAgentReport(): Promise<Buffer> {
@@ -238,8 +234,7 @@ export class ReportService {
       doc.moveDown();
     });
 
-    doc.end();
-    return Buffer.concat(chunks);
+    return this.finalizePdf(doc, chunks);
   }
 
   async generateAuditReport(): Promise<Buffer> {
@@ -274,7 +269,18 @@ export class ReportService {
       doc.moveDown();
     });
 
-    doc.end();
-    return Buffer.concat(chunks);
+    return this.finalizePdf(doc, chunks);
+  }
+
+  /**
+   * Ends the document and resolves only once the stream has fully flushed,
+   * so callers never receive a truncated/empty Buffer.
+   */
+  private finalizePdf(doc: PDFKit.PDFDocument, chunks: Buffer[]): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+      doc.end();
+    });
   }
 }
