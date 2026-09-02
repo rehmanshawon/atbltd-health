@@ -17,6 +17,8 @@ process.env.DB_PASSWORD = process.env.DB_PASSWORD || 'atbtest';
 process.env.DB_DATABASE = process.env.DB_DATABASE || 'atbltd_test';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'e2e-test-secret';
 
+const testStaffPassword = process.env.TEST_MEMBER_PASSWORD || 'e2e-test-password';
+
 describe('Claim submission + maker-checker payment verification (e2e)', () => {
   let app: INestApplication;
   let userRepository: import('typeorm').Repository<User>;
@@ -43,7 +45,7 @@ describe('Claim submission + maker-checker payment verification (e2e)', () => {
   });
 
   async function seedStaff(role: UserRole, memberId: string) {
-    const password = await bcrypt.hash('Password123!', 10);
+    const password = await bcrypt.hash(testStaffPassword, 10);
     await userRepository.save(
       userRepository.create({
         memberId,
@@ -58,7 +60,7 @@ describe('Claim submission + maker-checker payment verification (e2e)', () => {
 
     const res = await request(app.getHttpServer())
       .post('/auth/login')
-      .send({ identifier: memberId, password: 'Password123!' })
+      .send({ identifier: memberId, password: testStaffPassword })
       .expect(200);
 
     return res.body.accessToken as string;
