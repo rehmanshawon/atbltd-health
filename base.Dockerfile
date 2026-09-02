@@ -32,7 +32,7 @@ COPY --from=frontend-build /app/apps/frontend/.next ./.next
 COPY --from=frontend-build /app/apps/frontend/public ./public
 COPY --from=frontend-build /app/apps/frontend/package.json ./package.json
 COPY --from=frontend-build /app/apps/frontend/next.config.ts ./next.config.ts
-COPY --from=frontend-build /app/node_modules ./node_modules
+COPY --from=frontend-build /app/apps/frontend/node_modules ./node_modules
 
 EXPOSE 3000
 CMD ["npx", "next", "start", "-p", "3000"]
@@ -43,7 +43,7 @@ FROM node:22-alpine AS backend
 WORKDIR /app
 COPY --from=backend-build /app/apps/backend/dist ./dist
 COPY --from=backend-build /app/apps/backend/package.json ./package.json
-COPY --from=backend-build /app/node_modules ./node_modules
+COPY --from=backend-build /app/apps/backend/node_modules ./node_modules
 
 EXPOSE 3000
 CMD ["node", "dist/main"]
