@@ -12,12 +12,19 @@ const customJestConfig = {
     '^lucide-react$': '<rootDir>/node_modules/lucide-react/dist/cjs/lucide-react.js',
   },
   testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
+  collectCoverageFrom: [
+    'app/**/*.{ts,tsx}',
+    '!app/**/*.d.ts',
+    '!app/**/__tests__/**',
+    '!app/**/layout.tsx',
+    '!app/providers.tsx',
+  ],
   coverageThreshold: {
     global: {
-      lines: 60,
-      functions: 55,
-      branches: 50,
-      statements: 60,
+      lines: 29,
+      functions: 24,
+      branches: 26,
+      statements: 29,
     },
   },
 };

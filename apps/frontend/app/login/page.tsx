@@ -24,7 +24,6 @@ export default function LoginPage() {
   // Redirect if already authenticated
 
   const handleMemberLogin = async (e: FormEvent) => {
-    console.log('MEMBER LOGIN CALLED');
     e.preventDefault();
     setError('');
     setIsLoading(true);
