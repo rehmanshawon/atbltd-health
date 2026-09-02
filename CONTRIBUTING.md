@@ -15,10 +15,7 @@ Thank you for your interest in contributing to ATB Ltd — a healthcare fintech 
 3. **Install dependencies:**
 
    ```bash
-   cd apps/backend
-   npm install
-   cd ../frontend
-   npm install
+   npm ci
    ```
 
 4. **Set up environment:**
@@ -34,7 +31,6 @@ Thank you for your interest in contributing to ATB Ltd — a healthcare fintech 
 
    ```bash
    psql -U postgres -c "CREATE DATABASE atbltd;"
-   cd apps/backend
    npm run seed
    ```
 
@@ -42,12 +38,10 @@ Thank you for your interest in contributing to ATB Ltd — a healthcare fintech 
 
    ```bash
    # Terminal 1: Backend
-   cd apps/backend
-   npm run start:dev
+   npm run dev:backend
 
    # Terminal 2: Frontend
-   cd apps/frontend
-   npm run dev
+   npm run dev:frontend
    ```
 
 ## Development Workflow
@@ -67,8 +61,9 @@ Thank you for your interest in contributing to ATB Ltd — a healthcare fintech 
 3. Run tests before pushing:
 
    ```bash
-   cd apps/backend && npm test
-   cd apps/frontend && npm test
+   npm test
+   npm run typecheck
+   npm run lint
    ```
 
 4. Push and create a Pull Request
@@ -101,19 +96,16 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 ### Backend
 
 ```bash
-cd apps/backend
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-npm run test:cov      # Coverage report
+npm run test:backend
+npm run test:cov:backend
+npm run test:e2e:backend
 ```
 
 ### Frontend
 
 ```bash
-cd apps/frontend
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-npm run test:cov      # Coverage report
+npm run test:frontend
+npm run test:cov:frontend
 ```
 
 ## Architecture

@@ -22,40 +22,42 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## Backend application
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+NestJS API for the ATB Ltd platform. This directory is an npm workspace managed
+from the repository root.
 
 ## Installation
 
 ```bash
-$ npm install
+$ cd ../..
+$ npm ci
 ```
 
 ## Running the app
 
 ```bash
 # development
-$ npm run start
+$ npm run dev:backend
 
 # watch mode
-$ npm run start:dev
+$ npm run dev:backend
 
 # production mode
-$ npm run start:prod
+$ npm run build:backend && npm run start:prod --workspace=@atbltd-health/backend
 ```
 
 ## Test
 
 ```bash
 # unit tests
-$ npm run test
+$ npm run test:backend
 
 # e2e tests
-$ npm run test:e2e
+$ npm run test:e2e:backend
 
 # test coverage
-$ npm run test:cov
+$ npm run test:cov:backend
 ```
 
 ## Support

@@ -17,27 +17,22 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: apps/backend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install backend dependencies
-        working-directory: apps/backend
         run: npm ci
 
       - name: Run backend tests
-        working-directory: apps/backend
-        run: npm run test:cov
+        run: npm run test:cov:backend
 
       - name: Run backend typecheck
-        working-directory: apps/backend
-        run: npx tsc --noEmit
+        run: npm run typecheck:backend
 
       - name: Run backend lint
-        working-directory: apps/backend
-        run: npm run lint
+        run: npm run lint:backend
 
       - name: Security audit
-        working-directory: apps/backend
-        run: npm audit --audit-level=critical
+        run: npm audit --workspace=@atbltd-health/backend --audit-level=critical
 
   backend-e2e-test:
     runs-on: ubuntu-latest
@@ -49,17 +44,15 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: apps/backend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install backend dependencies
-        working-directory: apps/backend
         run: npm ci
 
       - name: Start disposable test database
         run: docker compose -f docker-compose.test.yml up -d --wait
 
       - name: Run backend e2e tests
-        working-directory: apps/backend
         env:
           DB_HOST: localhost
           DB_PORT: "5433"
@@ -67,7 +60,7 @@ jobs:
           DB_PASSWORD: atbtest
           DB_DATABASE: atbltd_test
           JWT_SECRET: ci-e2e-test-secret
-        run: npm run test:e2e
+        run: npm run test:e2e:backend
 
       - name: Tear down test database
         if: always()
@@ -83,24 +76,19 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: apps/frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install frontend dependencies
-        working-directory: apps/frontend
         run: npm ci --include=optional
 
       - name: Run frontend tests
-        working-directory: apps/frontend
-        run: npm run test:cov
+        run: npm run test:cov:frontend
 
       - name: Run frontend typecheck
-        working-directory: apps/frontend
-        run: ./node_modules/.bin/tsc --noEmit
+        run: npm run typecheck:frontend
 
       - name: Run frontend lint
-        working-directory: apps/frontend
-        run: npm run lint
+        run: npm run lint:frontend
 
       - name: Security audit
-        working-directory: apps/frontend
-        run: npm audit --audit-level=critical
+        run: npm audit --workspace=@atbltd-health/frontend --audit-level=critical

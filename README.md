@@ -10,10 +10,10 @@ A complete healthcare financial assistance platform for Bangladesh. ATB Ltd prov
 
 ```
 atbltd-health/
+├── package-lock.json               # ✅ Root workspace lockfile
 ├── apps/
 │   ├── backend/                    # NestJS API (port 3000)
 │   │   ├── package.json
-│   │   ├── package-lock.json       # ✅ Backend lockfile
 │   │   ├── .env.example            # ✅ Backend env vars
 │   │   ├── .eslintrc.js            # ✅ Backend lint config
 │   │   ├── .prettierrc             # ✅ Backend prettier
@@ -32,7 +32,6 @@ atbltd-health/
 │   │       └── common/             # Guards, decorators, enums
 │   └── frontend/                   # Next.js 16 App (port 3001)
 │       ├── package.json
-│       ├── package-lock.json       # ✅ Frontend lockfile
 │       ├── .env.example            # ✅ Frontend env vars
 │       ├── .eslintrc.json          # ✅ Frontend lint config
 │       ├── .prettierrc             # ✅ Frontend prettier
@@ -46,7 +45,7 @@ atbltd-health/
 │           ├── components/         # Shared components
 │           ├── i18n/               # Bengali/English translations
 │           └── lib/                # API helpers & auth context
-├── base.Dockerfile                 # ✅ Multi-stage Docker build
+├── base.Dockerfile                 # ✅ Multi-stage workspace Docker build
 ├── docker-compose.yml              # ✅ Docker Compose configuration
 ├── .env.example                    # ✅ Root env vars (all variables)
 ├── .eslintrc.json                  # ✅ Root lint config
@@ -62,22 +61,21 @@ atbltd-health/
 
 ## Key Files Location
 
-| File                 | Path                              |
-| -------------------- | --------------------------------- |
-| Backend lockfile     | `apps/backend/package-lock.json`  |
-| Frontend lockfile    | `apps/frontend/package-lock.json` |
-| Backend env example  | `apps/backend/.env.example`       |
-| Frontend env example | `apps/frontend/.env.example`      |
-| Root env example     | `.env.example`                    |
-| Backend ESLint       | `apps/backend/.eslintrc.js`       |
-| Frontend ESLint      | `apps/frontend/.eslintrc.json`    |
-| Backend Prettier     | `apps/backend/.prettierrc`        |
-| Frontend Prettier    | `apps/frontend/.prettierrc`       |
-| Docker (multi-stage) | `base.Dockerfile`                 |
-| Docker (root)        | `Dockerfile`                      |
-| Docker Compose       | `docker-compose.yml`              |
-| CI workflow          | `.github/workflows/ci.yml`        |
-| CD workflow          | `.github/workflows/deploy.yml`    |
+| File                 | Path                           |
+| -------------------- | ------------------------------ |
+| Workspace lockfile   | `package-lock.json`            |
+| Backend env example  | `apps/backend/.env.example`    |
+| Frontend env example | `apps/frontend/.env.example`   |
+| Root env example     | `.env.example`                 |
+| Backend ESLint       | `apps/backend/.eslintrc.js`    |
+| Frontend ESLint      | `apps/frontend/.eslintrc.json` |
+| Backend Prettier     | `apps/backend/.prettierrc`     |
+| Frontend Prettier    | `apps/frontend/.prettierrc`    |
+| Docker (multi-stage) | `base.Dockerfile`              |
+| Docker (root)        | `Dockerfile`                   |
+| Docker Compose       | `docker-compose.yml`           |
+| CI workflow          | `.github/workflows/ci.yml`     |
+| CD workflow          | `.github/workflows/deploy.yml` |
 
 ## Tech Stack
 
@@ -103,21 +101,13 @@ git clone https://github.com/rehmanshawon/atbltd-health.git
 cd atbltd-health
 ```
 
-### 2. Install Backend Dependencies
+### 2. Install Workspace Dependencies
 
 ```bash
-cd apps/backend
-npm ci  # Uses committed package-lock.json
+npm ci  # Installs both workspaces from the root lockfile
 ```
 
-### 3. Install Frontend Dependencies
-
-```bash
-cd ../frontend
-npm ci  # Uses committed package-lock.json
-```
-
-### 4. Configure Environment Variables
+### 3. Configure Environment Variables
 
 ```bash
 # Backend
@@ -131,56 +121,50 @@ cp .env.example .env.local
 
 Reference `apps/backend/.env.example` and `apps/frontend/.env.example` for the complete list of variables.
 
-### 5. Set up the Database
+### 4. Set up the Database
 
 ```bash
 psql -U postgres -c "CREATE DATABASE atbltd;"
 ```
 
-### 6. Seed Initial Data
+### 5. Seed Initial Data
 
 ```bash
-cd apps/backend
 npm run seed
 npm run seed:ref
 ```
 
 ## Running Tests
 
-### Backend (74 tests across 14 suites)
+The root scripts run each workspace from the repository root:
 
 ```bash
-cd apps/backend
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-npm run test:cov      # Coverage report (thresholds enforced)
+npm test
+npm run test:cov
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Target one workspace when needed:
+
+```bash
+npm run test:backend
+npm run test:frontend
+npm run test:e2e:backend
 ```
 
 Backend unit tests mock repositories and run without a live PostgreSQL server. For
-database-backed integration work, start the disposable test database with
+database-backed e2e tests, start the disposable test database with
 `docker compose -f docker-compose.test.yml up -d` and stop it with
 `docker compose -f docker-compose.test.yml down -v`.
-
-### Frontend (10 tests across 4 suites)
-
-```bash
-cd apps/frontend
-npm test              # Run all tests
-npm run test:cov      # Coverage report (thresholds enforced)
-```
 
 ## Linting & Type Checking
 
 ```bash
-# Backend
-cd apps/backend
+# All workspaces
 npm run lint
-npx tsc --noEmit
-
-# Frontend
-cd apps/frontend
-npm run lint
-npx tsc --noEmit
+npm run typecheck
 ```
 
 ## Environment Variables

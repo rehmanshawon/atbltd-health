@@ -4,12 +4,35 @@
   "private": true,
   "description": "Healthcare fintech platform for Bangladesh with NestJS backend and Next.js frontend.",
   "license": "UNLICENSED",
+  "workspaces": [
+    "apps/backend",
+    "apps/frontend"
+  ],
   "scripts": {
-    "build": "npm --prefix apps/backend run build && npm --prefix apps/frontend run build",
-    "lint": "npm --prefix apps/backend run lint && npm --prefix apps/frontend run lint",
-    "test": "npm --prefix apps/backend test && npm --prefix apps/frontend test",
-    "test:cov": "npm --prefix apps/backend run test:cov && npm --prefix apps/frontend run test:cov",
-    "typecheck": "npm --prefix apps/backend run typecheck && npm --prefix apps/frontend run typecheck"
+    "dev": "concurrently \"npm run start:dev --workspace=@atbltd-health/backend\" \"npm run dev --workspace=@atbltd-health/frontend\"",
+    "dev:backend": "npm run start:dev --workspace=@atbltd-health/backend",
+    "dev:frontend": "npm run dev --workspace=@atbltd-health/frontend",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "npm run build --workspace=@atbltd-health/backend",
+    "build:frontend": "npm run build --workspace=@atbltd-health/frontend",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "npm run lint --workspace=@atbltd-health/backend",
+    "lint:frontend": "npm run lint --workspace=@atbltd-health/frontend",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "npm run test --workspace=@atbltd-health/backend",
+    "test:frontend": "npm run test --workspace=@atbltd-health/frontend",
+    "test:e2e:backend": "npm run test:e2e --workspace=@atbltd-health/backend",
+    "test:cov": "npm run test:cov:backend && npm run test:cov:frontend",
+    "test:cov:backend": "npm run test:cov --workspace=@atbltd-health/backend",
+    "test:cov:frontend": "npm run test:cov --workspace=@atbltd-health/frontend",
+    "typecheck": "npm run typecheck:backend && npm run typecheck:frontend",
+    "typecheck:backend": "npm run typecheck --workspace=@atbltd-health/backend",
+    "typecheck:frontend": "npm run typecheck --workspace=@atbltd-health/frontend",
+    "seed": "npm run seed --workspace=@atbltd-health/backend",
+    "seed:ref": "npm run seed:ref --workspace=@atbltd-health/backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   },
   "engines": {
     "node": ">=22",

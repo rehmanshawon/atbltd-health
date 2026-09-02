@@ -18,10 +18,9 @@ This repository uses a **monorepo** architecture with separate apps for backend 
 
 ## Key Files
 
-### Lockfiles
+### Workspace lockfile
 
-- `apps/backend/package-lock.json` — Backend dependency lockfile
-- `apps/frontend/package-lock.json` — Frontend dependency lockfile
+- `package-lock.json` — Root npm workspace lockfile covering both applications
 
 ### Environment
 
@@ -63,22 +62,19 @@ This repository uses a **monorepo** architecture with separate apps for backend 
 ## Development Commands
 
 ```bash
-# Backend
-cd apps/backend
-npm ci          # Install with lockfile
-npm test        # Run tests
-npm run lint    # Lint
+# Install and validate both applications from the root
+npm ci
+npm test
+npm run lint
+npm run typecheck
+npm run build
 
-# Frontend
-cd apps/frontend
-npm ci          # Install with lockfile
-npm test        # Run tests
-npm run lint    # Lint
+# Target one application
+npm run test:backend
+npm run test:frontend
 ```
 
 ## Test Coverage
 
-| App      | Test Files | Total Tests | Coverage         |
-| -------- | ---------- | ----------- | ---------------- |
-| Backend  | 14         | 74          | 40.7% statements |
-| Frontend | 4          | 10          | 64.5% statements |
+Coverage thresholds are enforced by each workspace's Jest configuration and run
+through `npm run test:cov` at the repository root.
