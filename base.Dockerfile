@@ -21,7 +21,7 @@ RUN npm run build:frontend
 FROM dependencies AS backend-build
 
 WORKDIR /app
-COPY apps/backend/ ./
+COPY apps/backend/ ./apps/backend/
 RUN npm run build:backend
 
 # --- Final Frontend Image ---
