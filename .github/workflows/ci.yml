@@ -67,36 +67,36 @@ jobs:
         if: always()
         run: docker compose -f docker-compose.test.yml down -v
 
-    backend-migration-check:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
+  backend-migration-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Setup Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: "22"
-            cache: npm
-            cache-dependency-path: package-lock.json
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-        - name: Install backend dependencies
-          run: npm ci
+      - name: Install backend dependencies
+        run: npm ci
 
-        - name: Start disposable migration database
-          run: docker compose -f docker-compose.test.yml up -d --wait
+      - name: Start disposable migration database
+        run: docker compose -f docker-compose.test.yml up -d --wait
 
-        - name: Apply migrations to empty database
-          env:
-            DB_HOST: localhost
-            DB_PORT: "5433"
-            DB_USERNAME: atbtest
-            DB_PASSWORD: atbtest
-            DB_DATABASE: atbltd_test
-          run: npm run migration:run --workspace=@atbltd-health/backend
+      - name: Apply migrations to empty database
+        env:
+          DB_HOST: localhost
+          DB_PORT: "5433"
+          DB_USERNAME: atbtest
+          DB_PASSWORD: atbtest
+          DB_DATABASE: atbltd_test
+        run: npm run migration:run --workspace=@atbltd-health/backend
 
-        - name: Tear down migration database
-          if: always()
-          run: docker compose -f docker-compose.test.yml down -v
+      - name: Tear down migration database
+        if: always()
+        run: docker compose -f docker-compose.test.yml down -v
 
   frontend-test:
     runs-on: ubuntu-latest
