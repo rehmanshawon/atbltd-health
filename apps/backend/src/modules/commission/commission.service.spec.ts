@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException } from '@nestjs/common';
+import { Not, IsNull } from 'typeorm';
+import { UserRole } from '../../common/enums/user-role.enum';
 import { CommissionService } from './commission.service';
 import { Commission, CommissionStatus, CommissionType } from '../../entities/commission.entity';
 import { Agent } from '../../entities/agent.entity';
@@ -77,6 +79,146 @@ describe('CommissionService', () => {
     expect(agent.totalCommissionEarned).toBe(325);
     expect(auditLogRepository.save).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'COMMISSION_CREATED', entityId: 'commission-1' }),
+    );
+  });
+
+  it('returns the existing commission instead of creating a duplicate', async () => {
+    const existing = { id: 'commission-1', status: CommissionStatus.PENDING };
+    userRepository.findOne.mockResolvedValue({
+      id: 'member-1',
+      memberId: 'ATB-26-ME-01',
+      referralId: 'AG-001',
+    });
+    agentRepository.findOne.mockResolvedValue({ id: 'agent-1', agentCode: 'AG-001' });
+    commissionRepository.findOne.mockResolvedValue(existing);
+
+    await expect(service.createRegistrationCommission('member-1', 1000)).resolves.toBe(existing);
+
+    expect(commissionRepository.create).not.toHaveBeenCalled();
+    expect(commissionRepository.save).not.toHaveBeenCalled();
+  });
+
+  it('does not create a commission for an inactive referring agent', async () => {
+    userRepository.findOne.mockResolvedValue({ id: 'member-1', referralId: 'AG-001' });
+    agentRepository.findOne.mockResolvedValue(null);
+
+    await expect(service.createRegistrationCommission('member-1', 1000)).resolves.toBeNull();
+
+    expect(commissionRepository.findOne).not.toHaveBeenCalled();
+    expect(commissionRepository.save).not.toHaveBeenCalled();
+  });
+
+  it('creates an owner override using only the rate difference', async () => {
+    const agent = {
+      id: 'agent-1',
+      agentCode: 'AG-001',
+      commissionRate: '10',
+      totalCommissionEarned: '0',
+      parentAgentId: 'owner-1',
+    };
+    const owner = {
+      id: 'owner-1',
+      agentCode: 'OW-001',
+      commissionRate: '15',
+      totalCommissionEarned: '100',
+    };
+    userRepository.findOne.mockResolvedValue({
+      id: 'member-1',
+      memberId: 'ATB-26-ME-01',
+      referralId: 'AG-001',
+    });
+    agentRepository.findOne.mockResolvedValueOnce(agent).mockResolvedValueOnce(owner);
+    commissionRepository.findOne.mockResolvedValue(null);
+    commissionRepository.create.mockImplementation((value) => value);
+    commissionRepository.save.mockImplementation((value) =>
+      Promise.resolve({ id: 'saved', ...value }),
+    );
+
+    await service.createRegistrationCommission('member-1', 1000);
+
+    expect(commissionRepository.create).toHaveBeenCalledTimes(2);
+    expect(commissionRepository.create).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        commissionType: CommissionType.OVERRIDE,
+        agentId: 'owner-1',
+        commissionRate: 5,
+        commissionAmount: 50,
+      }),
+    );
+    expect(agent.totalCommissionEarned).toBe(100);
+    expect(owner.totalCommissionEarned).toBe(150);
+  });
+
+  it('confirms payment with a different checker and updates paid totals', async () => {
+    const commission = {
+      id: 'commission-1',
+      status: CommissionStatus.APPROVED,
+      approvedBy: 'admin-1',
+      checkerApprovedBy: null,
+      agentId: 'agent-1',
+      commissionAmount: '250',
+    };
+    const agent = { id: 'agent-1', totalCommissionPaid: '1000' };
+    commissionRepository.findOne.mockResolvedValue(commission);
+    commissionRepository.save.mockResolvedValue(commission);
+    agentRepository.findOne.mockResolvedValue(agent);
+
+    await service.confirmCommissionPayment('commission-1', 'admin-2');
+
+    expect(commission.status).toBe(CommissionStatus.PAID);
+    expect(commission.checkerApprovedBy).toBe('admin-2');
+    expect(agent.totalCommissionPaid).toBe(1250);
+    expect(auditLogRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'COMMISSION_PAID', performedById: 'admin-2' }),
+    );
+  });
+
+  it('reverses a paid commission and deducts earned and paid totals', async () => {
+    const commission = {
+      id: 'commission-1',
+      status: CommissionStatus.PAID,
+      agentId: 'agent-1',
+      commissionAmount: '500',
+      reversalReason: null,
+    };
+    const agent = {
+      id: 'agent-1',
+      totalCommissionEarned: '2000',
+      totalCommissionPaid: '1500',
+    };
+    commissionRepository.findOne.mockResolvedValue(commission);
+    commissionRepository.save.mockResolvedValue(commission);
+    agentRepository.findOne.mockResolvedValue(agent);
+
+    await service.reverseCommission('commission-1', 'sa-1', 'Fraud detected');
+
+    expect(commission.status).toBe(CommissionStatus.REVERSED);
+    expect(commission.reversalReason).toBe('Fraud detected');
+    expect(agent.totalCommissionEarned).toBe(1500);
+    expect(agent.totalCommissionPaid).toBe(1000);
+    expect(auditLogRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'COMMISSION_REVERSED', performedById: 'sa-1' }),
+    );
+  });
+
+  it('filters commissions for super-admin payout review', async () => {
+    commissionRepository.findAndCount.mockResolvedValue([[], 0]);
+
+    await expect(
+      service.findAll({ reviewerRole: UserRole.SUPER_ADMIN, page: 2, limit: 10 }),
+    ).resolves.toEqual({ commissions: [], total: 0, page: 2, totalPages: 0 });
+
+    expect(commissionRepository.findAndCount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          approvedBy: Not(IsNull()),
+          checkerApprovedBy: null,
+          status: CommissionStatus.APPROVED,
+        },
+        skip: 10,
+        take: 10,
+      }),
     );
   });
 
