@@ -4,7 +4,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ClaimService } from './claim.service';
 import { Claim } from '../../entities/claim.entity';
 import { Membership } from '../../entities/membership.entity';
-import { Payment } from '../../entities/payment.entity';
+import { Payment, PaymentStatus } from '../../entities/payment.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { ClaimDocument } from '../../entities/claim-document.entity';
 import { User } from '../../entities/user.entity';
@@ -280,6 +280,96 @@ describe('ClaimService', () => {
       await expect(
         service.updateClaimStatus('nonexistent', ClaimStatus.APPROVED, 'admin-1', UserRole.ADMIN),
       ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should reject an invalid status transition before changing the claim', async () => {
+      const claim = {
+        id: 'claim-1',
+        memberId: 'member-1',
+        status: ClaimStatus.SUBMITTED,
+        claimedAmount: 5000,
+      };
+      mockClaimRepository.findOne.mockResolvedValueOnce(claim);
+
+      await expect(
+        service.updateClaimStatus('claim-1', ClaimStatus.APPROVED, 'admin-1', UserRole.ADMIN),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(mockClaimRepository.save).not.toHaveBeenCalled();
+      expect(claim.status).toBe(ClaimStatus.SUBMITTED);
+    });
+
+    it('should disburse an approved claim and deduct the approved amount from benefits', async () => {
+      const claim = {
+        id: 'claim-12345678',
+        memberId: 'member-1',
+        status: ClaimStatus.APPROVED,
+        claimedAmount: 5000,
+        approvedAmount: 4000,
+        isDisbursed: false,
+      };
+      const membership = { userId: 'member-1', remainingBenefit: 10000 };
+
+      mockClaimRepository.findOne
+        .mockResolvedValueOnce(claim)
+        .mockResolvedValueOnce({ ...claim, member: { mobileNumber: '01712345678' } });
+      mockClaimRepository.save.mockResolvedValue(claim);
+      mockPaymentRepository.save.mockResolvedValue({ id: 'payment-1' });
+      mockMembershipRepository.findOne.mockResolvedValue(membership);
+      mockMembershipRepository.save.mockResolvedValue(membership);
+      mockNotificationService.notifyUser.mockResolvedValue(undefined);
+      mockSmsService.sendClaimStatusSms.mockResolvedValue(undefined);
+      mockAuditLogRepository.save.mockResolvedValue(undefined);
+
+      const result = await service.updateClaimStatus(
+        claim.id,
+        ClaimStatus.PAYMENT_PROCESSED,
+        'sa-1',
+        UserRole.SUPER_ADMIN,
+      );
+
+      expect(result.status).toBe(ClaimStatus.PAYMENT_PROCESSED);
+      expect(result.isDisbursed).toBe(true);
+      expect(membership.remainingBenefit).toBe(6000);
+      expect(mockPaymentRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'member-1',
+          amount: 4000,
+          status: PaymentStatus.VERIFIED,
+          transactionId: 'CLM-claim-12',
+          verifiedBy: 'sa-1',
+        }),
+      );
+      expect(mockMembershipRepository.save).toHaveBeenCalledWith(membership);
+    });
+
+    it('should record the previous status in the audit log', async () => {
+      const claim = {
+        id: 'claim-1',
+        memberId: 'member-1',
+        status: ClaimStatus.SUBMITTED,
+        claimedAmount: 5000,
+      };
+      mockClaimRepository.findOne
+        .mockResolvedValueOnce(claim)
+        .mockResolvedValueOnce({ ...claim, member: null });
+      mockClaimRepository.save.mockResolvedValue(claim);
+      mockNotificationService.notifyUser.mockResolvedValue(undefined);
+      mockAuditLogRepository.save.mockResolvedValue(undefined);
+
+      await service.updateClaimStatus(
+        'claim-1',
+        ClaimStatus.UNDER_REVIEW,
+        'admin-1',
+        UserRole.ADMIN,
+      );
+
+      expect(mockAuditLogRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          oldValue: { status: ClaimStatus.SUBMITTED },
+          newValue: { status: ClaimStatus.UNDER_REVIEW },
+        }),
+      );
     });
   });
 });

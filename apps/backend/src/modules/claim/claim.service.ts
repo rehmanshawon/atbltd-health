@@ -220,6 +220,8 @@ export class ClaimService {
       throw new NotFoundException('Claim not found');
     }
 
+    const previousStatus = claim.status;
+
     // Validate status transition
     this.validateStatusTransition(claim.status, newStatus);
 
@@ -342,7 +344,7 @@ export class ClaimService {
       entityId: claimId,
       performedById: adminId,
       newValue: { status: newStatus, ...data },
-      oldValue: { status: claim.status },
+      oldValue: { status: previousStatus },
     });
 
     return updatedClaim;
