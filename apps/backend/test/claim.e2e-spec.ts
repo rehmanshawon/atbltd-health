@@ -137,6 +137,18 @@ describe('Claim submission + maker-checker payment verification (e2e)', () => {
       .expect(200);
     const memberToken: string = memberLoginRes.body.accessToken;
 
+    // Role boundaries: members cannot access administrative payment data.
+    await request(app.getHttpServer())
+      .get('/admin/payments')
+      .set('Authorization', `Bearer ${memberToken}`)
+      .expect(403);
+
+    // Role boundaries: audit logs are restricted to Super Admins.
+    await request(app.getHttpServer())
+      .get('/admin/audit-logs')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(403);
+
     const submitClaimRes = await request(app.getHttpServer())
       .post('/claims')
       .set('Authorization', `Bearer ${memberToken}`)
