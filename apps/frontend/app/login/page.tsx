@@ -10,7 +10,14 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, memberLogin, isAuthenticated, user, isLoading: authLoading } = useAuth();
+  const {
+    login,
+    memberLogin,
+    isAuthenticated,
+    user,
+    isLoading: authLoading,
+    isRestored,
+  } = useAuth();
 
   const [isStaffLogin, setIsStaffLogin] = useState(false);
   const [memberId, setMemberId] = useState('');
@@ -21,7 +28,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [staffLoginStep, setStaffLoginStep] = useState<'id-password' | 'otp'>('id-password');
   const [staffOtp, setStaffOtp] = useState('');
-  // Redirect if already authenticated
+  useEffect(() => {
+    if (!isRestored || authLoading || !isAuthenticated || !user) return;
+
+    const destination = user.role === 'member' ? '/dashboard' : '/admin';
+    router.replace(destination);
+  }, [authLoading, isAuthenticated, isRestored, router, user]);
 
   const handleMemberLogin = async (e: FormEvent) => {
     e.preventDefault();

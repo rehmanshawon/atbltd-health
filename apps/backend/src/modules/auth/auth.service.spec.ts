@@ -185,6 +185,51 @@ describe('AuthService', () => {
       expect(result.accessToken).toBe('mock-jwt-token');
       expect(result.user.memberId).toBe('ATB-26-SA-1');
       expect(result.user.role).toBe(UserRole.SUPER_ADMIN);
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        expect.objectContaining({ memberId: 'ATB-26-SA-1' }),
+        { expiresIn: '8h' },
+      );
+    });
+
+    it('should issue a 12-hour session for owners and agents', async () => {
+      const ownerUser = {
+        id: 'uuid-owner',
+        memberId: 'ATB-26-OW-1',
+        fullName: 'Owner',
+        role: UserRole.OWNER,
+        isActive: true,
+        mobileNumber: '01710000001',
+        password: 'hashed',
+      };
+      mockUserRepository.findOne.mockResolvedValueOnce(ownerUser);
+      mockUserRepository.save.mockResolvedValue(ownerUser);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
+
+      await service.login({ identifier: ownerUser.memberId, password: 'password' });
+
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        expect.objectContaining({ memberId: ownerUser.memberId }),
+        { expiresIn: '12h' },
+      );
+    });
+
+    it('should issue the role-specific session when staff OTP is verified', async () => {
+      const agentUser = {
+        id: 'uuid-agent',
+        memberId: 'ATB-26-AG-1',
+        fullName: 'Agent',
+        role: UserRole.AGENT,
+        isActive: true,
+        mobileNumber: '01710000002',
+      };
+      mockUserRepository.findOne.mockResolvedValueOnce(agentUser);
+
+      await service.verifyStaffOtp(agentUser.memberId, '123456');
+
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        expect.objectContaining({ memberId: agentUser.memberId }),
+        { expiresIn: '12h' },
+      );
     });
 
     it('should throw UnauthorizedException for invalid password', async () => {

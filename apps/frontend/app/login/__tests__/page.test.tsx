@@ -2,25 +2,41 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import LoginPage from '../page';
 
 const memberLoginMock = jest.fn();
+const routerReplaceMock = jest.fn();
+let authState: {
+  login: jest.Mock;
+  memberLogin: jest.Mock;
+  isAuthenticated: boolean;
+  isRestored: boolean;
+  user: { role: string } | null;
+  isLoading: boolean;
+};
+
+function mockUseAuth() {
+  return authState;
+}
 
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+  useRouter: () => ({ push: jest.fn(), replace: routerReplaceMock }),
 }));
 
 jest.mock('../../lib/auth-context', () => ({
-  useAuth: () => ({
-    login: jest.fn(),
-    memberLogin: memberLoginMock,
-    isAuthenticated: false,
-    user: null,
-    isLoading: false,
-  }),
+  useAuth: mockUseAuth,
 }));
 
 describe('LoginPage', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     memberLoginMock.mockReset();
+    routerReplaceMock.mockReset();
+    authState = {
+      login: jest.fn(),
+      memberLogin: memberLoginMock,
+      isAuthenticated: false,
+      isRestored: true,
+      user: null,
+      isLoading: false,
+    };
     localStorage.clear();
   });
 
@@ -108,5 +124,14 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
 
     expect(await screen.findByText('Invalid password')).toBeInTheDocument();
+  });
+
+  it('redirects an already authenticated staff user to the admin page', async () => {
+    authState.isAuthenticated = true;
+    authState.user = { role: 'admin' };
+
+    render(<LoginPage />);
+
+    await waitFor(() => expect(routerReplaceMock).toHaveBeenCalledWith('/admin'));
   });
 });

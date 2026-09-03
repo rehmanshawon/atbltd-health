@@ -29,6 +29,10 @@ import { PaymentRoutingService } from './payment-routing.service';
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
+  private getSessionDuration(role: UserRole): string {
+    return role === UserRole.SUPER_ADMIN || role === UserRole.ADMIN ? '8h' : '12h';
+  }
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -260,7 +264,9 @@ export class AuthService {
     };
 
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload, {
+        expiresIn: this.getSessionDuration(user.role),
+      }),
       user: {
         memberId: user.memberId,
         fullName: user.fullName,
@@ -507,7 +513,9 @@ export class AuthService {
     };
 
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload, {
+        expiresIn: this.getSessionDuration(user.role),
+      }),
       user: {
         memberId: user.memberId,
         fullName: user.fullName,
