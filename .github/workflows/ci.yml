@@ -32,7 +32,7 @@ jobs:
         run: npm run lint:backend
 
       - name: Security audit
-        run: npm audit --workspace=@atbltd-health/backend --audit-level=critical
+        run: npm audit --workspace=@atbltd-health/backend --audit-level=high
 
   backend-e2e-test:
     runs-on: ubuntu-latest
@@ -92,4 +92,4 @@ jobs:
         run: npm run lint:frontend
 
       - name: Security audit
-        run: npm audit --workspace=@atbltd-health/frontend --audit-level=critical
+        run: npm audit --workspace=@atbltd-health/frontend --audit-level=high
