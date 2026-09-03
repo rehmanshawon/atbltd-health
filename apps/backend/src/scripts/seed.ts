@@ -13,7 +13,23 @@ import { Hospital } from '../entities/hospital.entity';
 
 const logger = new Logger('SeedScript');
 
+const requiredSeedPasswords = [
+  'SEED_ADMIN_PASSWORD',
+  'SEED_ADMIN2_PASSWORD',
+  'SEED_OWNER_PASSWORD',
+  'SEED_AGENT_PASSWORD',
+  'TEST_MEMBER_PASSWORD',
+] as const;
+
+function requireSeedPasswords() {
+  const missing = requiredSeedPasswords.filter((name) => !process.env[name]);
+  if (missing.length > 0) {
+    throw new Error(`Missing required seed environment variables: ${missing.join(', ')}`);
+  }
+}
+
 async function bootstrap() {
+  requireSeedPasswords();
   logger.log('🌱 Starting database seed...');
 
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -38,10 +54,7 @@ async function bootstrap() {
     // ============================================================
     // 1. Create Super Admin
     // ============================================================
-    const superAdminPassword = await bcrypt.hash(
-      process.env.SEED_ADMIN_PASSWORD || 'Admin@ATB2026',
-      12,
-    );
+    const superAdminPassword = await bcrypt.hash(process.env.SEED_ADMIN_PASSWORD!, 12);
 
     const superAdmin = queryRunner.manager.create(User, {
       memberId: 'ATB-26-SA-1',
@@ -61,10 +74,7 @@ async function bootstrap() {
     // ============================================================
     // 2. Create Second Admin
     // ============================================================
-    const secondAdminPassword = await bcrypt.hash(
-      process.env.SEED_ADMIN2_PASSWORD || 'Admin2@ATB2026',
-      12,
-    );
+    const secondAdminPassword = await bcrypt.hash(process.env.SEED_ADMIN2_PASSWORD!, 12);
 
     const secondAdmin = queryRunner.manager.create(User, {
       memberId: 'ATB-26-AD-1',
@@ -84,7 +94,7 @@ async function bootstrap() {
     // ============================================================
     // 3. Create an Owner
     // ============================================================
-    const ownerPassword = await bcrypt.hash(process.env.SEED_OWNER_PASSWORD || 'Owner@ATB2026', 12);
+    const ownerPassword = await bcrypt.hash(process.env.SEED_OWNER_PASSWORD!, 12);
 
     const owner = queryRunner.manager.create(User, {
       memberId: 'ATB-26-OW-1',
@@ -118,7 +128,7 @@ async function bootstrap() {
     // ============================================================
     // 4. Create a Sample Agent
     // ============================================================
-    const agentPassword = await bcrypt.hash(process.env.SEED_AGENT_PASSWORD || 'Agent@ATB2026', 12);
+    const agentPassword = await bcrypt.hash(process.env.SEED_AGENT_PASSWORD!, 12);
     const agentUser = queryRunner.manager.create(User, {
       memberId: 'ATB-26-AG-1',
       fullName: 'Sample Agent',
@@ -151,7 +161,7 @@ async function bootstrap() {
     // ============================================================
     // 5. Create a Sample Member (fully activated)
     // ============================================================
-    const memberPassword = await bcrypt.hash('Member@ATB2026', 12);
+    const memberPassword = await bcrypt.hash(process.env.TEST_MEMBER_PASSWORD!, 12);
 
     const member = queryRunner.manager.create(User, {
       memberId: 'ATB-26-ME-01',
@@ -479,17 +489,12 @@ async function bootstrap() {
     logger.log('🌱 SEED COMPLETE');
     logger.log('========================================');
     logger.log('\n📋 Login Credentials:\n');
-    logger.log('┌──────────────┬──────────────────┬─────────────────┐');
-    logger.log('│ Role         │ Staff ID         │ Password        │');
-    logger.log('├──────────────┼──────────────────┼─────────────────┤');
-    logger.log('│ Super Admin  │ ATB-26-SA-1      │ Admin@ATB2026   │');
-    logger.log('│ Admin        │ ATB-26-AD-1       │ Admin2@ATB2026  │');
-    logger.log('│ Owner        │ ATB-26-OW-1      │ Owner@ATB2026   │');
-    logger.log('│ Agent        │ ATB-26-AG-1      │ Agent@ATB2026   │');
-    logger.log('├──────────────┼──────────────────┼─────────────────┤');
-    logger.log('│ Member       │ ATB-26-ME-01        │ No password     │');
-    logger.log('└──────────────┴──────────────────┴─────────────────┘');
-    logger.log('\n⚠️  CHANGE ALL PASSWORDS IN PRODUCTION!');
+    logger.log(
+      'Seeded staff and member accounts. Passwords were supplied through environment variables.',
+    );
+    logger.log(
+      'Use the configured seed credentials for local access and rotate them before production use.',
+    );
     logger.log('========================================\n');
   } catch (error) {
     await queryRunner.rollbackTransaction();

@@ -60,6 +60,7 @@ jobs:
           DB_PASSWORD: atbtest
           DB_DATABASE: atbltd_test
           JWT_SECRET: ci-e2e-test-secret
+          TEST_MEMBER_PASSWORD: ci-e2e-member-password
         run: npm run test:e2e:backend
 
       - name: Tear down test database

@@ -3,8 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../lib/auth-context';
-import { logger } from '../../../lib/logger';
-import { ClaimDocumentsSchema, ClaimSchema } from '../../../lib/schemas';
+import { useClaimDetail, Claim, ClaimDocument, UploadEntry } from './useClaimDetail';
 import {
   ArrowLeft,
   Upload,
@@ -17,8 +16,6 @@ import {
   Paperclip,
 } from 'lucide-react';
 import Link from 'next/link';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
 const DOCUMENT_TYPES = [
   'Discharge Summary',
@@ -41,38 +38,6 @@ const STATUS_COLORS: Record<string, string> = {
   payment_processed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
 };
 
-interface Claim {
-  id: string;
-  surgeryType: string;
-  hospitalName: string;
-  admissionDate: string;
-  operationDate: string | null;
-  doctorName: string | null;
-  claimedAmount: number;
-  approvedAmount: number | null;
-  status: string;
-  rejectionReason: string | null;
-  notes: string | null;
-  createdAt: string;
-}
-
-interface ClaimDocument {
-  id: string;
-  documentType: string;
-  fileName: string;
-  fileUrl: string;
-  notes: string | null;
-  isVerified: boolean;
-  createdAt: string;
-}
-
-interface UploadEntry {
-  id: string; // unique key for React
-  documentType: string;
-  file: File | null;
-  notes: string;
-}
-
 export default function ClaimDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -89,37 +54,22 @@ export default function ClaimDetailPage() {
     { id: crypto.randomUUID(), documentType: '', file: null, notes: '' },
   ]);
 
+  const { loadData, handleUpload } = useClaimDetail({
+    id,
+    token: token || '',
+    setClaim,
+    setDocuments,
+    setError,
+    setIsLoading,
+    uploadEntries,
+    setIsUploading,
+    setUploadSuccess,
+    setUploadEntries,
+  });
+
   useEffect(() => {
     if (token && id) loadData();
   }, [token, id]);
-
-  const loadData = async () => {
-    try {
-      const [claimRes, docsRes] = await Promise.all([
-        fetch(`${API_BASE}/claims/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`${API_BASE}/claims/${id}/documents`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-      if (!claimRes.ok || !docsRes.ok) {
-        throw new Error('Unable to load claim details');
-      }
-      const claimData = await claimRes.json();
-      const docsData = await docsRes.json();
-      setClaim(ClaimSchema.parse(claimData));
-      setDocuments(ClaimDocumentsSchema.parse(docsData));
-    } catch (err) {
-      setError('Unable to load claim details. Please try again.');
-      logger.error('Failed to load claim details', {
-        endpoint: `/claims/${id}`,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const addUploadEntry = () => {
     setUploadEntries([
@@ -132,66 +82,12 @@ export default function ClaimDetailPage() {
     setUploadEntries(uploadEntries.filter((e) => e.id !== entryId));
   };
 
-  const updateUploadEntry = (entryId: string, field: keyof UploadEntry, value: any) => {
+  const updateUploadEntry = (
+    entryId: string,
+    field: keyof UploadEntry,
+    value: string | File | null,
+  ) => {
     setUploadEntries(uploadEntries.map((e) => (e.id === entryId ? { ...e, [field]: value } : e)));
-  };
-
-  const handleUpload = async () => {
-    const validEntries = uploadEntries.filter((e) => e.documentType && e.file);
-    if (validEntries.length === 0) {
-      setError('Please select a document type and choose a file for at least one entry');
-      return;
-    }
-
-    setIsUploading(true);
-    setError('');
-
-    try {
-      // Build FormData for actual file upload
-      const formData = new FormData();
-
-      // Append each file and its metadata
-      validEntries.forEach((entry, index) => {
-        formData.append('files', entry.file!);
-        formData.append(`documentTypes[${index}]`, entry.documentType);
-        formData.append(`notes[${index}]`, entry.notes || '');
-      });
-
-      // For now, since multer is set up on the backend but we don't have
-      // a proper endpoint that handles both files + metadata, let's use
-      // a JSON approach with file URLs (simulated)
-      // In production: upload to S3, get URLs, then call the JSON endpoint
-
-      const documents = validEntries.map((entry) => ({
-        documentType: entry.documentType,
-        fileName: entry.file!.name,
-        fileUrl: `/uploads/claims/${id}/${entry.file!.name}`,
-        notes: entry.notes || undefined,
-      }));
-
-      const res = await fetch(`${API_BASE}/claims/${id}/documents/upload`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ documents }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || 'Upload failed');
-      }
-
-      setUploadSuccess(true);
-      setUploadEntries([{ id: crypto.randomUUID(), documentType: '', file: null, notes: '' }]);
-      await loadData();
-      setTimeout(() => setUploadSuccess(false), 3000);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setIsUploading(false);
-    }
   };
 
   if (isLoading) {

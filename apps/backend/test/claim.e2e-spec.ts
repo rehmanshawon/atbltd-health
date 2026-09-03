@@ -17,7 +17,10 @@ process.env.DB_PASSWORD = process.env.DB_PASSWORD || 'atbtest';
 process.env.DB_DATABASE = process.env.DB_DATABASE || 'atbltd_test';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'e2e-test-secret';
 
-const testStaffPassword = process.env.TEST_MEMBER_PASSWORD || 'e2e-test-password';
+const testStaffPassword = process.env.TEST_MEMBER_PASSWORD;
+if (!testStaffPassword) {
+  throw new Error('TEST_MEMBER_PASSWORD must be set to run backend e2e tests');
+}
 
 describe('Claim submission + maker-checker payment verification (e2e)', () => {
   let app: INestApplication;

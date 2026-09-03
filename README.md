@@ -154,6 +154,18 @@ npm run test:frontend
 npm run test:e2e:backend
 ```
 
+### Isolated Test Run
+
+Run the backend and frontend unit suites without Docker, PostgreSQL, or other
+live services:
+
+```bash
+npm run test:isolated
+```
+
+This intentionally skips `npm run test:e2e:backend`, which requires the
+disposable PostgreSQL service described below.
+
 Backend unit tests mock repositories and run without a live PostgreSQL server. For
 database-backed e2e tests, start the disposable test database with
 `docker compose -f docker-compose.test.yml up -d` and stop it with
@@ -185,10 +197,11 @@ npm run typecheck
 | `NAGAD_MERCHANT_NUMBER`  | Nagad merchant number      | Optional |
 | `ROCKET_MERCHANT_NUMBER` | Rocket merchant number     | Optional |
 | `BANK_ACCOUNT`           | Bank account for transfers | Optional |
-| `SEED_ADMIN_PASSWORD`    | Seed admin password        | Optional |
-| `SEED_ADMIN2_PASSWORD`   | Seed admin2 password       | Optional |
-| `SEED_OWNER_PASSWORD`    | Seed owner password        | Optional |
-| `SEED_AGENT_PASSWORD`    | Seed agent password        | Optional |
+| `SEED_ADMIN_PASSWORD`    | Seed admin password        | Yes      |
+| `SEED_ADMIN2_PASSWORD`   | Seed admin2 password       | Yes      |
+| `SEED_OWNER_PASSWORD`    | Seed owner password        | Yes      |
+| `SEED_AGENT_PASSWORD`    | Seed agent password        | Yes      |
+| `TEST_MEMBER_PASSWORD`   | Seed/test member password  | Yes      |
 
 ### Frontend (`apps/frontend/.env.local`)
 

@@ -2,13 +2,11 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, X, Loader2, CheckCircle2 } from 'lucide-react';
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import PaymentSection from './membership/PaymentSection';
 import VerificationStep from './membership/VerificationStep';
 import CompleteStep from './membership/CompleteStep';
-
-// --- API base URL ---
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
+import { useMembershipForm } from './membership/useMembershipForm';
 
 interface MembershipModalProps {
   isOpen: boolean;
@@ -111,99 +109,23 @@ export default function MembershipModal({ isOpen, onClose, strings }: Membership
     onClose();
   };
 
-  const submitRegistration = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsLoading(true);
-    setErrorMessage('');
-
-    try {
-      const response = await fetch(`${API_BASE}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName,
-          mobileNumber: phone,
-          nid: nid || undefined,
-          email: email || undefined,
-          permanentAddress: permanentAddress || undefined,
-          currentAddress: currentAddress || undefined,
-          referralId: referralId || undefined,
-          paymentMethod,
-          senderAccount: senderAccount || phone,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
-
-      setStep('complete');
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : 'An unexpected error occurred';
-      setErrorMessage(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const sendOtp = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/auth/send-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobileNumber: phone }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to send OTP');
-      }
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Failed to send OTP';
-      setErrorMessage(msg);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    setOtp('');
-    setOtpError(false);
-    setErrorMessage('');
-    setIsLoading(true);
-    await sendOtp();
-    setIsLoading(false);
-  };
-
-  const verifyOtp = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsLoading(true);
-    setOtpError(false);
-    setErrorMessage('');
-
-    try {
-      const response = await fetch(`${API_BASE}/auth/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobileNumber: phone, otp }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setOtpError(true);
-        throw new Error(data.message || 'Invalid OTP');
-      }
-
-      setStep('complete');
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Verification failed';
-      setErrorMessage(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { submitRegistration, handleResendOtp, verifyOtp } = useMembershipForm({
+    fullName,
+    phone,
+    nid,
+    email,
+    permanentAddress,
+    currentAddress,
+    referralId,
+    paymentMethod,
+    senderAccount,
+    otp,
+    setStep,
+    setOtp,
+    setOtpError,
+    setIsLoading,
+    setErrorMessage,
+  });
 
   const currentStep = step === 'details' ? 0 : step === 'verification' ? 1 : 2;
 
