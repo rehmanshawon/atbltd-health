@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException } from '@nestjs/common';
 import { Not, IsNull } from 'typeorm';
 import { UserRole } from '../../common/enums/user-role.enum';
+import * as fc from 'fast-check';
 import { CommissionService } from './commission.service';
 import { Commission, CommissionStatus, CommissionType } from '../../entities/commission.entity';
 import { Agent } from '../../entities/agent.entity';
@@ -79,6 +80,43 @@ describe('CommissionService', () => {
     expect(agent.totalCommissionEarned).toBe(325);
     expect(auditLogRepository.save).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'COMMISSION_CREATED', entityId: 'commission-1' }),
+    );
+  });
+
+  it('calculates registration commissions correctly across valid amounts and rates', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.integer({ min: 1, max: 1_000_000 }),
+        fc.integer({ min: 1, max: 100 }),
+        async (registrationAmount, commissionRate) => {
+          jest.clearAllMocks();
+          const agent = {
+            id: 'agent-1',
+            agentCode: 'AG-001',
+            commissionRate: String(commissionRate),
+            totalCommissionEarned: '0',
+            parentAgentId: null,
+          };
+          userRepository.findOne.mockResolvedValue({
+            id: 'member-1',
+            memberId: 'ATB-26-ME-01',
+            referralId: 'AG-001',
+          });
+          agentRepository.findOne.mockResolvedValue(agent);
+          commissionRepository.findOne.mockResolvedValue(null);
+          commissionRepository.create.mockImplementation((value) => value);
+          commissionRepository.save.mockResolvedValue({ id: 'commission-1' });
+
+          await service.createRegistrationCommission('member-1', registrationAmount);
+
+          expect(commissionRepository.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+              commissionRate,
+              commissionAmount: (registrationAmount * commissionRate) / 100,
+            }),
+          );
+        },
+      ),
     );
   });
 

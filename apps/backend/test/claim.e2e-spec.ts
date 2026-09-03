@@ -124,6 +124,7 @@ describe('Claim submission + maker-checker payment verification (e2e)', () => {
     // 6. Bypass the 1-month benefit waiting period for this test membership
     const membership = await membershipRepository.findOne({ where: { userId: payment.userId } });
     expect(membership).not.toBeNull();
+    const remainingBenefitBeforeClaim = Number(membership!.remainingBenefit);
     const twoMonthsAgo = new Date();
     twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
     membership!.membershipStartDate = twoMonthsAgo;
@@ -172,6 +173,22 @@ describe('Claim submission + maker-checker payment verification (e2e)', () => {
       .expect(200);
     expect(approveRes.body.status).toBe('approved');
     expect(Number(approveRes.body.approvedAmount)).toBe(7500);
+
+    // 10. Disburse the approved claim and verify the persisted benefit deduction
+    const disburseRes = await request(app.getHttpServer())
+      .put(`/claims/${claimId}/status`)
+      .set('Authorization', `Bearer ${saToken}`)
+      .send({ status: 'payment_processed' })
+      .expect(200);
+    expect(disburseRes.body.status).toBe('payment_processed');
+    expect(disburseRes.body.isDisbursed).toBe(true);
+
+    const membershipAfterDisbursement = await membershipRepository.findOne({
+      where: { userId: payment.userId },
+    });
+    expect(Number(membershipAfterDisbursement!.remainingBenefit)).toBe(
+      remainingBenefitBeforeClaim - 7500,
+    );
   });
 
   it('rejects a claim submission when no active membership exists', async () => {
