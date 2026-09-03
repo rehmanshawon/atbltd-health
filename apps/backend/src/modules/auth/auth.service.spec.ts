@@ -234,6 +234,40 @@ describe('AuthService', () => {
         service.login({ identifier: 'ATB-26-ME-01', password: 'password' }),
       ).rejects.toThrow(UnauthorizedException);
     });
+
+    it('should reject inactive staff accounts', async () => {
+      mockUserRepository.findOne.mockResolvedValueOnce({
+        memberId: 'ATB-26-SA-1',
+        role: UserRole.ADMIN,
+        isActive: false,
+      });
+
+      await expect(
+        service.login({ identifier: 'ATB-26-SA-1', password: 'password' }),
+      ).rejects.toThrow('Your account is not active');
+    });
+
+    it('should find staff by mobile number when the staff ID is not found', async () => {
+      const staffUser = {
+        id: 'uuid-4',
+        memberId: 'ATB-26-AG-1',
+        fullName: 'Agent',
+        role: UserRole.AGENT,
+        isActive: true,
+        mobileNumber: '01710000001',
+        password: 'hashed',
+      };
+      mockUserRepository.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce(staffUser);
+      mockUserRepository.save.mockResolvedValue(staffUser);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
+
+      const result = await service.login({ identifier: '01710000001', password: 'password' });
+
+      expect(result.user.memberId).toBe('ATB-26-AG-1');
+      expect(mockUserRepository.findOne).toHaveBeenNthCalledWith(2, {
+        where: { mobileNumber: '01710000001' },
+      });
+    });
   });
 
   describe('memberLogin', () => {
@@ -351,6 +385,126 @@ describe('AuthService', () => {
           senderAccount: '01712345678',
         } as any),
       ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('OTP and profile flows', () => {
+    it('should send a member OTP for a registered mobile number', async () => {
+      mockUserRepository.findOne.mockResolvedValueOnce({ id: 'uuid-1' });
+      mockOtpService.issueMemberOtp.mockReturnValue('123456');
+
+      await expect(service.sendOtp('01710000000')).resolves.toEqual({
+        success: true,
+        message: 'OTP sent successfully. Valid for 5 minutes.',
+      });
+      expect(mockOtpService.issueMemberOtp).toHaveBeenCalledWith('01710000000');
+    });
+
+    it('should reject OTP requests for unknown mobile numbers', async () => {
+      mockUserRepository.findOne.mockResolvedValueOnce(null);
+
+      await expect(service.sendOtp('01710000000')).rejects.toThrow(BadRequestException);
+    });
+
+    it('should verify a member OTP and return a token', async () => {
+      const member = {
+        id: 'uuid-1',
+        memberId: 'ATB-26-ME-01',
+        fullName: 'Member',
+        role: UserRole.MEMBER,
+        isActive: false,
+        mobileNumber: '01710000000',
+      };
+      mockUserRepository.findOne.mockResolvedValueOnce(member);
+
+      await expect(
+        service.verifyOtp({ mobileNumber: '01710000000', otp: '123456' }),
+      ).resolves.toMatchObject({ success: true, accessToken: 'mock-jwt-token' });
+      expect(mockOtpService.verifyMemberOtp).toHaveBeenCalledWith('01710000000', '123456');
+    });
+
+    it('should reject OTP verification when the user cannot be found', async () => {
+      mockUserRepository.findOne.mockResolvedValueOnce(null);
+
+      await expect(
+        service.verifyOtp({ mobileNumber: '01710000000', otp: '123456' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should return a profile without the password', async () => {
+      const user = { id: 'uuid-1', fullName: 'Member', password: 'secret' } as User;
+      mockUserRepository.findOne.mockResolvedValueOnce(user);
+
+      const result = await service.getProfile('uuid-1');
+
+      expect(result).toBe(user);
+      expect(result.password).toBeUndefined();
+    });
+
+    it('should reject profile lookup for an unknown user', async () => {
+      mockUserRepository.findOne.mockResolvedValueOnce(null);
+
+      await expect(service.getProfile('missing')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should send staff OTP and tolerate an SMS failure', async () => {
+      mockUserRepository.findOne.mockResolvedValueOnce({
+        id: 'uuid-1',
+        memberId: 'ATB-26-SA-1',
+        role: UserRole.ADMIN,
+        mobileNumber: '01710000000',
+      });
+      mockOtpService.issueStaffOtp.mockReturnValue('654321');
+      mockSmsService.sendSms.mockRejectedValueOnce(new Error('Network unavailable'));
+
+      await expect(service.sendStaffLoginOtp('ATB-26-SA-1')).resolves.toEqual({
+        success: true,
+        message: 'OTP sent to your mobile number',
+      });
+    });
+
+    it('should reject staff OTP requests for members', async () => {
+      mockUserRepository.findOne.mockResolvedValueOnce({ role: UserRole.MEMBER });
+
+      await expect(service.sendStaffLoginOtp('ATB-26-ME-01')).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should update profile fields when no duplicates exist', async () => {
+      const user = {
+        id: 'uuid-1',
+        mobileNumber: '01710000000',
+        email: 'old@example.com',
+        fullName: 'Old Name',
+      } as User;
+      mockUserRepository.findOne
+        .mockResolvedValueOnce(user)
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(null);
+      mockUserRepository.save.mockResolvedValue(user);
+
+      await service.updateProfile('uuid-1', {
+        mobileNumber: '01710000001',
+        email: 'new@example.com',
+        fullName: 'New Name',
+      });
+
+      expect(mockUserRepository.save).toHaveBeenCalledWith({
+        ...user,
+        mobileNumber: '01710000001',
+        email: 'new@example.com',
+        fullName: 'New Name',
+      });
+    });
+
+    it('should reject profile updates with a duplicate mobile number', async () => {
+      mockUserRepository.findOne.mockResolvedValueOnce({ mobileNumber: '01710000000' });
+      mockUserRepository.findOne.mockResolvedValueOnce({ id: 'other-user' });
+
+      await expect(
+        service.updateProfile('uuid-1', { mobileNumber: '01710000001' }),
+      ).rejects.toThrow(ConflictException);
     });
   });
 });
