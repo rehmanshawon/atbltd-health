@@ -31,6 +31,7 @@ describe('AdminService', () => {
   const mockPaymentRepository = {
     findOne: jest.fn(),
     find: jest.fn(),
+    update: jest.fn(),
     save: jest.fn(),
     count: jest.fn(),
     findAndCount: jest.fn(),
@@ -96,6 +97,7 @@ describe('AdminService', () => {
     mockMembershipRepository.save.mockReset();
     mockPaymentRepository.findOne.mockReset();
     mockPaymentRepository.find.mockReset();
+    mockPaymentRepository.update.mockReset();
     mockPaymentRepository.save.mockReset();
     mockPaymentRepository.count.mockReset();
     mockPaymentRepository.findAndCount.mockReset();
@@ -174,6 +176,7 @@ describe('AdminService', () => {
       };
 
       mockPaymentRepository.findOne.mockResolvedValueOnce(payment);
+      mockPaymentRepository.update.mockResolvedValueOnce({ affected: 1 });
       mockPaymentRepository.save.mockResolvedValue({
         ...payment,
         status: PaymentStatus.VERIFIED,
@@ -194,6 +197,27 @@ describe('AdminService', () => {
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('Payment authorized');
+    });
+
+    it('should make concurrent authorization idempotent', async () => {
+      const payment = {
+        id: 'payment-1',
+        status: PaymentStatus.PENDING,
+        userId: 'user-1',
+      };
+
+      mockPaymentRepository.findOne
+        .mockResolvedValueOnce(payment)
+        .mockResolvedValueOnce({ ...payment, status: PaymentStatus.VERIFIED });
+      mockPaymentRepository.update.mockResolvedValueOnce({ affected: 0 });
+
+      const result = await service.verifyPayment('payment-1', 'sa-uuid', UserRole.SUPER_ADMIN);
+
+      expect(result).toEqual({
+        success: true,
+        message: 'Payment was already authorized',
+      });
+      expect(mockMembershipRepository.save).not.toHaveBeenCalled();
     });
   });
 

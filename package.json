@@ -32,6 +32,10 @@
     "seed": "npm run seed --workspace=@atbltd-health/backend",
     "seed:ref": "npm run seed:ref --workspace=@atbltd-health/backend"
   },
+  "dependencies": {
+    "class-transformer": "0.5.1",
+    "class-validator": "0.14.4"
+  },
   "devDependencies": {
     "@nestjs/common": "11.2.3",
     "@nestjs/core": "11.2.3",

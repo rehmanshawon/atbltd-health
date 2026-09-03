@@ -202,15 +202,34 @@ export class AdminService {
     }
 
     if (payment.status !== PaymentStatus.PENDING) {
+      if (payment.status === PaymentStatus.VERIFIED && adminRole === UserRole.SUPER_ADMIN) {
+        return { success: true, message: 'Payment was already authorized' };
+      }
       throw new BadRequestException(`Payment is already ${payment.status}`);
     }
 
     if (adminRole === UserRole.SUPER_ADMIN) {
-      // SA directly authorizes — no maker-checker needed
+      // Claim the pending row atomically so concurrent authorizations cannot activate twice.
+      const authorization = await this.paymentRepository.update(
+        { id: paymentId, status: PaymentStatus.PENDING },
+        {
+          status: PaymentStatus.VERIFIED,
+          verifiedBy: adminUserId,
+          verifiedAt: new Date(),
+        },
+      );
+
+      if (!authorization.affected) {
+        const currentPayment = await this.paymentRepository.findOne({ where: { id: paymentId } });
+        if (currentPayment?.status === PaymentStatus.VERIFIED) {
+          return { success: true, message: 'Payment was already authorized' };
+        }
+        throw new BadRequestException('Payment authorization could not be completed');
+      }
+
       payment.status = PaymentStatus.VERIFIED;
       payment.verifiedBy = adminUserId;
       payment.verifiedAt = new Date();
-      await this.paymentRepository.save(payment);
 
       await this.activateMembership(payment, adminUserId);
 

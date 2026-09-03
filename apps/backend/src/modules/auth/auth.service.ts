@@ -29,7 +29,7 @@ import { PaymentRoutingService } from './payment-routing.service';
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
-  private getSessionDuration(role: UserRole): string {
+  private getSessionDuration(role: UserRole): '8h' | '12h' {
     return role === UserRole.SUPER_ADMIN || role === UserRole.ADMIN ? '8h' : '12h';
   }
 
