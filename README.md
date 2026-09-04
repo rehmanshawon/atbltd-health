@@ -125,6 +125,7 @@ Reference `apps/backend/.env.example` and `apps/frontend/.env.example` for the c
 
 ```bash
 psql -U postgres -c "CREATE DATABASE atbltd;"
+npm run migration:run --workspace=@atbltd-health/backend
 ```
 
 ### 5. Seed Initial Data
@@ -190,6 +191,8 @@ npm run typecheck
 | `DB_USERNAME`            | Database username          | Yes      |
 | `DB_PASSWORD`            | Database password          | Yes      |
 | `DB_DATABASE`            | Database name              | Yes      |
+| `DB_SYNCHRONIZE`         | Allow TypeORM schema sync  | No       |
+| `DB_MIGRATIONS_RUN`      | Run TypeORM migrations     | No       |
 | `JWT_SECRET`             | JWT signing secret         | Yes      |
 | `GREENWEB_API_TOKEN`     | GreenWeb SMS API token     | Optional |
 | `GREENWEB_SENDER_ID`     | SMS sender ID              | Optional |
@@ -219,13 +222,49 @@ variables at container start and rotate them independently of application releas
 
 ## Deployment
 
-Deployment is automated via `.github/workflows/deploy.yml`:
+Deployment is automated via `.github/workflows/deploy.yml` after the complete
+`CI` workflow succeeds:
 
-1. CI runs (`.github/workflows/ci.yml`): lint, test, typecheck, audit
-2. Docker images built via `base.Dockerfile`
-3. Images pushed to Docker Hub
-4. SSH to EC2 pulls and restarts containers
-5. Nginx serves frontend with SSL
+1. A push to `main` starts `.github/workflows/ci.yml`.
+2. CI runs backend unit tests, E2E tests, migration validation, typechecking,
+   linting, frontend tests, and high-severity dependency audits.
+3. Only successful CI starts the deployment workflow.
+4. Docker images are built from the exact commit validated by CI and pushed to
+   Docker Hub.
+5. EC2 pulls the images and recreates the application containers.
+6. Deployment verifies both the backend health endpoint and frontend response;
+   failures print container status/logs and fail the deployment.
+7. Nginx serves the frontend with SSL.
+
+The production PostgreSQL named volume must be preserved. Never use
+`docker compose down -v` against the production compose project.
+
+## Database Migrations
+
+TypeORM migrations are stored in `apps/backend/src/migrations/`:
+
+```bash
+npm run migration:generate --workspace=@atbltd-health/backend
+npm run migration:run --workspace=@atbltd-health/backend
+npm run migration:revert --workspace=@atbltd-health/backend
+```
+
+CI applies migrations to an empty disposable PostgreSQL database on every
+change. The initial migration was generated for an empty schema and must not be
+run blindly against the existing EC2 database. Before enabling production
+automatic migrations, take a verified backup and record a migration baseline for
+the live schema.
+
+## Security and Reliability Controls
+
+- CI fails on high and critical npm audit findings; transient npm registry
+  failures are retried three times.
+- Payment authorization is atomic and idempotent.
+- Admin routes use JWT and role-based authorization.
+- Financial approval follows the Maker-Checker workflow.
+- Production deploys require successful CI and post-deploy health checks.
+- Production schema synchronization and automatic migrations are disabled until
+  the live database is baselined.
 
 ## Architecture
 

@@ -31,8 +31,13 @@ Thank you for your interest in contributing to ATB Ltd — a healthcare fintech 
 
    ```bash
    psql -U postgres -c "CREATE DATABASE atbltd;"
+   npm run migration:run --workspace=@atbltd-health/backend
    npm run seed
    ```
+
+   Never use `docker compose down -v` against the production project. Production
+   schema synchronization is disabled, and the existing EC2 schema must be
+   backed up and baselined before automatic migrations are enabled.
 
 6. **Start development:**
 
@@ -129,12 +134,14 @@ docker compose up -d
 
 ## Deployment
 
-Deployment is automatic via GitHub Actions on push to `main`:
+Deployment is triggered after GitHub Actions CI succeeds on `main`:
 
-1. Tests run (CI)
-2. Docker images built
-3. Pushed to Docker Hub
-4. SSH to EC2 pulls and restarts
+1. Backend and frontend tests, typechecks, lint, audits, E2E tests, and migration
+   validation run in CI.
+2. Docker images are built from the exact CI-validated commit.
+3. Images are pushed to Docker Hub.
+4. EC2 pulls and restarts the containers.
+5. Backend and frontend health checks must pass before deployment succeeds.
 
 ## Questions?
 

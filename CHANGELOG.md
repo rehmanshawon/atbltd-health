@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased] — 2026-08-29
 
+### Reliability and Security
+
+- Added an initial TypeORM migration and disposable-database migration check in
+  CI.
+- Disabled production schema synchronization and automatic migrations until the
+  existing EC2 schema is baselined.
+- Gated EC2 deployments on successful completion of the full CI workflow.
+- Added post-deployment backend and frontend health checks with container log
+  output on failure.
+- Raised npm audit enforcement to high-severity findings and added retries for
+  transient npm registry failures.
+- Made payment authorization atomic and idempotent.
+
+### Tests
+
+- Added authorization-boundary E2E coverage for member and admin routes.
+- Added migration execution validation against an empty PostgreSQL database.
+- Formatted the generated initial migration to pass repository lint checks.
+
 ### Added
 
 - Structured logging with nestjs-pino
