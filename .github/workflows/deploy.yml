@@ -69,5 +69,19 @@ jobs:
             docker compose down
             docker compose up -d --force-recreate
 
+            # Verify both public application containers before reporting success
+            for attempt in $(seq 1 30); do
+              if curl --fail --silent http://127.0.0.1:3001/health >/dev/null && \
+                 curl --fail --silent http://127.0.0.1:3000 >/dev/null; then
+                break
+              fi
+              if [ "$attempt" -eq 30 ]; then
+                docker compose ps
+                docker compose logs --tail=100 backend frontend
+                exit 1
+              fi
+              sleep 2
+            done
+
             # Clean up
             docker image prune -f
