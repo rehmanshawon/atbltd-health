@@ -21,7 +21,7 @@
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "npm run test --workspace=@atbltd-health/backend",
     "test:frontend": "npm run test --workspace=@atbltd-health/frontend",
-    "test:isolated": "npm run test:backend && npm run test:frontend",
+    "test:isolated": "npm run test:backend",
     "test:e2e:backend": "npm run test:e2e --workspace=@atbltd-health/backend",
     "test:cov": "npm run test:cov:backend && npm run test:cov:frontend",
     "test:cov:backend": "npm run test:cov --workspace=@atbltd-health/backend",
@@ -41,8 +41,8 @@
     "@nestjs/common": "11.2.3",
     "@nestjs/core": "11.2.3",
     "concurrently": "^9.2.1",
-    "ts-node": "10.9.2",
-    "rxjs": "7.8.1"
+    "rxjs": "7.8.1",
+    "ts-node": "10.9.2"
   },
   "engines": {
     "node": ">=22",

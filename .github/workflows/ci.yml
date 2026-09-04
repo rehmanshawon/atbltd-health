@@ -7,10 +7,12 @@ on:
     branches: [main]
 
 jobs:
-  backend-test:
+  validate:
+    name: Code Quality & Monorepo Validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -19,19 +21,48 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: Install backend dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: Run backend tests
-        run: npm run test:cov:backend
+      - name: Run linting
+        run: npm run lint
 
-      - name: Run backend typecheck
-        run: npm run typecheck:backend
+      - name: Run typecheck
+        run: npm run typecheck
+
+      - name: Run unit tests with coverage
+        run: npm run test:cov
+
+      - name: Run security audit
+        run: npm audit --audit-level=high
+
+  backend-test:
+    name: Backend Unit & Coverage Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run backend lint
         run: npm run lint:backend
 
-      - name: Security audit
+      - name: Run backend typecheck
+        run: npm run typecheck:backend
+
+      - name: Run backend unit tests with coverage
+        run: npm run test:cov:backend
+
+      - name: Security audit backend
         run: |
           for attempt in 1 2 3; do
             if npm audit --workspace=@atbltd-health/backend --audit-level=high; then
@@ -44,9 +75,11 @@ jobs:
           exit 1
 
   backend-e2e-test:
+    name: Backend E2E Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -55,7 +88,7 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: Install backend dependencies
+      - name: Install dependencies
         run: npm ci
 
       - name: Start disposable test database
@@ -77,9 +110,11 @@ jobs:
         run: docker compose -f docker-compose.test.yml down -v
 
   backend-migration-check:
+    name: Backend Migration Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -88,7 +123,7 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: Install backend dependencies
+      - name: Install dependencies
         run: npm ci
 
       - name: Start disposable migration database
@@ -108,9 +143,11 @@ jobs:
         run: docker compose -f docker-compose.test.yml down -v
 
   frontend-test:
+    name: Frontend Lint, Typecheck & Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -122,16 +159,16 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci --include=optional
 
-      - name: Run frontend tests
-        run: npm run test:cov:frontend
+      - name: Run frontend lint
+        run: npm run lint:frontend
 
       - name: Run frontend typecheck
         run: npm run typecheck:frontend
 
-      - name: Run frontend lint
-        run: npm run lint:frontend
+      - name: Run frontend tests
+        run: npm run test:cov:frontend
 
-      - name: Security audit
+      - name: Security audit frontend
         run: |
           for attempt in 1 2 3; do
             if npm audit --workspace=@atbltd-health/frontend --audit-level=high; then
