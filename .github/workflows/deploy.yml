@@ -57,6 +57,10 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+
+            # 1. Clean up stale images FIRST to ensure disk space
+            docker image prune -af
+
             # Log in to Docker Hub
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
@@ -71,7 +75,7 @@ jobs:
 
             # Verify both public application containers before reporting success
             for attempt in $(seq 1 30); do
-              if curl --fail --silent http://127.0.0.1:3001/health >/dev/null && \
+              if curl --fail --silent http://127.0.0.1:3001/api/health >/dev/null && \
                  curl --fail --silent http://127.0.0.1:3000 >/dev/null; then
                 break
               fi
@@ -83,5 +87,7 @@ jobs:
               sleep 2
             done
 
-            # Clean up
-            docker image prune -f
+            echo "Deployment successful!"
+
+            # 2. Clean up old images after successful deployment
+            docker image prune -af
