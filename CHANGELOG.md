@@ -17,13 +17,13 @@ All notable changes to this project will be documented in this file.
   transient npm registry failures.
 - Made payment authorization atomic and idempotent.
 
-### Tests
+### Test Coverage
 
 - Added authorization-boundary E2E coverage for member and admin routes.
 - Added migration execution validation against an empty PostgreSQL database.
 - Formatted the generated initial migration to pass repository lint checks.
 
-### Added
+### Initial Release Features
 
 - Structured logging with nestjs-pino
 - Sequential Maker-Checker approval workflow across all features

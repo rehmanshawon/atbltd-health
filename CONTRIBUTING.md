@@ -1,6 +1,7 @@
 # Contributing to ATB Ltd
 
-Thank you for your interest in contributing to ATB Ltd — a healthcare fintech platform for Bangladesh.
+Thank you for your interest in contributing to ATB Ltd — a healthcare fintech
+platform for Bangladesh.
 
 ## Getting Started
 
@@ -25,6 +26,7 @@ Thank you for your interest in contributing to ATB Ltd — a healthcare fintech 
    cp .env.example .env
    cd ../frontend
    cp .env.example .env.local
+   cd ../..
    ```
 
 5. **Run database migrations:**
@@ -71,7 +73,7 @@ Thank you for your interest in contributing to ATB Ltd — a healthcare fintech 
    npm run lint
    ```
 
-4. Push and create a Pull Request
+4. Push and create a Pull Request.
 
 ## Commit Convention
 
@@ -92,11 +94,18 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 - **TypeScript** with strict null checks where possible
 - **ESLint + Prettier** — run `npm run lint` before committing
-- **NestJS patterns** — services, DTOs, guards, interceptors
+- **NestJS patterns** — modular services, typed DTOs, guards, interceptors
 - **React components under 500 LOC** — split larger ones
 - **Every new feature needs tests**
 
 ## Testing
+
+### Standard Suite
+
+```bash
+npm test
+npm run test:cov
+```
 
 ### Backend
 
@@ -113,9 +122,21 @@ npm run test:frontend
 npm run test:cov:frontend
 ```
 
+### Isolated Zero-Network Testing
+
+Run tests in an offline, isolated environment with zero external dependencies:
+
+```bash
+npm run test:isolated
+```
+
+All external services (SMS gateways like GreenWeb, payment gateways like
+bKash/Nagad) are fully mocked with Jest to guarantee deterministic,
+account-free test execution.
+
 ## Architecture
 
-```
+```text
 SUPER_ADMIN → ADMIN → OWNER → AGENT → MEMBER
 ```
 
@@ -145,4 +166,4 @@ Deployment is triggered after GitHub Actions CI succeeds on `main`:
 
 ## Questions?
 
-Contact: info@atbltd.health
+Contact: <info@atbltd.health>

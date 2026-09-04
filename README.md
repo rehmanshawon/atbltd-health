@@ -2,25 +2,28 @@
 
 **"টাকার অভাবে থামবে না চিকিৎসা"** — _Treatment will not stop due to lack of money._
 
-A complete healthcare financial assistance platform for Bangladesh. ATB Ltd provides 12,000 BDT in medical bill support to members for eligible hospital stays.
+A complete healthcare financial assistance platform for Bangladesh. ATB Ltd
+provides 12,000 BDT in medical bill support to members for eligible hospital
+stays.
 
 > **Note:** This is a **monorepo** with backend and frontend in separate app directories.
 
 ## Project Structure
 
-```
+```text
 atbltd-health/
 ├── package-lock.json               # ✅ Root workspace lockfile
 ├── apps/
 │   ├── backend/                    # NestJS API (port 3000)
 │   │   ├── package.json
+│   │   ├── jest.config.js          # ✅ Backend test & coverage thresholds
 │   │   ├── .env.example            # ✅ Backend env vars
 │   │   ├── .eslintrc.js            # ✅ Backend lint config
 │   │   ├── .prettierrc             # ✅ Backend prettier
 │   │   ├── tsconfig.json
 │   │   └── src/
 │   │       ├── modules/
-│   │       │   ├── auth/           # Authentication & JWT
+│   │       │   ├── auth/           # Authentication & OTP lifecycle
 │   │       │   ├── admin/          # Admin dashboard & payment verification
 │   │       │   ├── claim/          # Benefit application processing
 │   │       │   ├── commission/     # Agent commission engine
@@ -29,7 +32,7 @@ atbltd-health/
 │   │       │   ├── notification/   # Real-time notifications
 │   │       │   └── sms/            # SMS gateway integration
 │   │       ├── entities/           # TypeORM entities
-│   │       └── common/             # Guards, decorators, enums
+│   │       └── common/             # Guards, decorators, sentry filter
 │   └── frontend/                   # Next.js 16 App (port 3001)
 │       ├── package.json
 │       ├── .env.example            # ✅ Frontend env vars
@@ -50,9 +53,11 @@ atbltd-health/
 ├── .env.example                    # ✅ Root env vars (all variables)
 ├── .eslintrc.json                  # ✅ Root lint config
 ├── Dockerfile                      # ✅ Root Dockerfile
-├── .github/workflows/
-│   ├── ci.yml                      # ✅ CI: lint, test, typecheck, audit
-│   └── deploy.yml                  # ✅ CD: Docker build & EC2 deploy
+├── .github/
+│   ├── PULL_REQUEST_TEMPLATE.md    # ✅ PR review template
+│   └── workflows/
+│       ├── ci.yml                  # ✅ CI: lint, test, typecheck, audit
+│       └── deploy.yml              # ✅ CD: Docker build & EC2 deploy
 ├── README.md                       # ✅ This file
 ├── CHANGELOG.md                    # ✅ Release history
 ├── CONTRIBUTING.md                 # ✅ Contribution guide
@@ -82,9 +87,11 @@ atbltd-health/
 - **Backend:** NestJS, TypeScript, TypeORM, PostgreSQL, Jest
 - **Frontend:** Next.js 16, React 19, Tailwind CSS, React Testing Library
 - **Infrastructure:** AWS EC2, Docker, Nginx, GitHub Actions
+- **Observability:** Prometheus (`@willsoto/nestjs-prometheus`), Sentry
+  (`@sentry/node`), `pino-pretty`
 - **SMS:** GreenWeb BD Gateway
 - **Auth:** JWT with 5-tier role-based access control
-- **Logging:** nestjs-pino (structured JSON logging)
+- **Validation:** class-validator, class-transformer, Zod
 
 ## Prerequisites
 
@@ -117,9 +124,11 @@ cp .env.example .env
 # Frontend
 cd ../frontend
 cp .env.example .env.local
+cd ../..
 ```
 
-Reference `apps/backend/.env.example` and `apps/frontend/.env.example` for the complete list of variables.
+Reference `apps/backend/.env.example` and `apps/frontend/.env.example` for the
+complete list of variables.
 
 ### 4. Set up the Database
 
@@ -137,7 +146,7 @@ npm run seed:ref
 
 ## Running Tests
 
-The root scripts run each workspace from the repository root:
+Execute the complete test suite from the repository root:
 
 ```bash
 npm test
@@ -147,7 +156,7 @@ npm run lint
 npm run build
 ```
 
-Target one workspace when needed:
+Target individual workspaces:
 
 ```bash
 npm run test:backend
@@ -155,27 +164,26 @@ npm run test:frontend
 npm run test:e2e:backend
 ```
 
-### Isolated Test Run
+### Isolated Zero-Network Test Run
 
-Run the backend and frontend unit suites without Docker, PostgreSQL, or other
-live services:
+Run unit test suites without Docker, PostgreSQL, SMS gateways, or network calls:
 
 ```bash
 npm run test:isolated
 ```
 
-This intentionally skips `npm run test:e2e:backend`, which requires the
-disposable PostgreSQL service described below.
+Backend unit tests mock repositories and external gateways. For database-backed
+e2e tests, start the disposable test database:
 
-Backend unit tests mock repositories and run without a live PostgreSQL server. For
-database-backed e2e tests, start the disposable test database with
-`docker compose -f docker-compose.test.yml up -d` and stop it with
-`docker compose -f docker-compose.test.yml down -v`.
+```bash
+docker compose -f docker-compose.test.yml up -d --wait
+npm run test:e2e:backend
+docker compose -f docker-compose.test.yml down -v
+```
 
 ## Linting & Type Checking
 
 ```bash
-# All workspaces
 npm run lint
 npm run typecheck
 ```
@@ -194,6 +202,7 @@ npm run typecheck
 | `DB_SYNCHRONIZE`         | Allow TypeORM schema sync  | No       |
 | `DB_MIGRATIONS_RUN`      | Run TypeORM migrations     | No       |
 | `JWT_SECRET`             | JWT signing secret         | Yes      |
+| `SENTRY_DSN`             | Sentry error tracking DSN  | Optional |
 | `GREENWEB_API_TOKEN`     | GreenWeb SMS API token     | Optional |
 | `GREENWEB_SENDER_ID`     | SMS sender ID              | Optional |
 | `BKASH_MERCHANT_NUMBER`  | bKash merchant number      | Optional |
@@ -212,79 +221,42 @@ npm run typecheck
 | --------------------- | --------------- | -------- |
 | `NEXT_PUBLIC_API_URL` | Backend API URL | Yes      |
 
-### Production secrets
-
-Never use the values from `.env.example` in a deployed environment. Store
-`DB_PASSWORD`, `JWT_SECRET`, payment merchant accounts, SMS credentials, and seed
-passwords in the deployment platform's secret store (AWS Secrets Manager is the
-recommended store for the current EC2 deployment). Inject them as environment
-variables at container start and rotate them independently of application releases.
-
-## Deployment
-
-Deployment is automated via `.github/workflows/deploy.yml` after the complete
-`CI` workflow succeeds:
-
-1. A push to `main` starts `.github/workflows/ci.yml`.
-2. CI runs backend unit tests, E2E tests, migration validation, typechecking,
-   linting, frontend tests, and high-severity dependency audits.
-3. Only successful CI starts the deployment workflow.
-4. Docker images are built from the exact commit validated by CI and pushed to
-   Docker Hub.
-5. EC2 pulls the images and recreates the application containers.
-6. Deployment verifies both the backend health endpoint and frontend response;
-   failures print container status/logs and fail the deployment.
-7. Nginx serves the frontend with SSL.
-
-The production PostgreSQL named volume must be preserved. Never use
-`docker compose down -v` against the production compose project.
-
-## Database Migrations
-
-TypeORM migrations are stored in `apps/backend/src/migrations/`:
-
-```bash
-npm run migration:generate --workspace=@atbltd-health/backend
-npm run migration:run --workspace=@atbltd-health/backend
-npm run migration:revert --workspace=@atbltd-health/backend
-```
-
-CI applies migrations to an empty disposable PostgreSQL database on every
-change. The initial migration was generated for an empty schema and must not be
-run blindly against the existing EC2 database. Before enabling production
-automatic migrations, take a verified backup and record a migration baseline for
-the live schema.
-
 ## Security and Reliability Controls
 
-- CI fails on high and critical npm audit findings; transient npm registry
-  failures are retried three times.
-- Payment authorization is atomic and idempotent.
-- Admin routes use JWT and role-based authorization.
+- CI fails on high and critical npm audit findings; transient registry failures
+  retry 3x.
+- Payment authorization is atomic, checked for idempotency, and guarded against
+  race conditions.
+- Sentry captures all unhandled 5xx exceptions and operational faults.
+- Prometheus exposes application telemetry and runtime metrics.
+- Jest enforces minimum 70% line coverage thresholds.
 - Financial approval follows the Maker-Checker workflow.
-- Production deploys require successful CI and post-deploy health checks.
-- Production schema synchronization and automatic migrations are disabled until
-  the live database is baselined.
+- Production deploys require passing CI and automated post-deploy health validation.
 
 ## Architecture
 
 ### Role Hierarchy
 
-```
+```text
 SUPER_ADMIN → ADMIN → OWNER → AGENT → MEMBER
 ```
 
 ### Maker-Checker Approval Flow
 
-- **Admin** = Maker (first review)
-- **Super Admin** = Checker (final approval)
-- Sequential workflow: items move from Admin queue to SA queue
+- **Admin** = Maker (initial review)
+- **Super Admin** = Checker (final verification & authorization)
+- Items move sequentially from Admin queue to SA queue
 - All financial operations require dual control
-- Every action is audit-logged
+- Every action produces an audit log
 
 ## API Documentation
 
 Base URL: `https://api.atbltd.health/api`
+
+### Observability & Health
+
+- `GET /api/health` — Service health status
+- `GET /api/metrics` — Prometheus telemetry & runtime metrics
 
 ### Authentication
 
@@ -301,21 +273,17 @@ Base URL: `https://api.atbltd.health/api`
 - `PUT /api/claims/:id/status` — Update status (Maker-Checker)
 - `POST /api/claims/:id/documents/upload` — Upload documents
 
-### Admin
+### Admin & Payments
 
 - `GET /api/admin/dashboard` — Dashboard stats
 - `GET /api/admin/payments` — Payment list
-- `POST /api/admin/payments/:id/verify` — Verify payment
+- `POST /api/admin/payments/:id/verify` — Verify payment (Maker-Checker)
 
 ### Notifications
 
 - `GET /api/notifications` — Get notifications
 - `PUT /api/notifications/:id/read` — Mark as read
 - `PUT /api/notifications/mark-all-read` — Mark all read
-
-### Health
-
-- `GET /api/health` — Health check endpoint
 
 ## Contributing
 

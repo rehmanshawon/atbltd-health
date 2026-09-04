@@ -1,6 +1,7 @@
 # Monorepo Structure Guide
 
-This repository uses a **monorepo** architecture with separate apps for backend and frontend.
+This repository uses a **monorepo** architecture with separate apps for
+backend and frontend.
 
 ## Why Monorepo?
 
