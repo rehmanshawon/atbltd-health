@@ -1,9 +1,24 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, HttpAdapterHost } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import * as Sentry from '@sentry/node';
 import { AppModule } from './app.module';
+import { SentryExceptionFilter } from './common/filters/sentry-exception.filter';
 
 async function bootstrap() {
+  // Initialize Sentry error tracking
+  if (process.env.SENTRY_DSN) {
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.NODE_ENV || 'development',
+      tracesSampleRate: 1.0,
+    });
+  }
+
   const app = await NestFactory.create(AppModule);
+
+  // Global Sentry exception filter
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new SentryExceptionFilter(httpAdapter));
 
   // Enable CORS for frontend (Next.js on port 3000)
   app.enableCors({
@@ -38,6 +53,7 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`🚀 ATB Backend running on http://localhost:${port}`);
   console.log(`📡 API available at http://localhost:${port}/api`);
+  console.log(`📊 Prometheus metrics available at http://localhost:${port}/api/metrics`);
 }
 
 bootstrap();
