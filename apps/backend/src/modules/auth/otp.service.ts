@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, Optional } from '@nestjs/common';
 import { SmsService } from '../sms/sms.service';
 
 type StoredOtp = { otp: string; expiresAt: Date };
@@ -9,7 +9,7 @@ export class OtpService {
   private readonly memberOtps = new Map<string, StoredOtp>();
   private readonly staffOtps = new Map<string, StoredOtp>();
 
-  constructor(private readonly smsService: SmsService) {}
+  constructor(@Optional() private readonly smsService?: SmsService) {}
 
   issueMemberOtp(mobileNumber: string): string {
     const otp = this.generateOtp();
@@ -21,15 +21,17 @@ export class OtpService {
   async sendMemberOtp(mobileNumber: string): Promise<{ success: boolean; message: string }> {
     const otp = this.issueMemberOtp(mobileNumber);
 
-    try {
-      await this.smsService.sendSms(
-        mobileNumber,
-        `ATB Ltd: Your verification OTP is ${otp}. Valid for 5 minutes.`,
-      );
-    } catch (error) {
-      this.logger.warn(
-        `Failed to send SMS to ${mobileNumber}, falling back to dev mode: ${error instanceof Error ? error.message : error}`,
-      );
+    if (this.smsService) {
+      try {
+        await this.smsService.sendSms(
+          mobileNumber,
+          `ATB Ltd: Your verification OTP is ${otp}. Valid for 5 minutes.`,
+        );
+      } catch (error) {
+        this.logger.warn(
+          `Failed to send SMS to ${mobileNumber}: ${error instanceof Error ? error.message : error}`,
+        );
+      }
     }
 
     return {
@@ -62,7 +64,7 @@ export class OtpService {
   ): Promise<{ success: boolean; message: string }> {
     const otp = this.issueStaffOtp(staffId);
 
-    if (mobileNumber) {
+    if (mobileNumber && this.smsService) {
       try {
         await this.smsService.sendSms(
           mobileNumber,

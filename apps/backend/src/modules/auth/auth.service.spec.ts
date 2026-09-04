@@ -10,11 +10,11 @@ import { AuditLog } from '../../entities/audit-log.entity';
 import { Agent } from '../../entities/agent.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { NotificationService } from '../notification/notification.service';
-import { SmsService } from '../sms/sms.service';
 import { OtpService } from './otp.service';
 import { PaymentRoutingService } from './payment-routing.service';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+
 describe('AuthService', () => {
   let service: AuthService;
 
@@ -56,16 +56,19 @@ describe('AuthService', () => {
     notifyUser: jest.fn(),
   };
 
-  const mockSmsService = {
-    sendSms: jest.fn(),
-    sendMembershipActivationSms: jest.fn(),
-  };
-
   const mockOtpService = {
     issueMemberOtp: jest.fn(),
     issueStaffOtp: jest.fn(),
     verifyMemberOtp: jest.fn(),
     verifyStaffOtp: jest.fn(),
+    sendMemberOtp: jest.fn().mockResolvedValue({
+      success: true,
+      message: 'OTP sent successfully. Valid for 5 minutes.',
+    }),
+    sendStaffOtp: jest.fn().mockResolvedValue({
+      success: true,
+      message: 'OTP sent to your mobile number',
+    }),
   };
 
   const mockPaymentRoutingService = {
@@ -114,7 +117,6 @@ describe('AuthService', () => {
         { provide: JwtService, useValue: mockJwtService },
         { provide: DataSource, useValue: mockDataSource },
         { provide: NotificationService, useValue: mockNotificationService },
-        { provide: SmsService, useValue: mockSmsService },
         { provide: OtpService, useValue: mockOtpService },
         { provide: PaymentRoutingService, useValue: mockPaymentRoutingService },
       ],
@@ -127,29 +129,35 @@ describe('AuthService', () => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
 
-    // Force reset all mock functions
     mockUserRepository.findOne.mockReset();
     mockUserRepository.findOne.mockImplementation(() => Promise.resolve(undefined));
-
     mockUserRepository.save.mockReset();
     mockUserRepository.create.mockReset();
+
     mockMembershipRepository.findOne.mockReset();
     mockMembershipRepository.save.mockReset();
     mockMembershipRepository.create.mockReset();
+
     mockPaymentRepository.findOne.mockReset();
     mockPaymentRepository.save.mockReset();
     mockPaymentRepository.create.mockReset();
+
     mockAuditLogRepository.save.mockReset();
     mockAuditLogRepository.create.mockReset();
+
     mockAgentRepository.findOne.mockReset();
     mockAgentRepository.save.mockReset();
+
     mockNotificationService.notifyRoles.mockReset();
     mockNotificationService.notifyUser.mockReset();
-    mockSmsService.sendSms.mockReset();
+
     mockOtpService.issueMemberOtp.mockReset();
     mockOtpService.issueStaffOtp.mockReset();
     mockOtpService.verifyMemberOtp.mockReset();
     mockOtpService.verifyStaffOtp.mockReset();
+    mockOtpService.sendMemberOtp.mockReset();
+    mockOtpService.sendStaffOtp.mockReset();
+
     mockPaymentRoutingService.getRecipientAccount.mockReset();
     mockPaymentRoutingService.getRecipientAccount.mockImplementation((method) => {
       if (method === 'paypal') {
@@ -174,7 +182,6 @@ describe('AuthService', () => {
       mockUserRepository.findOne.mockResolvedValueOnce(staffUser);
       mockUserRepository.save.mockResolvedValue(staffUser);
 
-      //const bcrypt = require('bcryptjs');
       jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
 
       const result = await service.login({
@@ -244,8 +251,6 @@ describe('AuthService', () => {
       };
 
       mockUserRepository.findOne.mockResolvedValueOnce(staffUser);
-
-      //const bcrypt = require('bcryptjs');
       jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
 
       await expect(
@@ -391,14 +396,11 @@ describe('AuthService', () => {
     });
 
     it('should throw ConflictException for duplicate mobile', async () => {
-      // Mock the findOne method specifically for this test
       mockUserRepository.findOne.mockImplementation((query: any) => {
         if (query?.where?.nid) {
-          // NID check — not found
           return Promise.resolve(null);
         }
         if (query?.where?.mobileNumber) {
-          // Mobile check — found existing
           return Promise.resolve({
             id: 'uuid-existing',
             mobileNumber: '01712345678',
@@ -418,8 +420,8 @@ describe('AuthService', () => {
     });
 
     it('should throw BadRequestException for invalid payment method', async () => {
-      mockUserRepository.findOne.mockImplementation((query: any) => {
-        return Promise.resolve(null); // Both NID and mobile not found
+      mockUserRepository.findOne.mockImplementation(() => {
+        return Promise.resolve(null);
       });
 
       await expect(
@@ -436,13 +438,16 @@ describe('AuthService', () => {
   describe('OTP and profile flows', () => {
     it('should send a member OTP for a registered mobile number', async () => {
       mockUserRepository.findOne.mockResolvedValueOnce({ id: 'uuid-1' });
-      mockOtpService.issueMemberOtp.mockReturnValue('123456');
+      mockOtpService.sendMemberOtp.mockResolvedValueOnce({
+        success: true,
+        message: 'OTP sent successfully. Valid for 5 minutes.',
+      });
 
       await expect(service.sendOtp('01710000000')).resolves.toEqual({
         success: true,
         message: 'OTP sent successfully. Valid for 5 minutes.',
       });
-      expect(mockOtpService.issueMemberOtp).toHaveBeenCalledWith('01710000000');
+      expect(mockOtpService.sendMemberOtp).toHaveBeenCalledWith('01710000000');
     });
 
     it('should reject OTP requests for unknown mobile numbers', async () => {
@@ -499,13 +504,16 @@ describe('AuthService', () => {
         role: UserRole.ADMIN,
         mobileNumber: '01710000000',
       });
-      mockOtpService.issueStaffOtp.mockReturnValue('654321');
-      mockSmsService.sendSms.mockRejectedValueOnce(new Error('Network unavailable'));
+      mockOtpService.sendStaffOtp.mockResolvedValueOnce({
+        success: true,
+        message: 'OTP sent to your mobile number',
+      });
 
       await expect(service.sendStaffLoginOtp('ATB-26-SA-1')).resolves.toEqual({
         success: true,
         message: 'OTP sent to your mobile number',
       });
+      expect(mockOtpService.sendStaffOtp).toHaveBeenCalledWith('uuid-1', '01710000000');
     });
 
     it('should reject staff OTP requests for members', async () => {
