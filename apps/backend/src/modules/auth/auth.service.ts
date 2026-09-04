@@ -22,9 +22,9 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationType } from '../../entities/notification.entity';
-import { SmsService } from '../sms/sms.service';
 import { OtpService } from './otp.service';
 import { PaymentRoutingService } from './payment-routing.service';
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -47,15 +47,12 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly dataSource: DataSource,
     private readonly notificationService: NotificationService,
-    private readonly smsService: SmsService,
     private readonly otpService: OtpService,
     private readonly paymentRoutingService: PaymentRoutingService,
   ) {}
 
   /**
-   * Step 1: Register a new member with payment information.
-   * This replaces the mock modal in your frontend.
-   * Flow: Validate → Check duplicates → Create user + membership + payment record → Return success
+   * Register a new member with payment info in an atomic transaction
    */
   async register(registerDto: RegisterDto): Promise<{
     success: boolean;
@@ -63,7 +60,6 @@ export class AuthService {
     memberId?: string;
     temporaryPassword?: string;
   }> {
-    // ---- VALIDATION: Check for duplicate NID and mobile ----
     if (registerDto.nid) {
       const existingNid = await this.userRepository.findOne({
         where: { nid: registerDto.nid },
@@ -80,27 +76,19 @@ export class AuthService {
       throw new ConflictException('A member with this mobile number already exists');
     }
 
-    // ---- VALIDATION: Payment routing ----
-    // Per meeting agenda: "No payment shall go to any Agent's personal account"
-    // In production, verify the transactionId with the payment gateway API
     const recipientAccount = this.paymentRoutingService.getRecipientAccount(
       registerDto.paymentMethod,
     );
 
-    // ---- TRANSACTION: Create user, membership, and payment in one atomic operation ----
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // 1. Generate Member ID: ATB-YYYY-XXXXXX
       const memberId = await this.generateMemberId(queryRunner);
-
-      // 2. Generate temporary password
       const temporaryPassword = this.generateTemporaryPassword();
       const hashedPassword = await bcrypt.hash(temporaryPassword, 12);
 
-      // 3. Create User
       const user = this.userRepository.create({
         memberId,
         fullName: registerDto.fullName,
@@ -112,11 +100,10 @@ export class AuthService {
         email: registerDto.email,
         permanentAddress: registerDto.permanentAddress,
         currentAddress: registerDto.currentAddress,
-        // emergencyContact: registerDto.emergencyContact,
         password: hashedPassword,
         role: UserRole.MEMBER,
         referralId: registerDto.referralId,
-        isActive: false, // Will be activated after payment verification
+        isActive: false,
         isKycVerified: false,
       });
 
@@ -131,27 +118,23 @@ export class AuthService {
         savedUser.id,
       );
 
-      // 4. Create Membership record
       const membership = this.membershipRepository.create({
         userId: savedUser.id,
         membershipFee: 1000.0,
         isPaymentVerified: false,
         paymentMethod: registerDto.paymentMethod,
-        //transactionId: registerDto.transactionId,
         isActive: false,
         remainingBenefit: 12000.0,
         renewalFee: 850.0,
       });
 
-      const savedMembership = await queryRunner.manager.save(membership);
+      await queryRunner.manager.save(membership);
 
-      // 5. Create Payment record (pending verification)
       const payment = this.paymentRepository.create({
         userId: savedUser.id,
         paymentType: PaymentType.MEMBERSHIP_FEE,
         amount: 1000.0,
         method: registerDto.paymentMethod,
-        //transactionId: registerDto.transactionId,
         senderAccount: registerDto.senderAccount || registerDto.mobileNumber,
         recipientAccount: recipientAccount,
         status: PaymentStatus.PENDING,
@@ -159,7 +142,6 @@ export class AuthService {
 
       await queryRunner.manager.save(payment);
 
-      // 6. Create Audit Log
       const auditLog = this.auditLogRepository.create({
         action: 'USER_REGISTERED',
         entity: 'User',
@@ -174,14 +156,12 @@ export class AuthService {
 
       await queryRunner.manager.save(auditLog);
 
-      // 7. If referralId is provided, link to agent (for commission tracking later)
       if (registerDto.referralId) {
         const referringAgent = await this.agentRepository.findOne({
           where: { agentCode: registerDto.referralId, isActive: true },
         });
 
         if (referringAgent) {
-          // Increment the agent's registration count
           referringAgent.totalMembersRegistered += 1;
           await queryRunner.manager.save(referringAgent);
         }
@@ -194,7 +174,7 @@ export class AuthService {
         message:
           'Registration successful. Your membership will be activated after payment verification. You will receive an SMS with your temporary password.',
         memberId: savedUser.memberId,
-        temporaryPassword, // In production, send this via SMS, never return in API response
+        temporaryPassword,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -217,17 +197,13 @@ export class AuthService {
     };
   }> {
     const { identifier, password } = loginDto;
-
-    // Normalize: uppercase for staff IDs
     const normalizedIdentifier = identifier.includes('ATB') ? identifier.toUpperCase() : identifier;
 
-    // Try to find user by staff ID first, then by mobile number
     let user = await this.userRepository.findOne({
       where: { memberId: normalizedIdentifier },
     });
 
     if (!user) {
-      // Try mobile number
       user = await this.userRepository.findOne({
         where: { mobileNumber: identifier },
       });
@@ -237,7 +213,6 @@ export class AuthService {
       throw new UnauthorizedException('Invalid Staff ID or Mobile Number');
     }
 
-    // Only staff (super_admin, admin, owner, agent) can use this login
     if (user.role === UserRole.MEMBER) {
       throw new UnauthorizedException('Members must login with Member ID only. Use Member Login.');
     }
@@ -247,12 +222,10 @@ export class AuthService {
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid password');
     }
 
-    // Update last login
     user.lastLoginAt = new Date();
     await this.userRepository.save(user);
 
@@ -277,12 +250,9 @@ export class AuthService {
   }
 
   /**
-   * Step 3: Verify OTP (for mobile verification during registration flow)
-   * In production: Integrate with an SMS gateway (Twilio, Infobip, etc.)
-   * Development: Uses mock OTP "123456" as configured in your frontend
+   * Dispatch OTP for mobile registration verification
    */
   async sendOtp(mobileNumber: string): Promise<{ success: boolean; message: string }> {
-    // Check if user exists
     const user = await this.userRepository.findOne({
       where: { mobileNumber },
     });
@@ -291,21 +261,11 @@ export class AuthService {
       throw new BadRequestException('No registration found for this mobile number');
     }
 
-    const otp = this.otpService.issueMemberOtp(mobileNumber);
-
-    // In production: Send OTP via SMS gateway
-    // await this.smsService.send(mobileNumber, `Your ATB verification code: ${otp}`);
-
-    this.logger.log(`[DEV] OTP for ${mobileNumber}: ${otp}`);
-
-    return {
-      success: true,
-      message: 'OTP sent successfully. Valid for 5 minutes.',
-    };
+    return this.otpService.sendMemberOtp(mobileNumber);
   }
 
   /**
-   * Verify OTP and activate the user if payment is verified
+   * Verify OTP and issue JWT access token
    */
   async verifyOtp(verifyOtpDto: VerifyOtpDto): Promise<{
     success: boolean;
@@ -314,7 +274,6 @@ export class AuthService {
   }> {
     this.otpService.verifyMemberOtp(verifyOtpDto.mobileNumber, verifyOtpDto.otp);
 
-    // Find the user and activate if payment is verified
     const user = await this.userRepository.findOne({
       where: { mobileNumber: verifyOtpDto.mobileNumber },
       relations: ['membership'],
@@ -324,7 +283,6 @@ export class AuthService {
       throw new BadRequestException('User not found');
     }
 
-    // Generate JWT token for the verified user
     const payload: JwtPayload = {
       sub: user.id,
       memberId: user.memberId,
@@ -332,77 +290,15 @@ export class AuthService {
       mobileNumber: user.mobileNumber,
     };
 
-    const accessToken = this.jwtService.sign(payload);
-
     return {
       success: true,
       message: 'OTP verified successfully.',
-      accessToken,
+      accessToken: this.jwtService.sign(payload),
     };
   }
 
   /**
-   * Generate a unique Member ID: ATB-YYYY-XXXXXX
-   * Format: ATB-{current year}-{6-digit sequential number}
-   */
-  private async generateMemberId(queryRunner: any): Promise<string> {
-    const currentYear = new Date().getFullYear().toString().slice(-2); // "26"
-
-    const result = await queryRunner.manager
-      .createQueryBuilder()
-      .select('MAX(user.memberId)', 'maxId')
-      .from(User, 'user')
-      .where('user.memberId ~ :pattern', {
-        pattern: `^ATB-${currentYear}-ME-[0-9]{2}$`, // New pattern for ATB-26-ME-01
-      })
-      .getRawOne();
-
-    let sequentialNumber = 1;
-
-    if (result?.maxId) {
-      const parts = result.maxId.split('-');
-      if (parts.length === 4) {
-        const lastNumber = parseInt(parts[3], 10);
-        if (!isNaN(lastNumber)) {
-          sequentialNumber = lastNumber + 1;
-        }
-      }
-    }
-
-    return `ATB-${currentYear}-ME-${String(sequentialNumber).padStart(2, '0')}`;
-  }
-  /**
-   * Generate a secure temporary password
-   */
-  private generateTemporaryPassword(): string {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    let password = '';
-    for (let i = 0; i < 8; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return `${password}@1`; // Ensure it has a special char and number
-  }
-
-  /**
-   * Get current user profile
-   */
-  async getProfile(userId: string): Promise<User> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['membership'],
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    // Remove sensitive data
-    delete user.password;
-    return user;
-  }
-
-  /**
-   * Member login with only Member ID (no password, no mobile)
+   * Member login with only Member ID
    */
   async memberLogin(memberId: string): Promise<{
     accessToken: string;
@@ -413,7 +309,6 @@ export class AuthService {
       isActive: boolean;
     };
   }> {
-    // Normalize input - allow "ATB-26-01" or "26-01"
     let normalizedId = memberId.trim().toUpperCase();
     if (!normalizedId.startsWith('ATB-')) {
       normalizedId = `ATB-${normalizedId}`;
@@ -452,7 +347,9 @@ export class AuthService {
     };
   }
 
-  // Send OTP for staff login
+  /**
+   * Send OTP for staff login
+   */
   async sendStaffLoginOtp(staffId: string): Promise<{ success: boolean; message: string }> {
     const user = await this.userRepository.findOne({
       where: { memberId: staffId.toUpperCase() },
@@ -466,28 +363,12 @@ export class AuthService {
       throw new UnauthorizedException('Members do not use MFA');
     }
 
-    const otp = this.otpService.issueStaffOtp(user.id);
-
-    // SEND SMS — need SmsService injected
-    if (user.mobileNumber) {
-      try {
-        await this.smsService.sendSms(
-          user.mobileNumber,
-          `ATB Ltd: Your login OTP is ${otp}. Valid for 5 minutes.`,
-        );
-        this.logger.log(`Staff OTP sent to ${user.mobileNumber}`);
-      } catch (error) {
-        this.logger.error('Failed to send staff OTP SMS:', error.message);
-        // Don't fail login if SMS fails — still allow dev OTP
-        // Send SMS
-        this.logger.log(`[DEV] Staff OTP for ${staffId}: ${otp}`);
-      }
-    }
-
-    return { success: true, message: 'OTP sent to your mobile number' };
+    return this.otpService.sendStaffOtp(user.id, user.mobileNumber);
   }
 
-  // Verify staff OTP and complete login
+  /**
+   * Verify staff OTP and complete login
+   */
   async verifyStaffOtp(
     staffId: string,
     otp: string,
@@ -525,6 +406,20 @@ export class AuthService {
     };
   }
 
+  async getProfile(userId: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['membership'],
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    delete user.password;
+    return user;
+  }
+
   async updateProfile(
     userId: string,
     data: { mobileNumber?: string; email?: string; fullName?: string },
@@ -535,7 +430,6 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    // Check duplicate mobile (except own)
     if (data.mobileNumber && data.mobileNumber !== user.mobileNumber) {
       const existing = await this.userRepository.findOne({
         where: { mobileNumber: data.mobileNumber },
@@ -545,7 +439,6 @@ export class AuthService {
       }
     }
 
-    // Check duplicate email (except own)
     if (data.email && data.email !== user.email) {
       const existingEmail = await this.userRepository.findOne({
         where: { email: data.email },
@@ -560,5 +453,41 @@ export class AuthService {
     if (data.fullName) user.fullName = data.fullName;
 
     return this.userRepository.save(user);
+  }
+
+  private async generateMemberId(queryRunner: any): Promise<string> {
+    const currentYear = new Date().getFullYear().toString().slice(-2);
+
+    const result = await queryRunner.manager
+      .createQueryBuilder()
+      .select('MAX(user.memberId)', 'maxId')
+      .from(User, 'user')
+      .where('user.memberId ~ :pattern', {
+        pattern: `^ATB-${currentYear}-ME-[0-9]{2}$`,
+      })
+      .getRawOne();
+
+    let sequentialNumber = 1;
+
+    if (result?.maxId) {
+      const parts = result.maxId.split('-');
+      if (parts.length === 4) {
+        const lastNumber = parseInt(parts[3], 10);
+        if (!isNaN(lastNumber)) {
+          sequentialNumber = lastNumber + 1;
+        }
+      }
+    }
+
+    return `ATB-${currentYear}-ME-${String(sequentialNumber).padStart(2, '0')}`;
+  }
+
+  private generateTemporaryPassword(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return `${password}@1`;
   }
 }

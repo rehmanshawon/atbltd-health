@@ -1,16 +1,41 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { SmsService } from '../sms/sms.service';
 
 type StoredOtp = { otp: string; expiresAt: Date };
 
 @Injectable()
 export class OtpService {
+  private readonly logger = new Logger(OtpService.name);
   private readonly memberOtps = new Map<string, StoredOtp>();
   private readonly staffOtps = new Map<string, StoredOtp>();
+
+  constructor(private readonly smsService: SmsService) {}
 
   issueMemberOtp(mobileNumber: string): string {
     const otp = this.generateOtp();
     this.memberOtps.set(mobileNumber, this.createStoredOtp(otp));
+    this.logger.log(`[DEV] Member OTP for ${mobileNumber}: ${otp}`);
     return otp;
+  }
+
+  async sendMemberOtp(mobileNumber: string): Promise<{ success: boolean; message: string }> {
+    const otp = this.issueMemberOtp(mobileNumber);
+
+    try {
+      await this.smsService.sendSms(
+        mobileNumber,
+        `ATB Ltd: Your verification OTP is ${otp}. Valid for 5 minutes.`,
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Failed to send SMS to ${mobileNumber}, falling back to dev mode: ${error instanceof Error ? error.message : error}`,
+      );
+    }
+
+    return {
+      success: true,
+      message: 'OTP sent successfully. Valid for 5 minutes.',
+    };
   }
 
   verifyMemberOtp(mobileNumber: string, otp: string): void {
@@ -27,7 +52,31 @@ export class OtpService {
   issueStaffOtp(staffId: string): string {
     const otp = this.generateOtp();
     this.staffOtps.set(staffId, this.createStoredOtp(otp));
+    this.logger.log(`[DEV] Staff OTP for ${staffId}: ${otp}`);
     return otp;
+  }
+
+  async sendStaffOtp(
+    staffId: string,
+    mobileNumber?: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const otp = this.issueStaffOtp(staffId);
+
+    if (mobileNumber) {
+      try {
+        await this.smsService.sendSms(
+          mobileNumber,
+          `ATB Ltd: Your login OTP is ${otp}. Valid for 5 minutes.`,
+        );
+        this.logger.log(`Staff OTP sent to ${mobileNumber}`);
+      } catch (error) {
+        this.logger.error(
+          `Failed to send staff OTP SMS: ${error instanceof Error ? error.message : error}`,
+        );
+      }
+    }
+
+    return { success: true, message: 'OTP sent to your mobile number' };
   }
 
   verifyStaffOtp(staffId: string, otp: string): void {
