@@ -1,32 +1,22 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  ForbiddenException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
-import { Membership } from '../../entities/membership.entity';
 import { Payment, PaymentStatus } from '../../entities/payment.entity';
 import { Claim } from '../../entities/claim.entity';
 import { ClaimStatus } from '../../common/enums/claim-status.enum';
 import { Agent } from '../../entities/agent.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
-import { CommissionService } from '../commission/commission.service';
-import { SmsService } from '../sms/sms.service';
-import { NotificationService } from '../notification/notification.service';
-import { NotificationType } from '../../entities/notification.entity';
+import { PaymentVerificationService } from './payment-verification.service';
+
 @Injectable()
 export class AdminService {
   private readonly logger = new Logger(AdminService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(Membership)
-    private readonly membershipRepository: Repository<Membership>,
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
     @InjectRepository(Claim)
@@ -35,9 +25,7 @@ export class AdminService {
     private readonly agentRepository: Repository<Agent>,
     @InjectRepository(AuditLog)
     private readonly auditLogRepository: Repository<AuditLog>,
-    private readonly commissionService: CommissionService,
-    private readonly smsService: SmsService,
-    private readonly notificationService: NotificationService,
+    private readonly paymentVerificationService: PaymentVerificationService,
   ) {}
 
   /**
@@ -63,7 +51,6 @@ export class AdminService {
     };
     agents: { total: number; active: number };
   }> {
-    // Member stats
     const totalMembers = await this.userRepository.count({
       where: { role: UserRole.MEMBER },
     });
@@ -82,7 +69,6 @@ export class AdminService {
       },
     });
 
-    // Payment stats
     const totalCollection = await this.paymentRepository
       .createQueryBuilder('payment')
       .select('SUM(payment.amount)', 'total')
@@ -103,7 +89,6 @@ export class AdminService {
       },
     });
 
-    // Claim stats
     const submittedClaims = await this.claimRepository.count();
     const pendingClaims = await this.claimRepository.count({
       where: { status: ClaimStatus.SUBMITTED },
@@ -115,7 +100,6 @@ export class AdminService {
       where: { status: ClaimStatus.REJECTED },
     });
 
-    // Agent stats
     const totalAgents = await this.agentRepository.count();
     const activeAgents = await this.agentRepository.count({
       where: { isActive: true },
@@ -147,197 +131,24 @@ export class AdminService {
   }
 
   /**
-   * Get all payments (with filters)
+   * Delegated: Get all payments (with filters)
    */
-  async getPayments(
-    status?: PaymentStatus,
-    page = 1,
-    limit = 20,
-  ): Promise<{
-    payments: Payment[];
-    total: number;
-    page: number;
-    totalPages: number;
-  }> {
-    const pageNum = Number(page) || 1;
-    const limitNum = Number(limit) || 20;
-    const where: FindOptionsWhere<Payment> = {};
-    if (status) where.status = status;
-
-    const [payments, total] = await this.paymentRepository.findAndCount({
-      where,
-      relations: ['user'],
-      order: { createdAt: 'DESC' },
-      skip: (pageNum - 1) * limitNum,
-      take: limitNum,
-    });
-
-    return {
-      payments,
-      total,
-      page,
-      totalPages: Math.ceil(total / limitNum),
-    };
+  async getPayments(status?: PaymentStatus, page = 1, limit = 20) {
+    return this.paymentVerificationService.getPayments(status, page, limit);
   }
 
   /**
-   * Verify a payment (Maker role in Maker-Checker)
+   * Delegated: Verify a payment
    */
-  async verifyPayment(
-    paymentId: string,
-    adminUserId: string,
-    adminRole: string,
-  ): Promise<{
-    success: boolean;
-    message: string;
-    requiresFinalApproval?: boolean;
-  }> {
-    const payment = await this.paymentRepository.findOne({
-      where: { id: paymentId },
-      relations: ['user'],
-    });
-
-    if (!payment) {
-      throw new NotFoundException('Payment not found');
-    }
-
-    if (payment.status !== PaymentStatus.PENDING) {
-      if (payment.status === PaymentStatus.VERIFIED && adminRole === UserRole.SUPER_ADMIN) {
-        return { success: true, message: 'Payment was already authorized' };
-      }
-      throw new BadRequestException(`Payment is already ${payment.status}`);
-    }
-
-    if (adminRole === UserRole.SUPER_ADMIN) {
-      // Claim the pending row atomically so concurrent authorizations cannot activate twice.
-      const authorization = await this.paymentRepository.update(
-        { id: paymentId, status: PaymentStatus.PENDING },
-        {
-          status: PaymentStatus.VERIFIED,
-          verifiedBy: adminUserId,
-          verifiedAt: new Date(),
-        },
-      );
-
-      if (!authorization.affected) {
-        const currentPayment = await this.paymentRepository.findOne({ where: { id: paymentId } });
-        if (currentPayment?.status === PaymentStatus.VERIFIED) {
-          return { success: true, message: 'Payment was already authorized' };
-        }
-        throw new BadRequestException('Payment authorization could not be completed');
-      }
-
-      payment.status = PaymentStatus.VERIFIED;
-      payment.verifiedBy = adminUserId;
-      payment.verifiedAt = new Date();
-
-      await this.activateMembership(payment, adminUserId);
-
-      return {
-        success: true,
-        message: 'Payment authorized and membership activated',
-      };
-    } else {
-      // Admin (Maker) — marks as reviewed, awaits SA
-      payment.verifiedBy = adminUserId;
-      payment.verifiedAt = new Date();
-      payment.notes = 'Reviewed by Admin. Awaiting Super Admin authorization.';
-      await this.paymentRepository.save(payment);
-
-      // Notify SA
-      await this.notificationService.notifyRoles(
-        [UserRole.SUPER_ADMIN],
-        NotificationType.PAYMENT_VERIFIED,
-        'Payment Awaiting Authorization',
-        `${payment.user.fullName} (${payment.user.memberId}) - ${payment.amount} BDT reviewed by Admin. Needs SA authorization.`,
-        '/admin',
-      );
-
-      return {
-        success: true,
-        message: 'Payment reviewed. Awaiting Super Admin authorization.',
-        requiresFinalApproval: true,
-      };
-    }
+  async verifyPayment(paymentId: string, adminUserId: string, adminRole: string) {
+    return this.paymentVerificationService.verifyPayment(paymentId, adminUserId, adminRole);
   }
 
-  private async activateMembership(payment: Payment, adminUserId: string): Promise<void> {
-    // Activate membership
-    const membership = await this.membershipRepository.findOne({
-      where: { userId: payment.userId },
-    });
-
-    if (membership) {
-      const today = new Date();
-      membership.isPaymentVerified = true;
-      membership.isActive = true;
-      membership.membershipStartDate = today;
-      const endDate = new Date(today);
-      endDate.setFullYear(endDate.getFullYear() + 1);
-      membership.membershipEndDate = endDate;
-      await this.membershipRepository.save(membership);
-    }
-
-    // Activate user
-    if (payment.user) {
-      payment.user.isActive = true;
-      await this.userRepository.save(payment.user);
-    }
-
-    // Notify user
-    await this.notificationService.notifyUser(
-      payment.userId,
-      NotificationType.PAYMENT_VERIFIED,
-      'Membership Activated',
-      `Your membership has been activated. Your Member ID is ${payment.user.memberId}.`,
-      '/dashboard',
-    );
-
-    // Notify admins/owners
-    await this.notificationService.notifyRoles(
-      [UserRole.ADMIN, UserRole.OWNER],
-      NotificationType.PAYMENT_VERIFIED,
-      'Payment Authorized',
-      `Payment of ${payment.amount} BDT from ${payment.user.fullName} authorized by SA.`,
-      '/admin',
-    );
-
-    // Send SMS
-    if (payment.user?.mobileNumber) {
-      try {
-        await this.smsService.sendMembershipActivationSms(payment.user.mobileNumber, {
-          fullName: payment.user.fullName,
-          memberId: payment.user.memberId,
-        });
-      } catch (error) {
-        this.logger.error('Failed to send SMS:', error.message);
-      }
-    }
-
-    // Create commission
-    if (payment.user?.referralId) {
-      try {
-        await this.commissionService.createRegistrationCommission(
-          payment.userId,
-          Number(payment.amount),
-        );
-      } catch (error) {
-        this.logger.error('Failed to create commission:', error.message);
-      }
-    }
-
-    // Audit log
-    await this.auditLogRepository.save({
-      action: 'PAYMENT_VERIFIED',
-      entity: 'Payment',
-      entityId: payment.id,
-      performedById: adminUserId,
-      newValue: {
-        status: 'verified',
-        amount: Number(payment.amount),
-        memberId: payment.user?.memberId,
-      },
-    });
+  /**
+   * Delegated: Get pending payments
+   */
+  async getPendingPayments(userRole?: string) {
+    return this.paymentVerificationService.getPendingPayments(userRole);
   }
 
   /**
@@ -370,39 +181,9 @@ export class AdminService {
   }
 
   /**
-   * Get pending payments that need verification
-   */
-  /**
-   * Get pending payments based on reviewer role
-   * Admin sees: fresh pending payments (not yet reviewed)
-   * SA sees: payments reviewed by Admin, awaiting SA authorization
-   */
-  async getPendingPayments(userRole?: string): Promise<Payment[]> {
-    if (userRole === UserRole.SUPER_ADMIN) {
-      // SA sees payments reviewed by Admin (has notes)
-      return this.paymentRepository.find({
-        where: {
-          status: PaymentStatus.PENDING,
-          notes: 'Reviewed by Admin. Awaiting Super Admin authorization.',
-        },
-        relations: ['user'],
-        order: { createdAt: 'ASC' },
-      });
-    } else {
-      // Admin sees fresh pending payments (no notes yet)
-      return this.paymentRepository.find({
-        where: { status: PaymentStatus.PENDING, notes: null },
-        relations: ['user'],
-        order: { createdAt: 'ASC' },
-      });
-    }
-  }
-
-  /**
-   * Get dashboard stats for Owner/Agent (their own data only)
+   * Get dashboard stats for Owner/Agent
    */
   async getAgentDashboardStats(userId: string): Promise<any> {
-    // Find the agent record for this user
     const agent = await this.agentRepository.findOne({
       where: { userId, isActive: true },
     });
@@ -414,7 +195,6 @@ export class AdminService {
       };
     }
 
-    // Count members referred by this agent
     const totalMembers = await this.userRepository.count({
       where: { referralId: agent.agentCode, role: UserRole.MEMBER },
     });
@@ -427,7 +207,6 @@ export class AdminService {
       },
     });
 
-    // Count sub-agents (for owners)
     const subAgents = await this.agentRepository.count({
       where: { parentAgentId: agent.id },
     });

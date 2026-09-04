@@ -1,17 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { User } from '../../entities/user.entity';
-import { Membership } from '../../entities/membership.entity';
 import { Payment, PaymentStatus } from '../../entities/payment.entity';
 import { Claim } from '../../entities/claim.entity';
 import { Agent } from '../../entities/agent.entity';
 import { AuditLog } from '../../entities/audit-log.entity';
 import { UserRole } from '../../common/enums/user-role.enum';
-import { CommissionService } from '../commission/commission.service';
-import { SmsService } from '../sms/sms.service';
-import { NotificationService } from '../notification/notification.service';
+import { PaymentVerificationService } from './payment-verification.service';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -21,11 +17,6 @@ describe('AdminService', () => {
     findOne: jest.fn(),
     save: jest.fn(),
     find: jest.fn(),
-  };
-
-  const mockMembershipRepository = {
-    findOne: jest.fn(),
-    save: jest.fn(),
   };
 
   const mockPaymentRepository = {
@@ -57,17 +48,10 @@ describe('AdminService', () => {
     findAndCount: jest.fn(),
   };
 
-  const mockCommissionService = {
-    createRegistrationCommission: jest.fn(),
-  };
-
-  const mockSmsService = {
-    sendMembershipActivationSms: jest.fn(),
-  };
-
-  const mockNotificationService = {
-    notifyUser: jest.fn(),
-    notifyRoles: jest.fn(),
+  const mockPaymentVerificationService = {
+    getPayments: jest.fn(),
+    verifyPayment: jest.fn(),
+    getPendingPayments: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -75,166 +59,85 @@ describe('AdminService', () => {
       providers: [
         AdminService,
         { provide: getRepositoryToken(User), useValue: mockUserRepository },
-        { provide: getRepositoryToken(Membership), useValue: mockMembershipRepository },
         { provide: getRepositoryToken(Payment), useValue: mockPaymentRepository },
         { provide: getRepositoryToken(Claim), useValue: mockClaimRepository },
         { provide: getRepositoryToken(Agent), useValue: mockAgentRepository },
         { provide: getRepositoryToken(AuditLog), useValue: mockAuditLogRepository },
-        { provide: CommissionService, useValue: mockCommissionService },
-        { provide: SmsService, useValue: mockSmsService },
-        { provide: NotificationService, useValue: mockNotificationService },
+        {
+          provide: PaymentVerificationService,
+          useValue: mockPaymentVerificationService,
+        },
       ],
     }).compile();
 
     service = module.get<AdminService>(AdminService);
 
     jest.clearAllMocks();
-    mockUserRepository.count.mockReset();
-    mockUserRepository.findOne.mockReset();
-    mockUserRepository.save.mockReset();
-    mockUserRepository.find.mockReset();
-    mockMembershipRepository.findOne.mockReset();
-    mockMembershipRepository.save.mockReset();
-    mockPaymentRepository.findOne.mockReset();
-    mockPaymentRepository.find.mockReset();
-    mockPaymentRepository.update.mockReset();
-    mockPaymentRepository.save.mockReset();
-    mockPaymentRepository.count.mockReset();
-    mockPaymentRepository.findAndCount.mockReset();
-    mockClaimRepository.count.mockReset();
-    mockAgentRepository.findOne.mockReset();
-    mockAgentRepository.count.mockReset();
-    mockAuditLogRepository.save.mockReset();
-    mockAuditLogRepository.findAndCount.mockReset();
-    mockCommissionService.createRegistrationCommission.mockReset();
-    mockSmsService.sendMembershipActivationSms.mockReset();
-    mockNotificationService.notifyUser.mockReset();
-    mockNotificationService.notifyRoles.mockReset();
   });
 
-  describe('verifyPayment', () => {
-    it('should throw NotFoundException for invalid payment', async () => {
-      mockPaymentRepository.findOne.mockResolvedValueOnce(null);
+  describe('getDashboardStats', () => {
+    it('should aggregate counts correctly', async () => {
+      mockUserRepository.count.mockResolvedValue(10);
+      mockPaymentRepository.count.mockResolvedValue(5);
+      mockClaimRepository.count.mockResolvedValue(2);
+      mockAgentRepository.count.mockResolvedValue(4);
 
-      await expect(
-        service.verifyPayment('invalid-id', 'admin-uuid', UserRole.ADMIN),
-      ).rejects.toThrow(NotFoundException);
+      const stats = await service.getDashboardStats();
+
+      expect(stats.members.total).toBe(10);
+      expect(stats.payments.totalCollection).toBe(5000);
+      expect(stats.agents.total).toBe(4);
+    });
+  });
+
+  describe('Delegation to PaymentVerificationService', () => {
+    it('should delegate getPayments', async () => {
+      const mockResult = { payments: [], total: 0, page: 1, totalPages: 0 };
+      mockPaymentVerificationService.getPayments.mockResolvedValueOnce(mockResult);
+
+      const result = await service.getPayments(PaymentStatus.PENDING, 1, 20);
+
+      expect(mockPaymentVerificationService.getPayments).toHaveBeenCalledWith(
+        PaymentStatus.PENDING,
+        1,
+        20,
+      );
+      expect(result).toBe(mockResult);
     });
 
-    it('should throw BadRequestException for already verified payment', async () => {
-      mockPaymentRepository.findOne.mockResolvedValueOnce({
-        id: 'payment-1',
-        status: PaymentStatus.VERIFIED,
-      });
-
-      await expect(
-        service.verifyPayment('payment-1', 'admin-uuid', UserRole.ADMIN),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('should mark as reviewed when Admin verifies (Maker)', async () => {
-      const payment = {
-        id: 'payment-1',
-        userId: 'user-1',
-        amount: 1000,
-        status: PaymentStatus.PENDING,
-        notes: null,
-        user: {
-          id: 'user-1',
-          memberId: 'ATB-26-ME-01',
-          fullName: 'Test Member',
-          mobileNumber: '01712345678',
-          referralId: null,
-        },
-      };
-
-      mockPaymentRepository.findOne.mockResolvedValueOnce(payment);
-      mockPaymentRepository.save.mockResolvedValue({
-        ...payment,
-        notes: 'Reviewed by Admin. Awaiting Super Admin authorization.',
-      });
+    it('should delegate verifyPayment', async () => {
+      const mockResponse = { success: true, message: 'Verified' };
+      mockPaymentVerificationService.verifyPayment.mockResolvedValueOnce(mockResponse);
 
       const result = await service.verifyPayment('payment-1', 'admin-uuid', UserRole.ADMIN);
 
-      expect(result.requiresFinalApproval).toBe(true);
-      expect(result.message).toContain('Awaiting Super Admin authorization');
+      expect(mockPaymentVerificationService.verifyPayment).toHaveBeenCalledWith(
+        'payment-1',
+        'admin-uuid',
+        UserRole.ADMIN,
+      );
+      expect(result).toEqual(mockResponse);
     });
 
-    it('should activate membership when SA authorizes (Checker)', async () => {
-      const payment = {
-        id: 'payment-1',
-        userId: 'user-1',
-        amount: 1000,
-        status: PaymentStatus.PENDING,
-        user: {
-          id: 'user-1',
-          memberId: 'ATB-26-ME-01',
-          fullName: 'Test Member',
-          mobileNumber: '01712345678',
-          referralId: null,
-        },
-      };
-
-      mockPaymentRepository.findOne.mockResolvedValueOnce(payment);
-      mockPaymentRepository.update.mockResolvedValueOnce({ affected: 1 });
-      mockPaymentRepository.save.mockResolvedValue({
-        ...payment,
-        status: PaymentStatus.VERIFIED,
-      });
-      mockMembershipRepository.findOne.mockResolvedValueOnce({
-        userId: 'user-1',
-        isPaymentVerified: false,
-        isActive: false,
-      });
-      mockMembershipRepository.save.mockResolvedValue({});
-      mockUserRepository.save.mockResolvedValue({ ...payment.user, isActive: true });
-      mockNotificationService.notifyUser.mockResolvedValue(undefined);
-      mockNotificationService.notifyRoles.mockResolvedValue(undefined);
-      mockSmsService.sendMembershipActivationSms.mockResolvedValue(undefined);
-      mockAuditLogRepository.save.mockResolvedValue(undefined);
-
-      const result = await service.verifyPayment('payment-1', 'sa-uuid', UserRole.SUPER_ADMIN);
-
-      expect(result.success).toBe(true);
-      expect(result.message).toContain('Payment authorized');
-    });
-
-    it('should make concurrent authorization idempotent', async () => {
-      const payment = {
-        id: 'payment-1',
-        status: PaymentStatus.PENDING,
-        userId: 'user-1',
-      };
-
-      mockPaymentRepository.findOne
-        .mockResolvedValueOnce(payment)
-        .mockResolvedValueOnce({ ...payment, status: PaymentStatus.VERIFIED });
-      mockPaymentRepository.update.mockResolvedValueOnce({ affected: 0 });
-
-      const result = await service.verifyPayment('payment-1', 'sa-uuid', UserRole.SUPER_ADMIN);
-
-      expect(result).toEqual({
-        success: true,
-        message: 'Payment was already authorized',
-      });
-      expect(mockMembershipRepository.save).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('getPendingPayments', () => {
-    it('should return fresh pending payments for Admin', async () => {
-      mockPaymentRepository.find.mockResolvedValueOnce([]);
+    it('should delegate getPendingPayments for Admin', async () => {
+      mockPaymentVerificationService.getPendingPayments.mockResolvedValueOnce([]);
 
       const result = await service.getPendingPayments(UserRole.ADMIN);
 
+      expect(mockPaymentVerificationService.getPendingPayments).toHaveBeenCalledWith(
+        UserRole.ADMIN,
+      );
       expect(result).toEqual([]);
     });
 
-    it('should return reviewed payments for SA', async () => {
-      mockPaymentRepository.find.mockResolvedValueOnce([]);
+    it('should delegate getPendingPayments for Super Admin', async () => {
+      mockPaymentVerificationService.getPendingPayments.mockResolvedValueOnce([]);
 
       const result = await service.getPendingPayments(UserRole.SUPER_ADMIN);
 
+      expect(mockPaymentVerificationService.getPendingPayments).toHaveBeenCalledWith(
+        UserRole.SUPER_ADMIN,
+      );
       expect(result).toEqual([]);
     });
   });
@@ -266,6 +169,18 @@ describe('AdminService', () => {
       expect(result.members.active).toBe(7);
       expect(result.commissions.totalEarned).toBe(500);
       expect(result.agents.total).toBe(3);
+    });
+  });
+
+  describe('getAuditLogs', () => {
+    it('should return paginated audit logs', async () => {
+      mockAuditLogRepository.findAndCount.mockResolvedValueOnce([[], 0]);
+
+      const result = await service.getAuditLogs(1, 50);
+
+      expect(result.logs).toEqual([]);
+      expect(result.total).toBe(0);
+      expect(result.totalPages).toBe(0);
     });
   });
 });

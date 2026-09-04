@@ -12,6 +12,7 @@ import { CommissionModule } from '../commission/commission.module';
 import { FraudService } from './fraud.service';
 import { SmsModule } from '../sms/sms.module';
 import { NotificationModule } from '../notification/notification.module';
+import { PaymentVerificationService } from './payment-verification.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Membership, Payment, Claim, Agent, AuditLog]),
@@ -20,7 +21,7 @@ import { NotificationModule } from '../notification/notification.module';
     NotificationModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService, FraudService],
-  exports: [AdminService],
+  providers: [AdminService, PaymentVerificationService, FraudService],
+  exports: [AdminService, PaymentVerificationService],
 })
 export class AdminModule {}
