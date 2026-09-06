@@ -5,12 +5,21 @@ describe('SmsService', () => {
   let service: SmsService;
 
   beforeEach(() => {
+    delete process.env.SMS_DISABLED;
     global.fetch = fetchMock;
     service = new SmsService();
   });
 
   afterEach(() => {
+    delete process.env.SMS_DISABLED;
     jest.clearAllMocks();
+  });
+
+  it('skips the provider when SMS is disabled for an isolated environment', async () => {
+    process.env.SMS_DISABLED = 'true';
+
+    await expect(service.sendSms('01712345678', 'Membership activated')).resolves.toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('sends a formatted Bangladesh number when the provider reports success', async () => {

@@ -12,6 +12,10 @@ export class SmsService {
   }
 
   async sendSms(to: string, message: string): Promise<boolean> {
+    if (process.env.SMS_DISABLED === 'true') {
+      return false;
+    }
+
     try {
       const formattedNumber = this.formatBangladeshNumber(to);
 
