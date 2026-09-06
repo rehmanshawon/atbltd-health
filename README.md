@@ -229,7 +229,10 @@ npm run typecheck
   race conditions.
 - Sentry captures all unhandled 5xx exceptions and operational faults.
 - Prometheus exposes application telemetry and runtime metrics.
-- Jest enforces minimum 70% line coverage thresholds.
+- Backend Jest enforces minimum 70% coverage for branches, functions, lines, and
+  statements. Frontend Jest currently enforces minimum thresholds of 26% for
+  branches, 24% for functions, 29% for lines, and 29% for statements while the
+  frontend suite is expanded.
 - Financial approval follows the Maker-Checker workflow.
 - Production deploys require passing CI and automated post-deploy health validation.
 

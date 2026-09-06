@@ -21,6 +21,7 @@ module.exports = {
   ],
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
+  setupFiles: ['<rootDir>/../test/unit-network-guard.js'],
   coverageThreshold: {
     global: {
       branches: 70,
