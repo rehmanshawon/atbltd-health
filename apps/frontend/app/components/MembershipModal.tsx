@@ -49,7 +49,7 @@ interface MembershipModalProps {
     member: string;
     cardNote: string;
     membershipId: string;
-    tempPassword: string;
+    tempPasswordLabel: string;
     benefitsAvailable: string;
     done: string;
     previewCode: string;
