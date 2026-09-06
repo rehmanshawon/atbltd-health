@@ -140,6 +140,46 @@ describe('AgentApprovalService', () => {
         BadRequestException,
       );
     });
+
+    it('should allow SA to approve an owner without a stored password', async () => {
+      const agent = {
+        id: 'agent-1',
+        agentCode: 'ATB-26-AG-3',
+        approvalStatus: AgentApprovalStatus.APPROVED_BY_ADMIN,
+        isActive: false,
+        user: {
+          role: UserRole.OWNER,
+          mobileNumber: '01712345678',
+          isActive: false,
+        },
+      };
+
+      mockAgentRepository.findOne.mockResolvedValueOnce(agent);
+      mockAgentRepository.save.mockImplementation(async (value) => value);
+      mockUserRepository.save.mockResolvedValue(agent.user);
+      mockSmsService.sendSms.mockResolvedValue(undefined);
+      mockNotificationService.notifyRoles.mockResolvedValue(undefined);
+      mockAuditLogRepository.save.mockResolvedValue(undefined);
+
+      const result = await service.approveAgent('agent-1', 'sa-1', UserRole.SUPER_ADMIN);
+
+      expect(result.approvalStatus).toBe(AgentApprovalStatus.ACTIVE);
+      expect(mockSmsService.sendSms).toHaveBeenCalledWith(
+        '01712345678',
+        expect.stringContaining('OWNER ID'),
+      );
+    });
+
+    it('should reject approval by an unsupported role', async () => {
+      mockAgentRepository.findOne.mockResolvedValueOnce({
+        id: 'agent-1',
+        approvalStatus: AgentApprovalStatus.PENDING,
+      });
+
+      await expect(service.approveAgent('agent-1', 'owner-1', UserRole.OWNER)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
   });
 
   describe('requestDeactivation', () => {
@@ -198,6 +238,60 @@ describe('AgentApprovalService', () => {
         service.requestDeactivation('agent-1', 'owner-agent-uuid', UserRole.OWNER),
       ).rejects.toThrow(ForbiddenException);
     });
+
+    it('should allow Admin to request deactivation', async () => {
+      const agent = { id: 'agent-1', approvalStatus: AgentApprovalStatus.ACTIVE };
+      mockAgentRepository.findOne.mockResolvedValueOnce(agent);
+      mockAgentRepository.save.mockImplementation(async (value) => value);
+
+      const result = await service.requestDeactivation('agent-1', 'admin-1', UserRole.ADMIN);
+
+      expect(result.approvalStatus).toBe(AgentApprovalStatus.DEACTIVATION_PENDING);
+    });
+
+    it('should reject deactivation by an unsupported role', async () => {
+      mockAgentRepository.findOne.mockResolvedValueOnce({ id: 'agent-1' });
+
+      await expect(
+        service.requestDeactivation('agent-1', 'member-1', UserRole.MEMBER),
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('approveDeactivation', () => {
+    it('should allow Admin to approve pending deactivation', async () => {
+      const agent = { id: 'agent-1', approvalStatus: AgentApprovalStatus.DEACTIVATION_PENDING };
+      mockAgentRepository.findOne.mockResolvedValueOnce(agent);
+      mockAgentRepository.save.mockImplementation(async (value) => value);
+
+      const result = await service.approveDeactivation('agent-1', 'admin-1', UserRole.ADMIN);
+
+      expect(result.approvalStatus).toBe(AgentApprovalStatus.DEACTIVATION_APPROVED_BY_ADMIN);
+    });
+
+    it('should reject deactivation approval by an unsupported role', async () => {
+      mockAgentRepository.findOne.mockResolvedValueOnce({ id: 'agent-1' });
+
+      await expect(
+        service.approveDeactivation('agent-1', 'owner-1', UserRole.OWNER),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should deactivate an agent without a linked user as SA', async () => {
+      const agent = {
+        id: 'agent-1',
+        approvalStatus: AgentApprovalStatus.DEACTIVATION_APPROVED_BY_ADMIN,
+        isActive: true,
+        user: null,
+      };
+      mockAgentRepository.findOne.mockResolvedValueOnce(agent);
+      mockAgentRepository.save.mockImplementation(async (value) => value);
+
+      const result = await service.approveDeactivation('agent-1', 'sa-1', UserRole.SUPER_ADMIN);
+
+      expect(result.approvalStatus).toBe(AgentApprovalStatus.DEACTIVATED);
+      expect(result.isActive).toBe(false);
+    });
   });
 
   describe('declineAgent', () => {
@@ -228,6 +322,23 @@ describe('AgentApprovalService', () => {
         expect.objectContaining({ action: 'AGENT_DECLINED', performedById: 'sa-1' }),
       );
     });
+
+    it('should reject a decline by a non-Super Admin', async () => {
+      await expect(service.declineAgent('agent-1', 'admin-1', UserRole.ADMIN)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('should reject declining an agent in the wrong state', async () => {
+      mockAgentRepository.findOne.mockResolvedValueOnce({
+        id: 'agent-1',
+        approvalStatus: AgentApprovalStatus.ACTIVE,
+      });
+
+      await expect(service.declineAgent('agent-1', 'sa-1', UserRole.SUPER_ADMIN)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
   });
 
   describe('declineDeactivation', () => {
@@ -253,6 +364,23 @@ describe('AgentApprovalService', () => {
         expect.objectContaining({ action: 'AGENT_DEACTIVATION_DECLINED' }),
       );
     });
+
+    it('should reject declining deactivation by a non-Super Admin', async () => {
+      await expect(
+        service.declineDeactivation('agent-1', 'admin-1', UserRole.ADMIN),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should reject declining deactivation in the wrong state', async () => {
+      mockAgentRepository.findOne.mockResolvedValueOnce({
+        id: 'agent-1',
+        approvalStatus: AgentApprovalStatus.ACTIVE,
+      });
+
+      await expect(
+        service.declineDeactivation('agent-1', 'sa-1', UserRole.SUPER_ADMIN),
+      ).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('getPendingApprovals', () => {
@@ -274,6 +402,22 @@ describe('AgentApprovalService', () => {
 
       expect(result.pendingCreates).toEqual([]);
       expect(result.pendingDeactivations).toEqual([]);
+    });
+
+    it('should return empty queries for unsupported roles', async () => {
+      mockAgentRepository.find.mockResolvedValueOnce([]);
+      mockAgentRepository.find.mockResolvedValueOnce([]);
+
+      await service.getPendingApprovals(UserRole.MEMBER);
+
+      expect(mockAgentRepository.find).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ where: [] }),
+      );
+      expect(mockAgentRepository.find).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ where: [] }),
+      );
     });
   });
 });

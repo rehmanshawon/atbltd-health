@@ -371,5 +371,97 @@ describe('ClaimService', () => {
         }),
       );
     });
+
+    it.each([
+      [ClaimStatus.REJECTED, { rejectionReason: 'Incomplete documents' }],
+      [ClaimStatus.DOCUMENT_REQUIRED, undefined],
+      [ClaimStatus.HOSPITAL_VERIFICATION, undefined],
+    ])('should transition a claim to %s', async (newStatus, data) => {
+      const claim = {
+        id: 'claim-1',
+        memberId: 'member-1',
+        status: ClaimStatus.UNDER_REVIEW,
+        claimedAmount: 5000,
+      };
+      mockClaimRepository.findOne
+        .mockResolvedValueOnce(claim)
+        .mockResolvedValueOnce({ ...claim, member: null });
+      mockClaimRepository.save.mockImplementation(async (value) => value);
+      mockNotificationService.notifyUser.mockResolvedValue(undefined);
+      mockAuditLogRepository.save.mockResolvedValue(undefined);
+
+      const result = await service.updateClaimStatus(
+        'claim-1',
+        newStatus,
+        'admin-1',
+        UserRole.ADMIN,
+        data,
+      );
+
+      expect(result.status).toBe(newStatus);
+      if (newStatus === ClaimStatus.REJECTED) {
+        expect(result.rejectionReason).toBe('Incomplete documents');
+      }
+    });
+
+    it('should use claimed amount when disbursing without a membership or approved amount', async () => {
+      const claim = {
+        id: 'claim-1',
+        memberId: 'member-1',
+        status: ClaimStatus.APPROVED,
+        claimedAmount: 5000,
+        approvedAmount: 0,
+        isDisbursed: false,
+      };
+      mockClaimRepository.findOne
+        .mockResolvedValueOnce(claim)
+        .mockResolvedValueOnce({ ...claim, member: null });
+      mockClaimRepository.save.mockImplementation(async (value) => value);
+      mockPaymentRepository.save.mockResolvedValue({ id: 'payment-1' });
+      mockMembershipRepository.findOne.mockResolvedValueOnce(null);
+      mockNotificationService.notifyUser.mockResolvedValue(undefined);
+      mockAuditLogRepository.save.mockResolvedValue(undefined);
+
+      const result = await service.updateClaimStatus(
+        'claim-1',
+        ClaimStatus.PAYMENT_PROCESSED,
+        'sa-1',
+        UserRole.SUPER_ADMIN,
+      );
+
+      expect(result.isDisbursed).toBe(true);
+      expect(mockPaymentRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({ amount: 5000 }),
+      );
+      expect(mockMembershipRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('should reject transitions from a terminal claim status', async () => {
+      mockClaimRepository.findOne.mockResolvedValueOnce({
+        id: 'claim-1',
+        status: ClaimStatus.REJECTED,
+      });
+
+      await expect(
+        service.updateClaimStatus('claim-1', ClaimStatus.UNDER_REVIEW, 'admin-1', UserRole.ADMIN),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('getClaimStats', () => {
+    it('should aggregate claim statuses and disbursed amounts', async () => {
+      mockClaimRepository.find.mockResolvedValueOnce([
+        { status: ClaimStatus.APPROVED, isDisbursed: true, approvedAmount: 4000 },
+        { status: ClaimStatus.PAYMENT_PROCESSED, isDisbursed: true, claimedAmount: 2500 },
+        { status: ClaimStatus.SUBMITTED, isDisbursed: false, claimedAmount: 9000 },
+      ]);
+
+      const result = await service.getClaimStats();
+
+      expect(result.total).toBe(3);
+      expect(result.byStatus[ClaimStatus.APPROVED]).toBe(1);
+      expect(result.byStatus[ClaimStatus.PAYMENT_PROCESSED]).toBe(1);
+      expect(result.totalDisbursed).toBe(6500);
+    });
   });
 });
