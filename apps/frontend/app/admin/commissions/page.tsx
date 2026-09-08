@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../lib/auth-context';
+import { logger } from '../../lib/logger';
 import { Banknote, Loader2, CheckCircle2, XCircle, Clock, TrendingUp } from 'lucide-react';
 import AdminTable from '../components/AdminTable';
 
@@ -84,7 +85,10 @@ export default function CommissionsPage() {
         totalPending: earned - paid,
       });
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to load commissions', {
+        endpoint: '/commissions',
+        error: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setIsLoading(false);
     }
@@ -118,6 +122,10 @@ export default function CommissionsPage() {
       setActionMsg({ type: 'success', text: 'Payment confirmed' });
       loadCommissions();
     } catch (err: unknown) {
+      logger.error('Failed to confirm payment', {
+        endpoint: `/commissions/${id}/confirm-payment`,
+        error: err instanceof Error ? err.message : String(err),
+      });
       setActionMsg({
         type: 'error',
         text: (err instanceof Error ? err.message : String(err)) || 'Confirmation failed',
@@ -142,8 +150,15 @@ export default function CommissionsPage() {
       if (!res.ok) throw new Error('Failed');
       setActionMsg({ type: 'success', text: 'Commission declined' });
       loadCommissions();
-    } catch {
-      setActionMsg({ type: 'error', text: 'Decline failed' });
+    } catch (err: unknown) {
+      logger.error('Failed to decline commission', {
+        endpoint: `/commissions/${id}/decline`,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      setActionMsg({
+        type: 'error',
+        text: (err instanceof Error ? err.message : String(err)) || 'Decline failed',
+      });
     }
     setTimeout(() => setActionMsg(null), 3000);
   };
