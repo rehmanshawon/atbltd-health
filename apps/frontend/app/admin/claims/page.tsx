@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import ClaimReviewModal from './ClaimReviewModal';
 import AdminTable from '../components/AdminTable';
-import { useAdminClaims } from './useAdminClaims';
+import { useAdminClaims, AdminClaim } from './useAdminClaims';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
@@ -74,27 +74,27 @@ interface ClaimDocument {
   createdAt: string;
 }
 
-interface Claim {
-  id: string;
-  memberId: string;
-  surgeryType: string;
-  hospitalName: string;
-  admissionDate: string;
-  claimedAmount: number;
-  approvedAmount: number | null;
-  status: string;
-  rejectionReason: string | null;
-  notes: string | null;
-  documents: string[] | null;
-  createdAt: string;
-  member?: { memberId: string; fullName: string; mobileNumber: string };
-}
+// interface Claim {
+//   id: string;
+//   memberId: string;
+//   surgeryType: string;
+//   hospitalName: string;
+//   admissionDate: string;
+//   claimedAmount: number;
+//   approvedAmount: number | null;
+//   status: string;
+//   rejectionReason: string | null;
+//   notes: string | null;
+//   documents: string[] | null;
+//   createdAt: string;
+//   member?: { memberId: string; fullName: string; mobileNumber: string };
+// }
 
 export default function AdminClaimsPage() {
   const { token } = useAuth();
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+  const [selectedClaim, setSelectedClaim] = useState<AdminClaim | null>(null);
   const [actionMsg, setActionMsg] = useState<{
     type: 'success' | 'error';
     text: string;
@@ -116,7 +116,7 @@ export default function AdminClaimsPage() {
     }
   }, [token, page, statusFilter]);
 
-  const openReview = async (claim: Claim) => {
+  const openReview = async (claim: AdminClaim) => {
     setSelectedClaim(claim);
     setReviewStatus('');
     setApprovedAmount(claim.claimedAmount?.toString() || '');

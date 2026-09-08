@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, CheckCircle2, X, FileText, Paperclip, Eye } from 'lucide-react';
+import { AdminClaim } from './useAdminClaims';
 
 interface ClaimDocument {
   id: string;
@@ -27,7 +28,7 @@ interface Claim {
 }
 
 interface ClaimReviewModalProps {
-  claim: Claim;
+  claim: AdminClaim;
   claimDocuments: ClaimDocument[];
   loadingDocuments: boolean;
   reviewStatus: string;

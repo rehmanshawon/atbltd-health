@@ -9,6 +9,7 @@ import KpiCards from './components/KpiCards';
 import ChartsSection from './components/ChartsSection';
 import PendingPaymentsTable from './components/PendingPaymentsTable';
 import AgentDashboardCards from './components/AgentDashboardCards';
+import { logger } from '../lib/logger';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
@@ -122,7 +123,9 @@ export default function AdminDashboard() {
         setPendingPayments([]);
       }
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to load admin dashboard data', {
+        error: err instanceof Error ? err.message : String(err),
+      });
       setStats(defaultStats);
       setPendingPayments([]);
     } finally {

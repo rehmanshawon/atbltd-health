@@ -18,6 +18,7 @@ const mockStrings = {
   howItWorks: 'How It Works',
   benefits: 'ATB Ltd Services',
   contact: 'Contact',
+  aboutChairman: 'About Chairman', // Add this
   becomeMember: 'Become a Member',
   learnHowItWorks: 'Learn How It Works',
   scroll: 'Scroll',
