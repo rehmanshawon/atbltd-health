@@ -24,7 +24,7 @@ const customJestConfig = {
       lines: 50,
       functions: 40,
       branches: 40,
-      statements: 45,
+      statements: 50,
     },
   },
 };

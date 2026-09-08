@@ -11,6 +11,8 @@ const claim = {
   surgeryType: 'Cardiac surgery',
   hospitalName: 'ATB Hospital',
   admissionDate: '2026-08-01',
+  operationDate: null,
+  doctorName: null,
   claimedAmount: 10000,
   approvedAmount: null,
   status: 'submitted',

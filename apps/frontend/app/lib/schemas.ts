@@ -26,3 +26,29 @@ export const ClaimDocumentSchema = z.object({
 });
 
 export const ClaimDocumentsSchema = z.array(ClaimDocumentSchema);
+
+// Claim status update payload
+export const ClaimStatusUpdateSchema = z.object({
+  status: z.enum([
+    'under_review',
+    'document_required',
+    'hospital_verification',
+    'approved',
+    'rejected',
+    'payment_processed',
+  ]),
+  approvedAmount: z.number().positive().optional(),
+  rejectionReason: z.string().min(1).optional(),
+  notes: z.string().optional(),
+});
+
+export type ClaimStatusUpdatePayload = z.infer<typeof ClaimStatusUpdateSchema>;
+
+// Claims list response
+export const ClaimsListResponseSchema = z.object({
+  claims: z.array(ClaimSchema),
+  total: z.number(),
+  totalPages: z.number(),
+});
+
+export type ClaimsListResponse = z.infer<typeof ClaimsListResponseSchema>;

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import ClaimReviewModal from './ClaimReviewModal';
 import AdminTable from '../components/AdminTable';
+import { useAdminClaims } from './useAdminClaims';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
@@ -91,12 +92,8 @@ interface Claim {
 
 export default function AdminClaimsPage() {
   const { token } = useAuth();
-  const [claims, setClaims] = useState<Claim[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [actionMsg, setActionMsg] = useState<{
     type: 'success' | 'error';
@@ -110,34 +107,14 @@ export default function AdminClaimsPage() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [reviewNotes, setReviewNotes] = useState('');
 
+  const { claims, setClaims, total, totalPages, isLoading, loadClaims, updateClaimStatus } =
+    useAdminClaims();
+
   useEffect(() => {
-    if (token) loadClaims();
-  }, [token, page, statusFilter]);
-
-  const loadClaims = async () => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (statusFilter) params.set('status', statusFilter);
-      params.set('page', page.toString());
-      params.set('limit', '15');
-
-      const res = await fetch(`${API_BASE}/claims?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      setClaims(data.claims || []);
-      setTotal(data.total || 0);
-      setTotalPages(data.totalPages || 1);
-    } catch (err) {
-      logger.error('Failed to load admin claims', {
-        endpoint: '/claims',
-        error: err instanceof Error ? err.message : String(err),
-      });
-    } finally {
-      setIsLoading(false);
+    if (token) {
+      loadClaims(page, statusFilter);
     }
-  };
+  }, [token, page, statusFilter]);
 
   const openReview = async (claim: Claim) => {
     setSelectedClaim(claim);
@@ -155,7 +132,11 @@ export default function AdminClaimsPage() {
       });
       const docs = await res.json();
       setClaimDocuments(Array.isArray(docs) ? docs : []);
-    } catch {
+    } catch (err) {
+      logger.error('Failed to load claim documents', {
+        endpoint: `/claims/${claim.id}/documents`,
+        error: err instanceof Error ? err.message : String(err),
+      });
       setClaimDocuments([]);
     } finally {
       setLoadingDocuments(false);
@@ -168,27 +149,11 @@ export default function AdminClaimsPage() {
     setActionMsg(null);
 
     try {
-      const body: any = { status: reviewStatus };
-      if (reviewStatus === 'approved') body.approvedAmount = parseFloat(approvedAmount);
-      if (reviewStatus === 'rejected') body.rejectionReason = rejectionReason;
-      if (reviewNotes) body.notes = reviewNotes;
-
-      const res = await fetch(`${API_BASE}/claims/${selectedClaim.id}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
+      const data = await updateClaimStatus(selectedClaim.id, reviewStatus, {
+        approvedAmount,
+        rejectionReason,
+        notes: reviewNotes,
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setActionMsg({ type: 'error', text: data.message || 'Update failed' });
-        setActionLoading(false);
-        return;
-      }
 
       setClaims((prev) => prev.map((c) => (c.id === selectedClaim.id ? { ...c, ...data } : c)));
 
@@ -200,14 +165,10 @@ export default function AdminClaimsPage() {
 
       setTimeout(() => {
         setActionMsg(null);
-        loadClaims();
+        loadClaims(page, statusFilter);
       }, 1500);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      logger.error('Failed to update claim status', {
-        endpoint: `/claims/${selectedClaim.id}/status`,
-        error: message,
-      });
       setActionMsg({ type: 'error', text: message || 'An error occurred' });
     } finally {
       setActionLoading(false);
