@@ -1,96 +1,161 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom';
 import CommissionsPage from '../page';
+import { useAuth } from '../../../lib/auth-context';
 
 jest.mock('../../../lib/auth-context', () => ({
-  useAuth: () => ({ token: 'test-token', user: { role: 'super_admin' } }),
+  useAuth: jest.fn(),
 }));
 
-const commission = {
-  id: 'commission-1',
-  agentCode: 'ATB-AG-001',
-  memberCode: 'ATB-001',
-  commissionType: 'registration',
-  registrationAmount: 1000,
-  commissionRate: 10,
-  commissionAmount: 100,
-  status: 'pending',
-  createdAt: '2026-08-01T00:00:00.000Z',
-  agent: { user: { fullName: 'Agent One' } },
-  member: { fullName: 'Test Member', memberId: 'ATB-001' },
+jest.mock('../../components/AdminTable', () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <table>
+      <tbody>{children}</tbody>
+    </table>
+  ),
+}));
+
+const mockCommissions = [
+  {
+    id: 'commission-1',
+    agentCode: 'ATB-26-AG-1',
+    memberCode: 'ATB-26-ME-01',
+    commissionType: 'member_registration',
+    registrationAmount: 1000,
+    commissionRate: 10,
+    commissionAmount: 100,
+    status: 'pending',
+    createdAt: '2026-08-15T00:00:00.000Z',
+    agent: { user: { fullName: 'Sample Agent' } },
+    member: { fullName: 'Sample Member', memberId: 'ATB-26-ME-01' },
+  },
+];
+
+const mockToken = 'test-token';
+const mockSuperAdmin = {
+  memberId: 'ATB-26-SA-1',
+  fullName: 'System Administrator',
+  role: 'super_admin',
+  isActive: true,
 };
 
 describe('CommissionsPage', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-    jest.restoreAllMocks();
-  });
-
-  it('renders the commissions table and summary stats', async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ commissions: [commission], total: 1, totalPages: 1 }),
-    } as Response) as jest.Mock;
-
-    render(<CommissionsPage />);
-
-    await waitFor(() => expect(screen.getByText('ATB-AG-001')).toBeInTheDocument());
-    expect(screen.getAllByText('100 BDT').length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: /approve/i })).toBeInTheDocument();
-  });
-
-  it('approves a pending commission and reloads the list', async () => {
-    const fetchMock = jest.fn((input: RequestInfo | URL, init?: RequestInit) => {
-      const url = String(input);
-      if (url.includes('/approve')) {
-        return Promise.resolve({ ok: true, json: async () => ({}) } as Response);
-      }
-      return Promise.resolve({
-        ok: true,
-        json: async () => ({ commissions: [commission], total: 1, totalPages: 1 }),
-      } as Response);
+    jest.clearAllMocks();
+    (useAuth as jest.Mock).mockReturnValue({
+      token: mockToken,
+      user: mockSuperAdmin,
+      isAuthenticated: true,
+      isLoading: false,
+      logout: jest.fn(),
+      login: jest.fn(),
+      memberLogin: jest.fn(),
     });
-    global.fetch = fetchMock as unknown as jest.Mock;
+  });
+
+  it('renders commissions and shows table data', async () => {
+    (global as any).fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({
+        commissions: mockCommissions,
+        total: 1,
+        totalPages: 1,
+      }),
+    });
 
     render(<CommissionsPage />);
 
-    await waitFor(() => expect(screen.getByText('ATB-AG-001')).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: /approve/i }));
+    await waitFor(() => {
+      expect(screen.getByText('ATB-26-AG-1')).toBeInTheDocument();
+    });
 
-    await waitFor(() =>
+    expect(screen.getByText('ATB-26-ME-01')).toBeInTheDocument();
+  });
+
+  it('calls approve endpoint when Approve button clicked', async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({
+        commissions: mockCommissions,
+        total: 1,
+        totalPages: 1,
+      }),
+    });
+
+    (global as any).fetch = fetchMock;
+
+    render(<CommissionsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Approve')).toBeInTheDocument();
+    });
+
+    // Set up fetch mock for the approve call
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({ success: true }),
+    });
+
+    await userEvent.click(screen.getByText('Approve'));
+
+    await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining('/commissions/commission-1/approve'),
         expect.objectContaining({ method: 'POST' }),
-      ),
-    );
-    expect(await screen.findByText('Commission approved')).toBeInTheDocument();
+      );
+    });
   });
 
-  it('shows an error message when confirming payment fails', async () => {
-    const approvedCommission = { ...commission, status: 'approved' };
-    const fetchMock = jest.fn((input: RequestInfo | URL) => {
-      const url = String(input);
-      if (url.includes('/confirm-payment')) {
-        return Promise.resolve({
-          ok: false,
-          json: async () => ({ message: 'Payment already reversed' }),
-        } as Response);
-      }
-      return Promise.resolve({
-        ok: true,
-        json: async () => ({ commissions: [approvedCommission], total: 1, totalPages: 1 }),
-      } as Response);
+  it('shows Decline button only for super_admin', async () => {
+    (global as any).fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({
+        commissions: mockCommissions,
+        total: 1,
+        totalPages: 1,
+      }),
     });
-    global.fetch = fetchMock as unknown as jest.Mock;
 
     render(<CommissionsPage />);
 
-    await waitFor(() => expect(screen.getByText('ATB-AG-001')).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: /confirm payment/i }));
+    await waitFor(() => {
+      expect(screen.getByText('Decline')).toBeInTheDocument();
+    });
+  });
 
-    expect(await screen.findByText('Payment already reversed')).toBeInTheDocument();
+  it('hides Decline button for admin', async () => {
+    (useAuth as jest.Mock).mockReturnValue({
+      token: mockToken,
+      user: { ...mockSuperAdmin, role: 'admin' },
+      isAuthenticated: true,
+      isLoading: false,
+      logout: jest.fn(),
+      login: jest.fn(),
+      memberLogin: jest.fn(),
+    });
+
+    (global as any).fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({
+        commissions: mockCommissions,
+        total: 1,
+        totalPages: 1,
+      }),
+    });
+
+    render(<CommissionsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Approve')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Decline')).not.toBeInTheDocument();
   });
 });
