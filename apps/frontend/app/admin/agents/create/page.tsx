@@ -197,7 +197,6 @@ export default function CreateAgentPage() {
               </div>
             ) : (
               <input
-                required
                 value={form.parentAgentCode}
                 onChange={(e) => setForm({ ...form, parentAgentCode: e.target.value })}
                 placeholder="e.g., ATB-26-OW-1"
