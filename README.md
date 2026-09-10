@@ -203,6 +203,7 @@ npm run typecheck
 | `DB_MIGRATIONS_RUN`      | Run TypeORM migrations     | No       |
 | `JWT_SECRET`             | JWT signing secret         | Yes      |
 | `SENTRY_DSN`             | Sentry error tracking DSN  | Optional |
+| `SMS_DISABLED`           | Disable outbound SMS calls | No       |
 | `GREENWEB_API_TOKEN`     | GreenWeb SMS API token     | Optional |
 | `GREENWEB_SENDER_ID`     | SMS sender ID              | Optional |
 | `BKASH_MERCHANT_NUMBER`  | bKash merchant number      | Optional |
@@ -230,9 +231,8 @@ npm run typecheck
 - Sentry captures all unhandled 5xx exceptions and operational faults.
 - Prometheus exposes application telemetry and runtime metrics.
 - Backend Jest enforces minimum 70% coverage for branches, functions, lines, and
-  statements. Frontend Jest currently enforces minimum thresholds of 26% for
-  branches, 24% for functions, 29% for lines, and 29% for statements while the
-  frontend suite is expanded.
+  statements. Frontend Jest enforces minimum thresholds of 52% for branches,
+  50% for functions, 61% for lines, and 59% for statements.
 - Financial approval follows the Maker-Checker workflow.
 - Production deploys require passing CI and automated post-deploy health validation.
 

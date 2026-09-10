@@ -65,6 +65,7 @@ All notable changes to this project will be documented in this file.
 
 - Comprehensive README.md
 - .env.example files for backend and frontend
+- Documented `SENTRY_DSN` and `SMS_DISABLED` in the root environment example.
 - CONTRIBUTING.md
 - CHANGELOG.md
 
