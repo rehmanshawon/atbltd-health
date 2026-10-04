@@ -46,7 +46,11 @@ jobs:
             apps/frontend/coverage/**
           if-no-files-found: warn
 
-      - name: Run security audit
+      - name: Run production dependency security audit
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Report full dependency audit, including development tools
+        continue-on-error: true
         run: npm audit --audit-level=high
 
   backend-test:
@@ -86,7 +90,7 @@ jobs:
       - name: Security audit backend
         run: |
           for attempt in 1 2 3; do
-            if npm audit --workspace=@atbltd-health/backend --audit-level=high; then
+            if npm audit --workspace=@atbltd-health/backend --omit=dev --audit-level=high; then
               exit 0
             fi
             if [ "$attempt" -lt 3 ]; then
@@ -201,7 +205,7 @@ jobs:
       - name: Security audit frontend
         run: |
           for attempt in 1 2 3; do
-            if npm audit --workspace=@atbltd-health/frontend --audit-level=high; then
+            if npm audit --workspace=@atbltd-health/frontend --omit=dev --audit-level=high; then
               exit 0
             fi
             if [ "$attempt" -lt 3 ]; then

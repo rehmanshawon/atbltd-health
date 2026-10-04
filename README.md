@@ -224,8 +224,9 @@ npm run typecheck
 
 ## Security and Reliability Controls
 
-- CI fails on high and critical npm audit findings; transient registry failures
-  retry 3x.
+- CI blocks high and critical vulnerabilities in production dependencies. The
+  full dependency audit, including development tools, is also reported so
+  upstream advisories remain visible; transient registry failures retry 3x.
 - Payment authorization is atomic, checked for idempotency, and guarded against
   race conditions.
 - Sentry captures all unhandled 5xx exceptions and operational faults.
