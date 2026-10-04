@@ -98,14 +98,14 @@ async function bootstrap() {
 
     const owner = queryRunner.manager.create(User, {
       memberId: 'ATB-26-OW-1',
-      fullName: 'A.K.M. Moshiur Rahman',
-      mobileNumber: '01711993597',
-      email: 'chairman@atbltd.health',
+      fullName: 'Seed Owner',
+      mobileNumber: '01700000002',
+      email: 'seed.owner@atbltd.health',
       password: ownerPassword,
       role: UserRole.OWNER,
       isActive: true,
       isKycVerified: true,
-      permanentAddress: 'Lane 08, House 02, Road 11, Sector 06, Uttara, Dhaka-1270',
+      permanentAddress: 'Test Address, Dhaka, Bangladesh',
     });
 
     const savedOwner = await queryRunner.manager.save(owner);
