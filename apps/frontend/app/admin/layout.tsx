@@ -53,7 +53,7 @@ const navItems = [
     roles: ['super_admin', 'admin'],
   },
   {
-    label: 'ATB Benefits',
+    label: 'STBL Benefits',
     href: '/admin/claims',
     icon: FileText,
     roles: ['super_admin', 'admin'],
@@ -121,7 +121,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="absolute left-0 top-0 bottom-0 w-[260px] bg-[#0A2A5E] z-10 flex flex-col">
             <div className="h-16 flex items-center px-5 border-b border-white/10">
               <Link href="/admin" className="text-white font-bold text-lg tracking-tight">
-                ATB<span className="text-red-300"> Admin</span>
+                STBL<span className="text-red-300"> Admin</span>
               </Link>
             </div>
             <nav className="flex-1 py-4 px-3 space-y-0.5">
@@ -162,7 +162,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex flex-col min-h-ful">
             <div className="h-16 flex items-center px-5 border-b border-white/10">
               <Link href="/admin" className="text-white font-bold text-lg tracking-tight">
-                ATB<span className="text-red-300"> Admin</span>
+                STBL<span className="text-red-300"> Admin</span>
               </Link>
             </div>
             <nav className="flex-1 py-4 px-3 space-y-0.5">

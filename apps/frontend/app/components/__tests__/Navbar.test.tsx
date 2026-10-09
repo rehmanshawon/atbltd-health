@@ -16,7 +16,7 @@ jest.mock('next/image', () => ({
 const mockStrings = {
   about: 'About Us',
   howItWorks: 'How It Works',
-  benefits: 'ATB Ltd Services',
+  benefits: 'STBL Services',
   contact: 'Contact',
   aboutChairman: 'About Chairman', // Add this
   becomeMember: 'Become a Member',
@@ -43,7 +43,7 @@ describe('Navbar', () => {
 
     expect(screen.getByText('About Us')).toBeInTheDocument();
     expect(screen.getByText('How It Works')).toBeInTheDocument();
-    expect(screen.getByText('ATB Ltd Services')).toBeInTheDocument();
+    expect(screen.getByText('STBL Services')).toBeInTheDocument();
     expect(screen.getByText('Contact')).toBeInTheDocument();
   });
 

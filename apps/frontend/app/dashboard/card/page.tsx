@@ -48,7 +48,7 @@ export default function DigitalCardPage() {
           Digital Membership Card
         </h1>
         <p className="text-neutral-400 text-sm mt-0.5">
-          Your ATB membership identification
+          Your STBL membership identification
         </p>
       </div>
 
@@ -60,10 +60,10 @@ export default function DigitalCardPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-neutral-400 text-[10px] font-semibold uppercase tracking-[0.2em]">
-                ATB Ltd
+                STBL
               </p>
               <p className="text-white font-bold text-lg mt-0.5">
-                Astha Treatment Bills
+                Sustho Thaki BD Ltd
               </p>
             </div>
             <Shield size={28} className="text-red-400/60" />
@@ -134,7 +134,7 @@ export default function DigitalCardPage() {
       </div>
 
       <p className="text-neutral-600 text-xs text-center">
-        Show this card or provide your Membership ID to access ATB services
+        Show this card or provide your Membership ID to access STBL services
       </p>
     </div>
   );

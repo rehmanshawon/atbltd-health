@@ -2,28 +2,28 @@ export const en = {
   nav: {
     about: 'About Us',
     howItWorks: 'How It Works',
-    benefits: 'ATB Ltd Services',
+    benefits: 'STBL Services',
     aboutChairman: 'About Chairman', // en
     contact: 'Contact',
-    becomeMember: 'Become an ATB Member',
+    becomeMember: 'Become an STBL Member',
     learnHowItWorks: 'How It Works',
     scroll: 'Scroll',
     languageToggle: 'BN',
-    login: 'ATB Login',
+    login: 'STBL Login',
   },
   hero: {
-    kicker: 'Astha Treatment Bills Ltd.',
+    kicker: 'Sustho Thaki BD Ltd (STBL)',
     trustedMembers: 'Trusted by 50,000+ Members',
     title: 'Inability to pay',
     titleTwo: 'will never stop your treatment',
     subtitleLead:
-      'ATB Ltd provides instant financial support of 12,000 BDT against your membership to pay your treatment bills during illness.',
+      'STBL provides instant financial support of 12,000 BDT against your membership to pay your treatment bills during illness.',
     subtitleSupport: '',
     subtitlePrice: '',
-    becomeMember: 'Become an ATB Member',
+    becomeMember: 'Become an STBL Member',
     learnHowItWorks: 'How It Works',
     scroll: 'Scroll',
-    login: 'ATB Login',
+    login: 'STBL Login',
   },
   stats: {
     maximumCoverage: 'Maximum Coverage',
@@ -34,7 +34,7 @@ export const en = {
     heading: 'Know before you join',
     title: 'A membership you can understand clearly.',
     description:
-      'We believe confidence begins with plain information. Here are the essential details of an ATB Health membership.',
+      'We believe confidence begins with plain information. Here are the essential details of an STBL membership.',
     annualMembership: 'Annual membership',
     annualMembershipValue: '1,000 BDT',
     annualMembershipDetail: 'One clear annual fee',
@@ -61,7 +61,7 @@ export const en = {
     eyebrow: 'Before you need care',
     title: 'The essentials, made transparent.',
     description:
-      'These are the key rules for using ATB medical treatment support. Please review the full membership terms before joining.',
+      'These are the key rules for using STBL medical treatment support. Please review the full membership terms before joining.',
     rule1Title: 'One-month activation',
     rule1Copy: 'Benefits can be used one month after your membership date.',
     rule2Title: '24-hour hospital stay',
@@ -73,13 +73,13 @@ export const en = {
     note: 'A member can receive up to 12,000 BDT in eligible treatment support in a membership year. Each request is subject to the applicable rules and review.',
   },
   diseaseCoverage: {
-    eyebrow: 'Diseases and treatments covered by ATB Ltd',
-    title: 'ATB Ltd pays the treatment bills for these conditions',
+    eyebrow: 'Diseases and treatments covered by STBL',
+    title: 'STBL pays the treatment bills for these conditions',
     description:
-      'ATB Ltd provides instant financial support of 12,000 BDT against membership to pay your treatment bills during illness.',
-    coveredHeading: 'Conditions for which ATB Ltd provides financial benefits',
+      'STBL provides instant financial support of 12,000 BDT against membership to pay your treatment bills during illness.',
+    coveredHeading: 'Conditions for which STBL provides financial benefits',
     coveredDescription:
-      'ATB provides financial support for emergency medical treatment, hospital admission, and eligible operations based on the required minimum stay, admission conditions, and verification process.',
+      'STBL provides financial support for emergency medical treatment, hospital admission, and eligible operations based on the required minimum stay, admission conditions, and verification process.',
     coveredList: [
       'Dengue Fever',
       'Chikungunya',
@@ -113,7 +113,7 @@ export const en = {
       'Fall from Height',
       'Respiratory Infection Surgery',
     ],
-    notCoveredHeading: 'Conditions excluded from ATB Ltd coverage',
+    notCoveredHeading: 'Conditions excluded from STBL coverage',
     notCoveredDescription:
       'The following services are not covered under the current policy and remain outside support unless changed by an approved policy decision.',
     notCoveredList: [
@@ -125,11 +125,11 @@ export const en = {
       'Self-inflicted injury surgery',
       'Surgery caused by substance abuse / alcohol or drug abuse',
     ],
-    note: 'The medical benefits for ATB Ltd membership holders will expand gradually over time.',
+    note: 'The medical benefits for STBL members will expand gradually over time.',
   },
   claimWorkflow: {
     eyebrow: 'Treatment Bill',
-    title: 'How ATB Ltd pays your treatment bill —',
+    title: 'How STBL pays your treatment bill —',
     description: '',
     overviewTitle: 'Step-by-step financial process',
     workflowTitle: 'Benefit Application sequence',
@@ -148,7 +148,7 @@ export const en = {
         number: 'Step 2',
         title: 'Hospital admission & initial notification',
         activity: [
-          'The person admitted or staying at a medical center must report information within 8 hours of admission at https://www.atbltd.health.',
+          'The person admitted or staying at a medical center must report information within 8 hours of admission at https://stbltd.com.',
           "Or call 01711993597 to inform about the treatment recipient's information.",
         ],
         timeframe: 'After discharge',
@@ -160,14 +160,14 @@ export const en = {
       {
         title: 'Step 1: Hospital admission & initial notification',
         copy: [
-          'The person admitted or staying at a medical center must report information within 8 hours of admission at https://www.atbltd.health.',
+          'The person admitted or staying at a medical center must report information within 8 hours of admission at https://stbltd.com.',
           "Or call 01711993597 to inform about the treatment recipient's information.",
         ],
       },
       {
         title: 'Step 2: Document collection after discharge',
         copy: [
-          'The person admitted or staying at a medical center must report information within 8 hours of admission at https://www.atbltd.health.',
+          'The person admitted or staying at a medical center must report information within 8 hours of admission at https://stbltd.com.',
           "Or call 01711993597 to inform about the treatment recipient's information.",
         ],
       },
@@ -178,7 +178,7 @@ export const en = {
     heading: '',
     title: '',
     description: '',
-    meaningfulCover: 'ATB Ltd',
+    meaningfulCover: 'STBL',
     meaningfulCoverTitle: 'How It Works',
     meaningfulCoverDescription: '',
     meaningfulPoints: [
@@ -186,9 +186,9 @@ export const en = {
       'When your membership ID becomes active after 30 days, a first aid box will be delivered to you as a gift.',
       'Financial support of up to 12,000 BDT is provided for bills of those staying at least 24 hours in a hospital, clinic, or medical center.',
       'The hospital stay requirement may be relaxed for patients with broken arms or legs.',
-      'The person admitted or staying at a medical center must report information within 8 hours at https://www.atbltd.health.',
+      'The person admitted or staying at a medical center must report information within 8 hours at https://stbltd.com.',
       "Or call 01711993597 to inform about the treatment recipient's information.",
-      'After verifying your submitted information, ATB Ltd authorities will pay the bill to the merchant or bank account of the healthcare provider.',
+      'After verifying your submitted information, STBL authorities will pay the bill to the merchant or bank account of the healthcare provider.',
     ],
     madeForLife: 'Made for real life',
     madeForLifeTitle: 'Simple enough to understand at a glance.',
@@ -203,33 +203,33 @@ export const en = {
   chairman: {
     eyebrow: 'A note from our chairman',
     title: 'Inability to pay will never stop your treatment',
-    body1: '— Astha Treatment Bills Ltd (ATB) operates with this slogan.',
+    body1: '— Sustho Thaki BD Ltd (STBL) operates with this slogan.',
     body2:
-      "In Bangladesh's large population, many middle-class and lower-middle-class people cannot access medical care during illness due to financial constraints. ATB Ltd stands beside patients by providing technology-driven instant financial support. People from all levels and professions in Bangladesh can become members of ATB Ltd and receive this health service with confidence.",
+      "In Bangladesh's large population, many middle-class and lower-middle-class people cannot access medical care during illness due to financial constraints. STBL stands beside patients by providing technology-driven instant financial support. People from all levels and professions in Bangladesh can become members of STBL and receive this health service with confidence.",
     signature: 'Signature',
     name: 'A.K.M. Moshiur Rahman',
     role: 'Founder & Chairman',
-    caption: 'Astha Treatment Bills Ltd',
+    caption: 'Sustho Thaki BD Ltd',
   },
   faq: {
     eyebrow: 'Clarity from the beginning',
     title: 'Questions, answered simply.',
-    description: 'Everything you need to know before becoming an ATB Ltd member.',
+    description: 'Everything you need to know before becoming an STBL member.',
     questions: {
-      q1: 'What is ATB?',
-      q2: 'What does ATB do?',
+      q1: 'What is STBL?',
+      q2: 'What does STBL do?',
       q3: 'How much does membership cost and how long is it valid?',
       q4: 'What is required to become a member?',
       q5: 'What is the age limit for members?',
       q6: 'How do we get the 12,000 BDT benefit?',
     },
     answers: {
-      q1: 'ATB is a limited company registered with RJSC.',
-      q2: "ATB's role is to ensure 12,000 BDT in financial support for medical treatment over a 12-month period when an ATB member faces health issues.",
+      q1: 'STBL provides healthcare financial assistance to its members.',
+      q2: "STBL provides up to 12,000 BDT in financial support for medical treatment over a 12-month period when a member faces health issues.",
       q3: 'Membership costs 1,000 BDT. It is valid for 12 months from the date of becoming a member.',
       q4: "Name, father's name, mother's name, National ID number, mobile number, permanent address, current address, referral ID (optional), photo (optional), and proof of payment.",
       q5: 'From 3 years to 57 years. Any citizen of Bangladesh.',
-      q6: "A claim must be made within 6 hours of hospital admission and a minimum 24-hour hospital stay is required. The claim process must also be completed according to ATB's terms and conditions. The money will be sent to the bKash account before release from the hospital.",
+      q6: "A claim must be made within 6 hours of hospital admission and a minimum 24-hour hospital stay is required. The claim process must also be completed according to STBL's terms and conditions. The money will be sent to the bKash account before release from the hospital.",
     },
   },
   footer: {
@@ -250,7 +250,7 @@ export const en = {
     address: 'Madhobilota, Block - C, Flat - 1306, Sector - 18, RUAP, Uttara, Dhaka - 1230.',
   },
   modal: {
-    title: 'ATB Ltd Membership Form',
+    title: 'STBL Membership Form',
     details: 'Your details',
     payment: 'Payment',
     verify: 'Verify number',
@@ -271,10 +271,10 @@ export const en = {
     renewal: 'Annual renewal fee is 850 BDT.',
     choosePayment: 'Send money via bKash or nagad to the number below.',
     sendMoney: 'Send Money',
-    sendMoneyDetail: 'Send 1,000 BDT to ATB bKash: 01721719611',
+    sendMoneyDetail: 'Send 1,000 BDT to STBL bKash: 01721719611',
     merchant: 'Merchant checkout coming soon',
     safety:
-      "Only send money to the official ATB bKash/nagad number: 01721719611. Never send to any agent's personal account.",
+      "Only send money to the official STBL bKash/nagad number: 01721719611. Never send to any agent's personal account.",
     back: 'Back',
     sentPayment: "I've sent the payment",
     verifyMobile: 'Verify your mobile number',
@@ -285,7 +285,7 @@ export const en = {
     otp: 'One-time password',
     enterOtp: 'Enter the six-digit preview code to continue.',
     verifyActivate: 'Verify & activate',
-    membershipPreview: 'ATB Ltd',
+    membershipPreview: 'STBL',
     welcome: 'Welcome,',
     member: 'member',
     cardNote:
@@ -314,7 +314,7 @@ export const en = {
   aboutChairman: {
     eyebrow: 'About the Chairman',
     title: 'A.K.M. Moshiur Rahman',
-    description: 'Complete profile of the Chairman of Astha Treatment Bills Ltd',
+    description: 'Complete profile of the Chairman of Sustho Thaki BD Ltd',
     currentRoles: 'Current Roles',
     chairmanTitle: 'Chairman',
     directorTitle: 'Director',
@@ -323,7 +323,7 @@ export const en = {
     careerTitle: 'Career',
     educationTitle: 'Education',
     roles: {
-      chairman: 'Chairman, Astha Treatment Bills Ltd',
+      chairman: 'Chairman, Sustho Thaki BD Ltd',
       director1: 'Director, Rabindra Srijonkola University',
       director2: 'Director, Business Research Council (BRC)',
       director3: 'Director, Business Networking Club Ltd',

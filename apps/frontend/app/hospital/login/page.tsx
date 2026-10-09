@@ -47,7 +47,7 @@ export default function HospitalLoginPage() {
       <div className="hidden lg:flex lg:w-[480px] bg-[#0A2A5E] relative overflow-hidden flex-col justify-between p-10">
         <div>
           <Link href="/" className="text-white font-bold text-xl">
-            ATB<span className="text-red-300"> Ltd</span>
+            STBL<span className="text-red-300"> Hospital</span>
           </Link>
           <p className="text-neutral-300 text-sm mt-1">
             Hospital Partner Portal
@@ -55,7 +55,7 @@ export default function HospitalLoginPage() {
         </div>
         <div>
           <p className="text-neutral-200 text-lg font-medium">
-            Verify patient claims and coordinate with ATB
+            Verify patient claims and coordinate with STBL
           </p>
         </div>
       </div>
@@ -97,7 +97,7 @@ export default function HospitalLoginPage() {
                 required
                 value={loginId}
                 onChange={(e) => setLoginId(e.target.value)}
-                placeholder="hospital@atbltd"
+                placeholder="hospital@stbltd"
                 className="w-full px-4 py-2.5 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-[#D32F2F] focus:outline-none focus:ring-1 focus:ring-[#D32F2F]/20 text-sm"
               />
             </div>

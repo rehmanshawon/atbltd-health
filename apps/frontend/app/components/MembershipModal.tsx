@@ -156,7 +156,7 @@ export default function MembershipModal({ isOpen, onClose, strings }: Membership
 
             {step !== 'complete' && (
               <>
-                <p className="section-eyebrow">ATB Ltd membership</p>
+                <p className="section-eyebrow">STBL membership</p>
                 <h2 id="membership-title">{strings.title}</h2>
                 <div className="enrollment-steps" aria-label={`Step ${currentStep + 1} of 3`}>
                   <div className="enrollment-step active">

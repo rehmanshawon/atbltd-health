@@ -213,7 +213,7 @@ export default function HospitalDashboard() {
             <FileText size={40} className="text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">No applications to verify</p>
             <p className="text-gray-400 text-sm mt-1">
-              Applications will appear here when ATB sends them for hospital verification
+              Applications will appear here when STBL sends them for hospital verification
             </p>
           </div>
         ) : (

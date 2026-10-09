@@ -38,7 +38,7 @@ jest.mock('lucide-react', () => ({
 }));
 
 const mockStrings = {
-  title: 'ATB Ltd Membership Form',
+  title: 'STBL Membership Form',
   details: 'Your Details',
   payment: 'Payment',
   verify: 'Verify',
@@ -58,7 +58,7 @@ const mockStrings = {
   renewal: 'Renewal 850 BDT/year',
   choosePayment: 'Choose payment method',
   sendMoney: 'Send Money',
-  sendMoneyDetail: 'Send 1,000 BDT to ATB bKash',
+  sendMoneyDetail: 'Send 1,000 BDT to STBL bKash',
   merchant: 'Merchant coming soon',
   safety: 'Only send to official number',
   back: 'Back',
@@ -114,7 +114,7 @@ describe('MembershipModal', () => {
   it('should render the modal when isOpen is true', () => {
     render(<MembershipModal isOpen={true} onClose={mockOnClose} strings={mockStrings as any} />);
 
-    expect(screen.getByText('ATB Ltd Membership Form')).toBeInTheDocument();
+    expect(screen.getByText('STBL Membership Form')).toBeInTheDocument();
     expect(screen.getByLabelText(/Full Name/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Mobile Number/)).toBeInTheDocument();
   });
@@ -122,7 +122,7 @@ describe('MembershipModal', () => {
   it('should not render when isOpen is false', () => {
     render(<MembershipModal isOpen={false} onClose={mockOnClose} strings={mockStrings as any} />);
 
-    expect(screen.queryByText('ATB Ltd Membership Form')).not.toBeInTheDocument();
+    expect(screen.queryByText('STBL Membership Form')).not.toBeInTheDocument();
   });
 
   it('should submit form with correct payload', async () => {

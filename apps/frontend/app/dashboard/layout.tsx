@@ -52,7 +52,7 @@ export default function DashboardLayout({
                 href="/"
                 className="text-white font-bold text-lg tracking-tight"
               >
-                ATB<span className="text-red-300"> Ltd</span>
+                STBL
               </Link>
             </div>
             <nav className="flex-1 py-4 px-3 space-y-0.5">
@@ -98,7 +98,7 @@ export default function DashboardLayout({
               href="/"
               className="text-white font-bold text-lg tracking-tight"
             >
-              ATB<span className="text-red-300"> Ltd</span>
+              STBL
             </Link>
           </div>
           <nav className="flex-1 py-4 px-3 space-y-0.5">

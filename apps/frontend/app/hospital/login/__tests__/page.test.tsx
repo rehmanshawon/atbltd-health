@@ -47,7 +47,7 @@ describe('HospitalLoginPage', () => {
 
     render(<HospitalLoginPage />);
 
-    await userEvent.type(screen.getByPlaceholderText('hospital@atbltd'), 'square.hospital');
+    await userEvent.type(screen.getByPlaceholderText('hospital@stbltd'), 'square.hospital');
     await userEvent.type(screen.getByPlaceholderText('Enter password'), 'password123');
 
     await userEvent.click(screen.getByText('Sign in'));
@@ -69,7 +69,7 @@ describe('HospitalLoginPage', () => {
 
     render(<HospitalLoginPage />);
 
-    await userEvent.type(screen.getByPlaceholderText('hospital@atbltd'), 'wrong');
+    await userEvent.type(screen.getByPlaceholderText('hospital@stbltd'), 'wrong');
     await userEvent.type(screen.getByPlaceholderText('Enter password'), 'wrong');
 
     await userEvent.click(screen.getByText('Sign in'));

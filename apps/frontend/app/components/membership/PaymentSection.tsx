@@ -69,7 +69,7 @@ export default function PaymentSection({
               01721719611
             </span>
             <small style={{ marginTop: '4px', display: 'block' }}>
-              ATB Official bKash (Personal)
+              STBL Official bKash
             </small>
           </span>
           <BadgeCheck size={20} />
