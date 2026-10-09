@@ -76,8 +76,8 @@ export default function Navbar({
         >
           <div className="relative h-15 w-[190px] sm:h-20 sm:w-[240px] lg:w-[280px] overflow-hidden">
             <Image
-              src="/images/logo.png"
-              alt="ATB"
+              src="/images/stbl-logo.jpeg"
+              alt="STBL"
               fill
               priority
               className="

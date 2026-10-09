@@ -111,8 +111,8 @@ export default function LoginPage() {
             <div className="bg-white rounded-lg p-2 shadow-lg">
               <div className="relative h-10 w-[150px] sm:h-15 sm:w-[100px] overflow-hidden">
                 <Image
-                  src="/images/logo.png"
-                  alt="ATB"
+                  src="/images/stbl-logo.jpeg"
+                  alt="STBL"
                   fill
                   priority
                   className="object-contain object-left select-none pointer-events-none"

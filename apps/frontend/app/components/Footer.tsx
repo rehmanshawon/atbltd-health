@@ -39,8 +39,8 @@ export default function Footer({ strings }: FooterProps) {
           <div className="footer-main">
             <div className="footer-brand">
               {/* <Image
-                src="/images/logo.png"
-                alt="ATB Ltd"
+                src="/images/stbl-logo.jpeg"
+                alt="Sustho Thaki BD Ltd"
                 width={370}
                 height={215}
                 className="object-contain object-left"
@@ -50,8 +50,8 @@ export default function Footer({ strings }: FooterProps) {
                   <div className="bg-white rounded-lg p-2 shadow-lg">
                     <div className="relative h-10 w-[150px] sm:h-20 sm:w-[150px] overflow-hidden">
                       <Image
-                        src="/images/logo.png"
-                        alt="ATB"
+                        src="/images/stbl-logo.jpeg"
+                        alt="STBL"
                         fill
                         priority
                         className="object-contain object-left select-none pointer-events-none"
@@ -67,7 +67,7 @@ export default function Footer({ strings }: FooterProps) {
                   href="https://www.facebook.com/profile.php?id=61592163080085"
                   target="_blank"
                   rel="noreferrer"
-                  aria-label="Follow ATB Ltd on Facebook"
+                  aria-label="Follow STBL on Facebook"
                 >
                   <span className="facebook-mark" aria-hidden="true">
                     f
@@ -75,10 +75,10 @@ export default function Footer({ strings }: FooterProps) {
                 </motion.a>
                 <motion.a
                   whileHover={{ scale: 1.15 }}
-                  href="https://atbltd.health"
+                  href="https://stbltd.com"
                   target="_blank"
                   rel="noreferrer"
-                  aria-label="Visit atbltd.health"
+                  aria-label="Visit stbltd.com"
                 >
                   <Earth size={18} />
                 </motion.a>
@@ -97,15 +97,15 @@ export default function Footer({ strings }: FooterProps) {
                 {strings.membershipDetails}
               </Link>
               <Link href="#about">{strings.frequentlyAskedQuestions}</Link>
-              <a href="https://atbltd.health" target="_blank" rel="noreferrer">
+              <a href="https://stbltd.com" target="_blank" rel="noreferrer">
                 {strings.visitWebsite} <ExternalLink size={14} />
               </a>
             </div>
             <address>
               <h3>{strings.getInTouch}</h3>
-              <a href="mailto:info@atbltd.health">
+              <a href="mailto:info@stbltd.com">
                 <Mail size={16} />
-                info@atbltd.health
+                info@stbltd.com
               </a>
               <a href="tel:+8801711993597">
                 <Phone size={16} />
@@ -122,7 +122,7 @@ export default function Footer({ strings }: FooterProps) {
           {/* Footer Bottom with Powered By */}
           <div className="footer-bottom">
             <span>
-              © {new Date().getFullYear()} ATB Ltd. {strings.rights}
+              © {new Date().getFullYear()} Sustho Thaki BD Ltd. {strings.rights}
             </span>
 
             <a
