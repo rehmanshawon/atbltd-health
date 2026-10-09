@@ -9,7 +9,7 @@
     "apps/frontend"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run start:dev --workspace=@atbltd-health/backend\" \"npm run dev --workspace=@atbltd-health/frontend\"",
+    "dev": "concurrently \"npm run start:dev --workspace=@atbltd-health/backend\" \"npm run dev --workspace=@atbltd-health/frontend -- --port 3001\"",
     "dev:backend": "npm run start:dev --workspace=@atbltd-health/backend",
     "dev:frontend": "npm run dev --workspace=@atbltd-health/frontend",
     "build": "npm run build:backend && npm run build:frontend",
