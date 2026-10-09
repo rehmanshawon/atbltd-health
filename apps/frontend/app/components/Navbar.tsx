@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface NavbarProps {
   onJoin?: () => void;
@@ -21,16 +21,11 @@ interface NavbarProps {
     languageToggle: string;
     login: string;
   };
-  language: "en" | "bn";
+  language: 'en' | 'bn';
   onLanguageChange: () => void;
 }
 
-export default function Navbar({
-  onJoin,
-  strings,
-  language,
-  onLanguageChange,
-}: NavbarProps) {
+export default function Navbar({ onJoin, strings, language, onLanguageChange }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const closeMenu = () => setIsMenuOpen(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -39,8 +34,8 @@ export default function Navbar({
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 60);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
@@ -55,7 +50,7 @@ export default function Navbar({
     >
       <div
         className={`glass navbar-shell rounded-[30px] px-5 sm:px-7 lg:px-10 min-h-20 lg:h-24 flex items-center justify-between transition-all duration-500 ${
-          isScrolled ? "shadow-2xl border-white/20" : ""
+          isScrolled ? 'shadow-2xl border-white/20' : ''
         }`}
       >
         {/* Logo */}
@@ -76,7 +71,7 @@ export default function Navbar({
         >
           <div className="relative h-15 w-[190px] sm:h-20 sm:w-[240px] lg:w-[280px] overflow-hidden">
             <Image
-              src="/images/stbl-logo.jpeg"
+              src="/images/stbl_logo.png"
               alt="STBL"
               fill
               priority
@@ -95,36 +90,21 @@ export default function Navbar({
         {/* Menu */}
 
         <div className="hidden lg:flex items-center gap-10">
-          <Link
-            href="#chairman-message"
-            className="text-white/75 hover:text-white transition"
-          >
+          <Link href="#chairman-message" className="text-white/75 hover:text-white transition">
             {strings.about}
           </Link>
 
-          <Link
-            href="#benefits"
-            className="text-white/75 hover:text-white transition"
-          >
+          <Link href="#benefits" className="text-white/75 hover:text-white transition">
             {strings.howItWorks}
           </Link>
 
-          <Link
-            href="#diseaseCoverage"
-            className="text-white/75 hover:text-white transition"
-          >
+          <Link href="#diseaseCoverage" className="text-white/75 hover:text-white transition">
             {strings.benefits}
           </Link>
-          <Link
-            href="#about-chairman"
-            className="text-white/75 hover:text-white transition"
-          >
-            {strings.aboutChairman || "চেয়ারম্যান সম্পর্কে"}
+          <Link href="#about-chairman" className="text-white/75 hover:text-white transition">
+            {strings.aboutChairman || 'চেয়ারম্যান সম্পর্কে'}
           </Link>
-          <Link
-            href="#contact"
-            className="text-white/75 hover:text-white transition"
-          >
+          <Link href="#contact" className="text-white/75 hover:text-white transition">
             {strings.contact}
           </Link>
         </div>
@@ -135,17 +115,17 @@ export default function Navbar({
             href="/login"
             className="secondary-button whitespace-nowrap"
             style={{
-              marginLeft: "32px",
-              padding: "8px 16px",
-              fontSize: "0.8rem",
+              marginLeft: '32px',
+              padding: '8px 16px',
+              fontSize: '0.8rem',
             }}
           >
-            {strings.login || "Login"}
+            {strings.login || 'Login'}
           </Link>
           <button
             onClick={onJoin}
             className="primary-button whitespace-nowrap"
-            style={{ padding: "12px 24px", fontSize: "0.9rem" }}
+            style={{ padding: '12px 24px', fontSize: '0.9rem' }}
           >
             {strings.becomeMember}
             <ArrowRight size={18} />
@@ -153,10 +133,8 @@ export default function Navbar({
           <button
             className="language-toggle whitespace-nowrap"
             onClick={onLanguageChange}
-            aria-label={
-              language === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"
-            }
-            style={{ padding: "8px 14px", minWidth: "auto" }}
+            aria-label={language === 'bn' ? 'Switch to English' : 'বাংলায় পরিবর্তন করুন'}
+            style={{ padding: '8px 14px', minWidth: 'auto' }}
           >
             {strings.languageToggle}
           </button>
@@ -179,30 +157,26 @@ export default function Navbar({
           className="mobile-menu glass"
         >
           {[
-            ["About", "#chairman-message"],
-            ["How It Works", "#how-it-works"],
-            ["Benefits", "#benefits"],
-            ["About Chairman", "#about-chairman"],
-            ["Contact", "#contact"],
+            ['About', '#chairman-message'],
+            ['How It Works', '#how-it-works'],
+            ['Benefits', '#benefits'],
+            ['About Chairman', '#about-chairman'],
+            ['Contact', '#contact'],
           ].map(([label, href]) => (
             <Link key={href} href={href} onClick={closeMenu}>
-              {label === "About"
+              {label === 'About'
                 ? strings.about
-                : label === "How It Works"
+                : label === 'How It Works'
                   ? strings.howItWorks
-                  : label === "Benefits"
+                  : label === 'Benefits'
                     ? strings.benefits
-                    : label === "About Chairman"
-                      ? strings.aboutChairman || "চেয়ারম্যান সম্পর্কে"
+                    : label === 'About Chairman'
+                      ? strings.aboutChairman || 'চেয়ারম্যান সম্পর্কে'
                       : strings.contact}
             </Link>
           ))}
-          <Link
-            href="/login"
-            onClick={closeMenu}
-            className="secondary-button w-full text-center"
-          >
-            {strings.login || "Login"}
+          <Link href="/login" onClick={closeMenu} className="secondary-button w-full text-center">
+            {strings.login || 'Login'}
           </Link>
           <button
             onClick={() => {
@@ -213,11 +187,8 @@ export default function Navbar({
           >
             {strings.becomeMember} <ArrowRight size={18} />
           </button>
-          <button
-            className="language-toggle mobile-language-toggle"
-            onClick={onLanguageChange}
-          >
-            {language === "bn" ? "English" : "বাংলা"}
+          <button className="language-toggle mobile-language-toggle" onClick={onLanguageChange}>
+            {language === 'bn' ? 'English' : 'বাংলা'}
           </button>
         </motion.div>
       )}

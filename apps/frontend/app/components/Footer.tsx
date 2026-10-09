@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { Earth, ExternalLink, Mail, MapPin, Phone } from "lucide-react";
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Earth, ExternalLink, Mail, MapPin, Phone } from 'lucide-react';
 
 interface FooterProps {
   strings: {
@@ -39,7 +39,7 @@ export default function Footer({ strings }: FooterProps) {
           <div className="footer-main">
             <div className="footer-brand">
               {/* <Image
-                src="/images/stbl-logo.jpeg"
+                src="/images/stbl_logo.png"
                 alt="Sustho Thaki BD Ltd"
                 width={370}
                 height={215}
@@ -50,7 +50,7 @@ export default function Footer({ strings }: FooterProps) {
                   <div className="bg-white rounded-lg p-2 shadow-lg">
                     <div className="relative h-10 w-[150px] sm:h-20 sm:w-[150px] overflow-hidden">
                       <Image
-                        src="/images/stbl-logo.jpeg"
+                        src="/images/stbl_logo.png"
                         alt="STBL"
                         fill
                         priority
@@ -93,9 +93,7 @@ export default function Footer({ strings }: FooterProps) {
             </div>
             <div>
               <h3>{strings.support}</h3>
-              <Link href="#membership-details">
-                {strings.membershipDetails}
-              </Link>
+              <Link href="#membership-details">{strings.membershipDetails}</Link>
               <Link href="#about">{strings.frequentlyAskedQuestions}</Link>
               <a href="https://stbltd.com" target="_blank" rel="noreferrer">
                 {strings.visitWebsite} <ExternalLink size={14} />
