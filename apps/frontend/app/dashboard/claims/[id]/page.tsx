@@ -1,9 +1,15 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { useAuth } from '../../../lib/auth-context';
-import { useClaimDetail, Claim, ClaimDocument, UploadEntry } from './useClaimDetail';
+import {
+  loadData as fetchClaimData,
+  useClaimDetail,
+  Claim,
+  ClaimDocument,
+  UploadEntry,
+} from './useClaimDetail';
 import {
   ArrowLeft,
   Upload,
@@ -40,7 +46,6 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function ClaimDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const { token } = useAuth();
 
   const [claim, setClaim] = useState<Claim | null>(null);
@@ -54,7 +59,7 @@ export default function ClaimDetailPage() {
     { id: crypto.randomUUID(), documentType: '', file: null, notes: '' },
   ]);
 
-  const { loadData, handleUpload } = useClaimDetail({
+  const { handleUpload } = useClaimDetail({
     id,
     token: token || '',
     setClaim,
@@ -68,7 +73,16 @@ export default function ClaimDetailPage() {
   });
 
   useEffect(() => {
-    if (token && id) loadData();
+    if (!token || !id) return;
+
+    void fetchClaimData({
+      id,
+      token,
+      setClaim,
+      setDocuments,
+      setError,
+      setIsLoading,
+    });
   }, [token, id]);
 
   const addUploadEntry = () => {

@@ -3,7 +3,6 @@
 import { useEffect, useState, Fragment } from "react";
 import { useAuth } from "../../lib/auth-context";
 import {
-  UserCheck,
   Loader2,
   Plus,
   ChevronRight,
@@ -40,7 +39,24 @@ export default function OwnersPage() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (token) loadOwners();
+    if (!token) return;
+
+    const fetchOwners = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/agents/owners`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setOwners(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+        setOwners([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchOwners();
   }, [token]);
 
   const loadOwners = async () => {

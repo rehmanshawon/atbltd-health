@@ -51,7 +51,24 @@ export default function FraudPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (token) loadAlerts();
+    if (!token) return;
+
+    const fetchAlerts = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/admin/fraud-check`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setAlerts(data || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchAlerts();
   }, [token]);
 
   const loadAlerts = async () => {

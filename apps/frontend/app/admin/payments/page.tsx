@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../lib/auth-context";
 import { adminApi } from "../../lib/api";
-import { Banknote, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Banknote, Loader2 } from "lucide-react";
 import AdminTable from "../components/AdminTable";
 
 interface Payment {
@@ -27,26 +27,28 @@ export default function PaymentsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (token) loadPayments();
-  }, [token, page, statusFilter]);
+    if (!token) return;
 
-  const loadPayments = async () => {
-    setIsLoading(true);
-    try {
-      const data = await adminApi.getPayments(
-        token!,
-        statusFilter || undefined,
-        Number(page),
-      );
-      setPayments(data.payments || []);
-      setTotal(data.total || 0);
-      setTotalPages(data.totalPages || 1);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const fetchPayments = async () => {
+      setIsLoading(true);
+      try {
+        const data = await adminApi.getPayments(
+          token,
+          statusFilter || undefined,
+          Number(page),
+        );
+        setPayments(data.payments || []);
+        setTotal(data.total || 0);
+        setTotalPages(data.totalPages || 1);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchPayments();
+  }, [token, page, statusFilter]);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-GB", {

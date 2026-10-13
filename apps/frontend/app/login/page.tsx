@@ -11,7 +11,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 export default function LoginPage() {
   const router = useRouter();
   const {
-    login,
     memberLogin,
     isAuthenticated,
     user,
@@ -42,7 +41,7 @@ export default function LoginPage() {
     try {
       await memberLogin(memberId);
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        router.push('/dashboard');
       }, 300);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -93,7 +92,7 @@ export default function LoginPage() {
         localStorage.setItem('atb_token', data.accessToken);
         localStorage.setItem('atb_user', JSON.stringify(data.user));
 
-        window.location.href = '/admin';
+        router.push('/admin');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');

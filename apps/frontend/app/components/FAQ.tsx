@@ -3,7 +3,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
-import { FAQS } from "../lib/constants";
 import SectionHeading from "./SectionHeading";
 
 interface FAQProps {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../lib/auth-context';
-import { Building2, Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import AdminTable from '../components/AdminTable';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
@@ -36,7 +36,23 @@ export default function HospitalsPage() {
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
-    if (token) loadHospitals();
+    if (!token) return;
+
+    const fetchHospitals = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/hospitals`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setHospitals(data || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchHospitals();
   }, [token]);
 
   const loadHospitals = async () => {

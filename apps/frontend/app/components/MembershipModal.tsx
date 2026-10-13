@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, X, Loader2, CheckCircle2 } from 'lucide-react';
+import { Check, X, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import PaymentSection from './membership/PaymentSection';
 import VerificationStep from './membership/VerificationStep';

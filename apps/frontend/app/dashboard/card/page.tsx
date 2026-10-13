@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../lib/auth-context";
 import { membershipApi } from "../../lib/api";
 import {
-  CreditCard,
   Copy,
   CheckCircle2,
   Loader2,

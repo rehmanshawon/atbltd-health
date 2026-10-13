@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, CheckCircle2, X, FileText, Paperclip, Eye } from 'lucide-react';
+import { Loader2, CheckCircle2, X, FileText, Paperclip } from 'lucide-react';
 import { AdminClaim } from './useAdminClaims';
 
 interface ClaimDocument {
@@ -10,21 +10,6 @@ interface ClaimDocument {
   fileUrl: string;
   notes: string | null;
   isVerified: boolean;
-}
-
-interface Claim {
-  id: string;
-  memberId: string;
-  surgeryType: string;
-  hospitalName: string;
-  admissionDate: string;
-  claimedAmount: number;
-  approvedAmount: number | null;
-  status: string;
-  rejectionReason: string | null;
-  notes: string | null;
-  createdAt: string;
-  member?: { memberId: string; fullName: string; mobileNumber: string };
 }
 
 interface ClaimReviewModalProps {

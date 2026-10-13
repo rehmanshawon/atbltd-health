@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Quote } from "lucide-react";
 
 interface ChairmanProps {
   strings: {

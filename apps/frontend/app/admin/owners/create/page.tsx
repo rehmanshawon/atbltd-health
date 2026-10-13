@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../lib/auth-context';
 import { ArrowLeft, UserPlus, Loader2, CheckCircle2, Lock } from 'lucide-react';
 import Link from 'next/link';
@@ -9,7 +8,6 @@ import Link from 'next/link';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
 export default function CreateOwnerPage() {
-  const router = useRouter();
   const { token, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');

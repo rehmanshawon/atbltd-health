@@ -12,7 +12,7 @@ export async function apiCall<T = any>(
   endpoint: string,
   options: ApiOptions = {},
 ): Promise<T> {
-  const { method = "GET", body, token, isPublic = false } = options;
+  const { method = "GET", body, token } = options;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

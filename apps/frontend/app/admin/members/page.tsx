@@ -8,8 +8,6 @@ import {
   Users,
   Search,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 
 interface Member {
@@ -31,37 +29,40 @@ export default function MembersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
+  const [submittedSearch, setSubmittedSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (token) loadMembers();
-  }, [token, page]);
+    if (!token) return;
 
-  const loadMembers = async () => {
-    setIsLoading(true);
-    try {
-      if (search) {
-        const data = await usersApi.search(token!, search);
-        setMembers(data || []);
-        setTotal((data || []).length);
-        setTotalPages(1);
-      } else {
-        const data = await usersApi.findAll(token!, page, "member");
-        setMembers(data.users || []);
-        setTotal(data.total || 0);
-        setTotalPages(data.totalPages || 1);
+    const fetchMembers = async () => {
+      setIsLoading(true);
+      try {
+        if (submittedSearch) {
+          const data = await usersApi.search(token, submittedSearch);
+          setMembers(data || []);
+          setTotal((data || []).length);
+          setTotalPages(1);
+        } else {
+          const data = await usersApi.findAll(token, page, "member");
+          setMembers(data.users || []);
+          setTotal(data.total || 0);
+          setTotalPages(data.totalPages || 1);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+
+    void fetchMembers();
+  }, [token, page, submittedSearch]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
-    loadMembers();
+    setSubmittedSearch(search);
   };
 
   const formatDate = (d: string) =>

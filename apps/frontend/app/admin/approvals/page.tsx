@@ -24,15 +24,10 @@ interface PendingAgent {
 export default function ApprovalsPage() {
   const { token, user } = useAuth();
   const isSuperAdmin = user?.role === 'super_admin';
-  const isAdmin = user?.role === 'admin';
   const [pendingCreates, setPendingCreates] = useState<PendingAgent[]>([]);
   const [pendingDeactivations, setPendingDeactivations] = useState<PendingAgent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionMsg, setActionMsg] = useState('');
-
-  useEffect(() => {
-    if (token) loadPending();
-  }, [token]);
 
   const loadPending = async () => {
     try {
@@ -48,6 +43,27 @@ export default function ApprovalsPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchPendingApprovals = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/agents/pending-approvals`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setPendingCreates(data.pendingCreates || []);
+        setPendingDeactivations(data.pendingDeactivations || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchPendingApprovals();
+  }, [token]);
 
   const handleApprove = async (id: string) => {
     try {

@@ -9,29 +9,6 @@ import {
 } from "lucide-react";
 import SectionHeading from "./SectionHeading";
 
-const rules = [
-  {
-    icon: CalendarDays,
-    title: "One-month activation",
-    copy: "Benefits can be used one month after your membership date.",
-  },
-  {
-    icon: HeartPulse,
-    title: "24-hour hospital stay",
-    copy: "Treatment support applies when an eligible hospital stay is at least 24 hours.",
-  },
-  {
-    icon: Landmark,
-    title: "Up to 12,000 BDT yearly",
-    copy: "Your available annual support reduces only as eligible treatment bills are used.",
-  },
-  {
-    icon: ClipboardCheck,
-    title: "Document-led review",
-    copy: "Keep hospital and treatment documents ready for the review process.",
-  },
-];
-
 interface BenefitEligibilityProps {
   strings: {
     eyebrow: string;

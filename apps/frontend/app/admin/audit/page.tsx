@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../lib/auth-context";
 import {
   ShieldAlert,
-  Search,
   Loader2,
   ChevronLeft,
   ChevronRight,
@@ -49,28 +48,30 @@ export default function AuditPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (token) loadLogs();
-  }, [token, page]);
+    if (!token) return;
 
-  const loadLogs = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(
-        `${API_BASE}/admin/audit-logs?page=${page}&limit=30`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
-      const data = await res.json();
-      setLogs(data.logs || []);
-      setTotal(data.total || 0);
-      setTotalPages(data.totalPages || 1);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const fetchLogs = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `${API_BASE}/admin/audit-logs?page=${page}&limit=30`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        const data = await res.json();
+        setLogs(data.logs || []);
+        setTotal(data.total || 0);
+        setTotalPages(data.totalPages || 1);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchLogs();
+  }, [token, page]);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleString("en-GB", {

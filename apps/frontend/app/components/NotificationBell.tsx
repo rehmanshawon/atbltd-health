@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../lib/auth-context';
 import { Bell, CheckCheck, Loader2 } from 'lucide-react';
-import Link from 'next/link';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -26,21 +25,55 @@ export default function NotificationBell() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (token) {
-      loadNotifications();
-      loadUnreadCount();
+    if (!token) return;
 
-      const isStaff = user?.role === 'admin' || user?.role === 'owner';
-      const pollInterval = isStaff ? 10000 : 30000; // 10s for staff, 30s for members
+    const fetchNotifications = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/notifications?limit=15`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      // Poll every 30 seconds
-      const interval = setInterval(() => {
-        loadUnreadCount();
-      }, pollInterval);
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/notifications/unread-count`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          if (res.status === 401) {
+            console.warn('Token expired, stopping notification polling');
+            return;
+          }
+          console.error('Failed to load notifications:', res.status);
+          return;
+        }
+        const data = await res.json();
+        setUnreadCount(data.unreadCount || 0);
+      } catch (err) {
+        console.warn('Notification polling failed:', err instanceof Error ? err.message : 'Unknown');
+      }
+    };
 
-      return () => clearInterval(interval);
-    }
-  }, [token]);
+    void fetchNotifications();
+    void fetchUnreadCount();
+
+    const isStaff = user?.role === 'admin' || user?.role === 'owner';
+    const pollInterval = isStaff ? 10000 : 30000;
+    const interval = setInterval(() => {
+      void fetchUnreadCount();
+    }, pollInterval);
+
+    return () => clearInterval(interval);
+  }, [token, user?.role]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -65,29 +98,6 @@ export default function NotificationBell() {
       console.error(err);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const loadUnreadCount = async () => {
-    if (!token) return; // Guard against undefined token
-    try {
-      const res = await fetch(`${API_BASE}/notifications/unread-count`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        if (res.status === 401) {
-          // Token expired — don't log as error, just silently stop
-          console.warn('Token expired, stopping notification polling');
-          return;
-        }
-        // Token might be expired — silently fail
-        console.error('Failed to load notifications:', res.status);
-        return;
-      }
-      const data = await res.json();
-      setUnreadCount(data.unreadCount || 0);
-    } catch (err) {
-      console.warn('Notification polling failed:', err instanceof Error ? err.message : 'Unknown');
     }
   };
 

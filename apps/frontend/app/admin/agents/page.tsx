@@ -1,19 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useState, Fragment } from "react";
-import { useAuth } from "../../lib/auth-context";
-import {
-  UserCheck,
-  Loader2,
-  ChevronRight,
-  ChevronDown,
-  Plus,
-} from "lucide-react";
-import Link from "next/link";
-import AdminTable from "../components/AdminTable";
+import { useEffect, useState, Fragment } from 'react';
+import { useAuth } from '../../lib/auth-context';
+import { UserCheck, Loader2, ChevronRight, ChevronDown, Plus } from 'lucide-react';
+import Link from 'next/link';
+import AdminTable from '../components/AdminTable';
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://api.atbltd.health/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/api';
 
 interface Member {
   id: string;
@@ -52,7 +45,33 @@ export default function AgentsPage() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (token) loadAgents();
+    if (!token) return;
+
+    let cancelled = false;
+
+    const fetchAgents = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/agents`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(`Failed to load agents: ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) setAgents(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (!cancelled) {
+          console.error(err);
+          setAgents([]);
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    void fetchAgents();
+
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   const loadAgents = async () => {
@@ -77,15 +96,7 @@ export default function AgentsPage() {
     setExpandedIds(next);
   };
 
-  const formatCurrency = (amount: number) =>
-    `${amount?.toLocaleString() || 0} BDT`;
-
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
+  const formatCurrency = (amount: number) => `${amount?.toLocaleString() || 0} BDT`;
 
   if (isLoading) {
     return (
@@ -96,14 +107,14 @@ export default function AgentsPage() {
   }
 
   const handleDeactivate = async (agentId: string) => {
-    if (!confirm("Request deactivation of this owner?")) return;
+    if (!confirm('Request deactivation of this owner?')) return;
 
     try {
       const res = await fetch(`${API_BASE}/agents/${agentId}/deactivate`, {
-        method: "PUT",
+        method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error('Failed');
       await loadAgents();
     } catch (err) {
       console.error(err);
@@ -115,9 +126,7 @@ export default function AgentsPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-brand-blue">Agents</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
-            Manage agents and their members
-          </p>
+          <p className="text-gray-500 text-sm mt-0.5">Manage agents and their members</p>
         </div>
         <Link
           href="/admin/agents/create"
@@ -130,34 +139,20 @@ export default function AgentsPage() {
       {/* Stats Summary */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="bg-white border border-gray-200 rounded-md p-4">
-          <p className="text-gray-400 text-xs font-semibold uppercase">
-            Total Agents
-          </p>
+          <p className="text-gray-400 text-xs font-semibold uppercase">Total Agents</p>
+          <p className="text-brand-blue text-2xl font-bold mt-1">{agents.length}</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-md p-4">
+          <p className="text-gray-400 text-xs font-semibold uppercase">Total Members</p>
           <p className="text-brand-blue text-2xl font-bold mt-1">
-            {agents.length}
+            {agents.reduce((sum, a) => sum + (a.totalMembersRegistered || 0), 0)}
           </p>
         </div>
         <div className="bg-white border border-gray-200 rounded-md p-4">
-          <p className="text-gray-400 text-xs font-semibold uppercase">
-            Total Members
-          </p>
-          <p className="text-brand-blue text-2xl font-bold mt-1">
-            {agents.reduce(
-              (sum, a) => sum + (a.totalMembersRegistered || 0),
-              0,
-            )}
-          </p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-md p-4">
-          <p className="text-gray-400 text-xs font-semibold uppercase">
-            Total Commission Earned
-          </p>
+          <p className="text-gray-400 text-xs font-semibold uppercase">Total Commission Earned</p>
           <p className="text-brand-blue text-2xl font-bold mt-1">
             {formatCurrency(
-              agents.reduce(
-                (sum, a) => sum + Number(a.totalCommissionEarned || 0),
-                0,
-              ),
+              agents.reduce((sum, a) => sum + Number(a.totalCommissionEarned || 0), 0),
             )}
           </p>
         </div>
@@ -172,9 +167,7 @@ export default function AgentsPage() {
         </div>
 
         {agents.length === 0 ? (
-          <div className="py-16 text-center text-gray-400 text-sm">
-            No agents found
-          </div>
+          <div className="py-16 text-center text-gray-400 text-sm">No agents found</div>
         ) : (
           <AdminTable minWidth={1120}>
             <thead>
@@ -208,14 +201,13 @@ export default function AgentsPage() {
             <tbody>
               {agents.map((agent, i) => {
                 const isExpanded = expandedIds.has(agent.id);
-                const memberCount =
-                  agent.members?.length || agent.totalMembersRegistered || 0;
+                const memberCount = agent.members?.length || agent.totalMembersRegistered || 0;
 
                 return (
                   <Fragment key={agent.id}>
                     {/* Agent Row */}
                     <tr
-                      className={`border-b border-gray-50 ${i % 2 === 0 ? "bg-white" : "bg-gray-50/20"}`}
+                      className={`border-b border-gray-50 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/20'}`}
                     >
                       <td className="py-2.5 px-4">
                         <div className="flex items-center gap-2">
@@ -225,15 +217,9 @@ export default function AgentsPage() {
                               className="p-1 rounded hover:bg-gray-100 transition-colors"
                             >
                               {isExpanded ? (
-                                <ChevronDown
-                                  size={16}
-                                  className="text-gray-400"
-                                />
+                                <ChevronDown size={16} className="text-gray-400" />
                               ) : (
-                                <ChevronRight
-                                  size={16}
-                                  className="text-gray-400"
-                                />
+                                <ChevronRight size={16} className="text-gray-400" />
                               )}
                             </button>
                           )}
@@ -249,7 +235,7 @@ export default function AgentsPage() {
                         {agent.user?.mobileNumber}
                       </td>
                       <td className="py-2.5 px-4 text-gray-600 text-sm">
-                        {agent.parentAgent?.agentCode || "—"}
+                        {agent.parentAgent?.agentCode || '—'}
                       </td>
                       <td className="py-2.5 px-4 text-center text-gray-700 text-sm font-semibold">
                         {agent.commissionRate}%
@@ -264,14 +250,14 @@ export default function AgentsPage() {
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
                             agent.isActive
-                              ? "bg-green-50 text-green-700"
-                              : "bg-gray-100 text-gray-500"
+                              ? 'bg-green-50 text-green-700'
+                              : 'bg-gray-100 text-gray-500'
                           }`}
                         >
                           <span
-                            className={`w-1.5 h-1.5 rounded-full ${agent.isActive ? "bg-green-500" : "bg-gray-400"}`}
+                            className={`w-1.5 h-1.5 rounded-full ${agent.isActive ? 'bg-green-500' : 'bg-gray-400'}`}
                           />
-                          {agent.isActive ? "Active" : "Inactive"}
+                          {agent.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
                       <td className="py-2.5 px-4 text-center">
@@ -283,9 +269,7 @@ export default function AgentsPage() {
                             Deactivate
                           </button>
                         ) : (
-                          <span className="text-gray-400 text-xs">
-                            Deactivated
-                          </span>
+                          <span className="text-gray-400 text-xs">Deactivated</span>
                         )}
                       </td>
                     </tr>
@@ -293,38 +277,25 @@ export default function AgentsPage() {
                     {/* Members (expanded) */}
                     {isExpanded &&
                       agent.members?.map((member) => (
-                        <tr
-                          key={member.id}
-                          className="bg-gray-50/50 border-b border-gray-50"
-                        >
+                        <tr key={member.id} className="bg-gray-50/50 border-b border-gray-50">
                           <td className="py-2 px-4 pl-12 text-gray-600 text-xs font-mono">
                             {member.memberId}
                           </td>
-                          <td className="py-2 px-4 text-gray-600 text-sm">
-                            {member.fullName}
-                          </td>
-                          <td className="py-2 px-4 text-gray-500 text-sm">
-                            {member.mobileNumber}
-                          </td>
+                          <td className="py-2 px-4 text-gray-600 text-sm">{member.fullName}</td>
+                          <td className="py-2 px-4 text-gray-500 text-sm">{member.mobileNumber}</td>
                           <td className="py-2 px-4 text-gray-400 text-sm">—</td>
-                          <td className="py-2 px-4 text-center text-gray-400 text-sm">
-                            —
-                          </td>
-                          <td className="py-2 px-4 text-center text-gray-400 text-sm">
-                            —
-                          </td>
-                          <td className="py-2 px-4 text-center text-gray-400 text-sm">
-                            —
-                          </td>
+                          <td className="py-2 px-4 text-center text-gray-400 text-sm">—</td>
+                          <td className="py-2 px-4 text-center text-gray-400 text-sm">—</td>
+                          <td className="py-2 px-4 text-center text-gray-400 text-sm">—</td>
                           <td className="py-2 px-4 text-center">
                             <span
                               className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
                                 member.isActive
-                                  ? "bg-green-50 text-green-700"
-                                  : "bg-gray-100 text-gray-500"
+                                  ? 'bg-green-50 text-green-700'
+                                  : 'bg-gray-100 text-gray-500'
                               }`}
                             >
-                              {member.isActive ? "Active" : "Inactive"}
+                              {member.isActive ? 'Active' : 'Inactive'}
                             </span>
                           </td>
                         </tr>

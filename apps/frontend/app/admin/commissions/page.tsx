@@ -52,7 +52,47 @@ export default function CommissionsPage() {
   });
 
   useEffect(() => {
-    if (token) loadCommissions();
+    if (!token) return;
+
+    const fetchCommissions = async () => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (statusFilter) params.set('status', statusFilter);
+        params.set('page', String(page));
+        params.set('limit', '15');
+
+        const res = await fetch(`${API_BASE}/commissions?${params}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setCommissions(data.commissions || []);
+        setTotal(data.total || 0);
+        setTotalPages(data.totalPages || 1);
+
+        const earned = (data.commissions || []).reduce(
+          (sum: number, c: Commission) => sum + Number(c.commissionAmount),
+          0,
+        );
+        const paid = (data.commissions || [])
+          .filter((c: Commission) => c.status === 'paid')
+          .reduce((sum: number, c: Commission) => sum + Number(c.commissionAmount), 0);
+        setSummary({
+          totalEarned: earned,
+          totalPaid: paid,
+          totalPending: earned - paid,
+        });
+      } catch (err) {
+        logger.error('Failed to load commissions', {
+          endpoint: '/commissions',
+          error: err instanceof Error ? err.message : String(err),
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void fetchCommissions();
   }, [token, page, statusFilter]);
 
   const loadCommissions = async () => {

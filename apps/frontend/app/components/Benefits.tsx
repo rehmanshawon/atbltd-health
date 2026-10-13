@@ -3,7 +3,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { Check } from "lucide-react";
-import { BENEFITS } from "../lib/constants";
 import SectionHeading from "./SectionHeading";
 
 function BenefitArtwork({ type }: { type: string }) {

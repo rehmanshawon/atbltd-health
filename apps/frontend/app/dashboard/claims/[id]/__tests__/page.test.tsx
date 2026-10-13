@@ -31,7 +31,7 @@ const claim = {
 
 function mockFetchSequence(overrides: { documents?: unknown[]; uploadOk?: boolean } = {}) {
   const { documents = [], uploadOk = true } = overrides;
-  return jest.fn((input: RequestInfo | URL, init?: RequestInit) => {
+  return jest.fn((input: RequestInfo | URL) => {
     const url = String(input);
     if (url.includes('/documents/upload')) {
       return uploadOk

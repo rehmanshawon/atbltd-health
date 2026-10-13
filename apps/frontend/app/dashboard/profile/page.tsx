@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export default function ProfilePage() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 

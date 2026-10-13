@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Phone, Upload, FileCheck, Banknote } from "lucide-react";
+import { Phone, FileCheck, Banknote } from "lucide-react";
 import SectionHeading from "./SectionHeading";
 
 interface ClaimWorkflowProps {

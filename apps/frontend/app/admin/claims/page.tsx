@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { logger } from '../../lib/logger';
 import {
-  FileText,
   Eye,
   CheckCircle2,
   AlertCircle,
@@ -114,7 +113,7 @@ export default function AdminClaimsPage() {
     if (token) {
       loadClaims(page, statusFilter);
     }
-  }, [token, page, statusFilter]);
+  }, [token, page, statusFilter, loadClaims]);
 
   const openReview = async (claim: AdminClaim) => {
     setSelectedClaim(claim);

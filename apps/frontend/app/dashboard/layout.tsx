@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../lib/auth-context";
 import {
@@ -10,7 +10,6 @@ import {
   User,
   LogOut,
   Menu,
-  Bell,
 } from "lucide-react";
 import Link from "next/link";
 import NotificationBell from "../components/NotificationBell";
@@ -30,7 +29,7 @@ export default function DashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
     logout();

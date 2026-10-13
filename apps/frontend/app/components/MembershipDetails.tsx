@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { FileCheck2, ShieldCheck, WalletCards } from "lucide-react";
-import { MEMBERSHIP_DETAILS } from "../lib/constants";
 import SectionHeading from "./SectionHeading";
 
 const detailIcons = [WalletCards, ShieldCheck, FileCheck2];

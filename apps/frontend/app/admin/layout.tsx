@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../lib/auth-context';
 import {
@@ -11,7 +11,6 @@ import {
   LogOut,
   Menu,
   ShieldAlert,
-  Bell,
   Building2,
   Clock,
   User,
@@ -101,7 +100,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, logout } = useAuth();
   // Filter by role
   const visibleNavItems = navItems.filter(
     (item) => !item.roles || (user && item.roles.includes(user.role)),

@@ -2,7 +2,6 @@
 
 import { useAuth } from '../../lib/auth-context';
 import {
-  FileText,
   Download,
   Users,
   Banknote,
@@ -15,7 +14,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.atbltd.health/a
 
 export default function ReportsPage() {
   const { token, user } = useAuth();
-  const isSuperAdmin = user?.role === 'super_admin';
 
   const reports = [
     {
